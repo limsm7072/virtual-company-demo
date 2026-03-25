@@ -307,9 +307,8 @@
 
 <div class="tabs">
   <button class="tab active" onclick="switchTab('missions')">📋 루틴</button>
-  <button class="tab" onclick="switchTab('projects')">🎯 목표</button>
+  <button class="tab" onclick="switchTab('projects')">💼 사업</button>
   <button class="tab" onclick="switchTab('employees')">👥 직원</button>
-  <button class="tab" onclick="switchTab('report')">📊 리포트</button>
 </div>
 
 <div class="content" id="content"></div>
@@ -324,9 +323,7 @@
 <div class="toast" id="toast"></div>
 
 <div class="bbar">
-  <button class="bb sec" onclick="newDay()">📅 다음 날</button>
-  <button class="bb pri" onclick="openSheetAll()">👔 채용</button>
-  <button class="bb sec" onclick="resetGame()">↻ 리셋</button>
+  <button class="bb pri" onclick="newDay()">📅 다음 날</button>
 </div>
 
 </div><!-- /gameScreen -->
@@ -464,8 +461,8 @@ function showStep(){
     const avail=D.filter(t=>!already.includes(t.id));
 
     if(picking>=2||avail.length===0){
-      // 다 골랐으면 다음으로
-      introStep=7;showStep();return;
+      // 다 골랐으면 계획서 완성으로
+      introStep=9;showStep();return;
     }
 
     const ordinal=['가장','그 다음으로'][picking];
@@ -484,52 +481,22 @@ function showStep(){
     extra.innerHTML=`<div style="margin-top:8px">${opts}</div>
       ${picking>0?`<div style="margin-top:6px"><button class="npc-confirm" onclick="bpSkipTeam()" style="background:#2a2510;border-color:#5a5530;color:#8a8060">▸ 이것만 할래요</button></div>`:''}`;
 
-  } else if(introStep===7){
-    // 사업계획서 - 목표 설정
-    avatar.textContent='🎯';
-    npcName.textContent='사업계획서 작성';
-    text.textContent='이 회사의 첫 번째 목표는?';
-    tap.style.display='none';
-    dialog.onclick=null;
-
-    const goals=[
-      {text:'건강한 습관 만들기',icon:'💪'},
-      {text:'자격증/시험 합격',icon:'📚'},
-      {text:'체중 관리',icon:'⚖️'},
-      {text:'생활 패턴 개선',icon:'🌅'},
-      {text:'자기계발',icon:'🚀'},
-      {text:'직접 입력',icon:'✏️'},
-    ];
-    const opts=goals.map(g=>`<div class="hr" onclick="bpPickGoal('${g.text}')">
-      <div class="hr-ic" style="background:#4a4520;border-color:#8a8060;font-size:14px">${g.icon}</div>
-      <div class="hr-info"><div class="t" style="color:#ffe066">${g.text}</div></div>
-    </div>`).join('');
-
-    extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
-
-  } else if(introStep===8){
-    // 사업계획서 - 기간
-    avatar.textContent='📅';
-    npcName.textContent='사업계획서 작성';
-    text.textContent=`"${S._bpGoal}"\n\n첫 성과 점검은 언제 할까요?`;
-    tap.style.display='none';
-    dialog.onclick=null;
-
-    const periods=['1주','2주','1개월','3개월','6개월'];
-    const opts=periods.map(p=>`<div class="hr" onclick="bpPickPeriod('${p}')">
-      <div class="hr-ic" style="background:#4a4520;border-color:#8a8060;font-size:12px">📅</div>
-      <div class="hr-info"><div class="t" style="color:#ffe066">${p}</div></div>
-    </div>`).join('');
-
-    extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
-
   } else if(introStep===9){
     // 사업계획서 완성 & 리뷰
     avatar.textContent='📄';
     npcName.textContent='사업계획서 완성';
 
     const teamNames=(S.planTeams||[]).map(tid=>{const t=D.find(x=>x.id===tid);return t?t.icon+' '+t.name:'';}).join(', ');
-    const plan=`[ ${S.companyName} 사업계획서 ]\n\n▸ 회사명: ${S.companyName}\n▸ 주력 분야: ${teamNames}\n▸ 목표: ${S._bpGoal||''}\n▸ 기간: ${S._bpPeriod||''}\n\n투자 심사를 진행합니다...`;
+    // 세부 루틴도 표시
+    const details=(S.planTeams||[]).map(tid=>{
+      const t=D.find(x=>x.id===tid);
+      const d=S._teamDetails?S._teamDetails[tid]:null;
+      if(!t)return'';
+      let line=`▸ ${t.icon} ${t.name}`;
+      if(d) line+=`: ${d.what} ${tid==='sleep'?'→ '+d.howMuch+'까지':d.howMuch}`;
+      return line;
+    }).join('\n');
+    const plan=`[ ${S.companyName} 사업계획서 ]\n\n${details}`;
     text.textContent=plan;
     tap.style.display='block';
     tap.textContent='탭하여 심사 결과 확인 ▸';
@@ -769,35 +736,9 @@ function bpDetailPick2(choice){
 }
 
 function bpSkipTeam(){
-  introStep=7;showStep();
-}
-
-function bpPickGoal(goal){
-  if(goal==='직접 입력'){
-    document.getElementById('npcExtra').innerHTML=`
-      <input class="npc-input" id="goalInput" type="text" placeholder="목표를 입력하세요" maxlength="20">
-      <br>
-      <button class="npc-confirm" onclick="bpCustomGoal()">▸ 다음</button>
-    `;
-    setTimeout(()=>{const inp=document.getElementById('goalInput');if(inp)inp.focus();},200);
-    return;
-  }
-  S._bpGoal=goal;
-  introStep=8;showStep();
-}
-
-function bpCustomGoal(){
-  const inp=document.getElementById('goalInput');
-  const v=inp?inp.value.trim():'';
-  if(!v){inp.style.borderColor='#cc4444';return;}
-  S._bpGoal=v;
-  introStep=8;showStep();
-}
-
-function bpPickPeriod(p){
-  S._bpPeriod=p;
   introStep=9;showStep();
 }
+
 
 function rentOffice(idx){
   const o=OFFICES[idx];
@@ -824,17 +765,7 @@ function rentOffice(idx){
     S.depts.push({...t,kpi:0,emps:[],missions});
   });
 
-  // 목표를 프로젝트로 자동 생성
-  if(S._bpGoal){
-    const periodMap={'1주':7,'2주':14,'1개월':30,'3개월':90,'6개월':180};
-    const dur=periodMap[S._bpPeriod]||30;
-    S.projects.push({
-      name:S._bpGoal, desc:S._bpGoal, icon:'🎯',
-      teams:S.planTeams, duration:dur, goal:60,
-      startDay:1, settled:false,
-      reward:{exp:Math.round(dur*6), money:dur*300}
-    });
-  }
+
 
   // 직원 채용 튜토리얼로
   introStep=13;
@@ -1081,7 +1012,7 @@ function drawChar(x,y,emp,eg,kpi,bubble,isWaving){
 // ===== TABS =====
 function switchTab(t){
   S.tab=t;
-  document.querySelectorAll('.tab').forEach((b,i)=>{b.classList.toggle('active',['missions','projects','employees','report'][i]===t);});
+  document.querySelectorAll('.tab').forEach((b,i)=>{b.classList.toggle('active',['missions','projects','employees'][i]===t);});
   renderContent();
 }
 
