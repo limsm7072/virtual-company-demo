@@ -5,261 +5,96 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>수호컴퍼니</title>
 <style>
-  @font-face { font-family:'Dot'; src:url('https://fonts.gstatic.com/s/dotgothic16/v17/v6-QGYjBJFKgyw5nSoDAGE7L435YPFrT.woff2') format('woff2'); }
+  @font-face{font-family:'Dot';src:url('https://fonts.gstatic.com/s/dotgothic16/v17/v6-QGYjBJFKgyw5nSoDAGE7L435YPFrT.woff2') format('woff2')}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  body{
-    font-family:'Dot','DotGothic16','Malgun Gothic',monospace;background:#2a2a1a;color:#f0e8d0;
-    overflow-x:hidden;max-width:480px;margin:0 auto;
-    border-left:2px solid #4a4a2a;border-right:2px solid #4a4a2a;
-    min-height:100vh;image-rendering:pixelated;
-  }
+  body{font-family:'Dot','DotGothic16',monospace;background:#0a0a1a;color:#f0e8d0;overflow-x:hidden;max-width:480px;margin:0 auto;border-left:2px solid #4a4a2a;border-right:2px solid #4a4a2a;min-height:100vh}
 
-  /* ===== 레트로 HUD ===== */
-  .hud{
-    background:#3a3520;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;
-    border-bottom:3px solid #5a5530;position:sticky;top:0;z-index:50;
-  }
+  .hud{background:#3a3520;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #5a5530;position:sticky;top:0;z-index:50}
   .hud-left{display:flex;flex-direction:column;gap:1px}
   .hud-day{font-size:9px;color:#a09870}
-  .hud-grade{font-size:13px;color:#ffe066;text-shadow:1px 1px 0 #806000}
-  .exp-wrap{display:flex;align-items:center;gap:4px;margin-top:2px}
-  .exp-lbl{font-size:8px;color:#a09870}
-  .exp-bar{width:80px;height:8px;background:#1a1a10;border:2px solid #5a5530;image-rendering:pixelated}
-  .exp-fill{height:100%;background:#66cc44;transition:width 0.5s}
+  .hud-grade{font-size:11px;color:#ffe066;text-shadow:1px 1px 0 #806000}
   .hud-right{display:flex;gap:8px}
   .hud-stat{text-align:center;background:#2a2510;padding:4px 8px;border:2px solid #5a5530}
   .hud-stat .val{font-size:11px;font-weight:bold}
   .hud-stat .lbl{font-size:7px;color:#8a8060}
 
-  /* ===== 오피스 캔버스 ===== */
-  .office-wrap{position:relative;width:100%;height:240px;background:#1a1a10;border-bottom:3px solid #5a5530;overflow:hidden}
+  .office-wrap{position:relative;width:100%;height:260px;background:#1a1a10;border-bottom:3px solid #5a5530;overflow:hidden}
   .office-canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
 
-  /* 루나 */
-
-  /* ===== 탭 (레트로 버튼) ===== */
-  .tabs{
-    display:flex;background:#3a3520;border-bottom:3px solid #5a5530;
-  }
-  .tab{
-    flex:1;padding:8px 0;font-size:10px;color:#8a8060;background:#2a2510;
-    border:none;border-right:2px solid #5a5530;cursor:pointer;font-family:inherit;
-    text-align:center;transition:all 0.1s;
-  }
-  .tab:last-child{border-right:none}
-  .tab.active{background:#4a4520;color:#ffe066;box-shadow:inset 0 -3px 0 #ffe066}
-  .tab:active{background:#5a5530}
-
-  /* ===== 컨텐츠 ===== */
   .content{padding:8px;padding-bottom:60px}
 
-  /* 레트로 카드 */
-  .rc{
-    background:#3a3520;border:2px solid #5a5530;margin-bottom:8px;
-    box-shadow:2px 2px 0 rgba(0,0,0,0.4);
-  }
-  .rc-head{
-    background:#4a4520;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;
-    border-bottom:2px solid #5a5530;
-  }
-  .rc-title{font-size:11px;color:#f0e8d0}
-  .rc-badge{
-    font-size:9px;padding:2px 6px;border:2px solid;font-weight:bold;
-  }
-  .rc-badge.high{color:#44ff44;border-color:#22aa22;background:#1a3a1a}
-  .rc-badge.mid{color:#ffcc00;border-color:#aa8800;background:#3a2a1a}
-  .rc-badge.low{color:#ff4444;border-color:#aa2222;background:#3a1a1a}
-  .rc-body{padding:6px 8px}
+  .card{background:#3a3520;border:2px solid #5a5530;margin-bottom:8px;box-shadow:2px 2px 0 rgba(0,0,0,0.4)}
+  .card-head{background:#4a4520;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #5a5530}
+  .card-title{font-size:11px;color:#f0e8d0}
+  .card-body{padding:8px}
 
-  /* KPI 바 (레트로) */
-  .kbar{height:8px;background:#1a1a10;border:2px solid #5a5530;margin-bottom:8px}
-  .kbar-fill{height:100%;transition:width 0.5s}
-  .kbar-fill.high{background:#44aa22}
-  .kbar-fill.mid{background:#ccaa00}
-  .kbar-fill.low{background:#aa2222}
+  .btn{display:flex;align-items:center;gap:8px;padding:8px;background:#2a2510;border:2px solid #5a5530;margin-bottom:4px;cursor:pointer;transition:all 0.1s}
+  .btn:active{background:#4a4520;transform:scale(0.97)}
+  .btn .ic{width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid;flex-shrink:0}
+  .btn .info{flex:1}
+  .btn .info .t{font-size:10px;font-weight:bold}
+  .btn .info .d{font-size:8px;color:#8a8060}
+  .btn .cost{font-size:9px;font-weight:bold}
+  .btn.locked{opacity:0.3;pointer-events:none}
 
-  /* 미션 아이템 (레트로 리스트) */
-  .mi{
-    display:flex;align-items:center;gap:6px;padding:6px;margin-bottom:3px;
-    background:#2a2510;border:1px solid #4a4520;cursor:pointer;
-  }
-  .mi:active{background:#4a4520;transform:scale(0.98)}
-  .mi-ck{
-    width:14px;height:14px;border:2px solid #5a5530;background:#1a1a10;
-    display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;
-  }
-  .mi.done .mi-ck{background:#22aa22;border-color:#44cc44;color:#fff}
-  .mi.fail .mi-ck{background:#aa2222;border-color:#cc4444;color:#fff}
-  .mi-txt{font-size:10px;flex:1}
+  .mi{display:flex;align-items:center;gap:8px;padding:8px;background:#2a2510;border:1px solid #4a4520;margin-bottom:4px;cursor:pointer}
+  .mi:active{background:#4a4520;transform:scale(0.97)}
+  .mi-ck{width:14px;height:14px;border:2px solid #5a5530;background:#1a1a10;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
+  .mi.done .mi-ck{background:#228822;border-color:#44cc44;color:#fff}
+  .mi .mi-txt{font-size:10px;flex:1}
   .mi.done .mi-txt{color:#6a6a4a;text-decoration:line-through}
 
-  /* 직원 행 */
-  .er{
-    display:flex;align-items:center;gap:6px;padding:6px;margin-bottom:3px;
-    background:#2a2510;border:1px solid #4a4520;
-  }
-  .er-face{
-    width:20px;height:20px;border:2px solid;display:flex;align-items:center;
-    justify-content:center;font-size:10px;image-rendering:pixelated;
-  }
-  .er-info{flex:1}
-  .er-info .n{font-size:10px}
-  .er-info .r{font-size:8px}
-  .er-mood{font-size:12px}
+  .prog-wrap{background:#1a1a10;border:2px solid #5a5530;height:14px;margin:6px 0;position:relative;overflow:hidden}
+  .prog-fill{height:100%;background:#66aa44;transition:width 0.3s}
+  .prog-text{position:absolute;top:0;left:0;width:100%;text-align:center;font-size:8px;line-height:10px;color:#fff}
 
-  /* 부서추가 */
-  .add-c{
-    border:2px dashed #5a5530;padding:16px;text-align:center;color:#5a5530;
-    font-size:10px;cursor:pointer;margin-bottom:8px;
-  }
-  .add-c:active{border-color:#ffe066;color:#ffe066}
+  .bbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:50;background:#3a3520;border-top:3px solid #5a5530;padding:6px 8px;padding-bottom:max(6px,env(safe-area-inset-bottom));display:flex;gap:4px}
+  .bb{flex:1;padding:8px 0;border:2px solid;font-family:inherit;font-size:9px;cursor:pointer;text-align:center;box-shadow:2px 2px 0 rgba(0,0,0,0.3)}
+  .bb:active{transform:translate(1px,1px)}
+  .bb.pri{background:#4a6a2a;border-color:#66aa44;color:#ccff88}
+  .bb.sec{background:#2a2510;border-color:#5a5530;color:#a09870}
+  .bb.hide{display:none}
 
-  /* ===== 리포트 (레트로 감성) ===== */
-  .rpt-header{text-align:center;padding:12px 0;border-bottom:2px dashed #5a5530;margin-bottom:8px}
-  .rpt-header .icon{font-size:24px}
-  .rpt-header .grade{font-size:14px;color:#ffe066;margin-top:4px;text-shadow:1px 1px 0 #806000}
-  .rpt-header .sub{font-size:8px;color:#8a8060}
+  .toast{position:fixed;top:44px;left:50%;transform:translateX(-50%);z-index:200;background:#3a3520;border:2px solid #66cc44;color:#ccff88;padding:6px 14px;font-size:9px;display:none;box-shadow:2px 2px 0 rgba(0,0,0,0.5);font-family:inherit}
+  .toast.bad{border-color:#cc4444;color:#ff8888}
 
-  .rpt-stats{display:flex;gap:4px;margin-bottom:8px}
-  .rpt-stat{
-    flex:1;text-align:center;padding:8px 4px;
-    background:#2a2510;border:2px solid #5a5530;
-  }
-  .rpt-stat .v{font-size:16px;font-weight:bold}
-  .rpt-stat .l{font-size:7px;color:#8a8060;margin-top:2px}
-
-  .rpt-dept{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:5px 6px;border-bottom:1px solid #3a3520;font-size:10px;
-  }
-  .rpt-dept:last-child{border-bottom:none}
-  .rpt-bar-mini{width:60px;height:6px;background:#1a1a10;border:1px solid #4a4520}
-  .rpt-bar-fill{height:100%}
-
-  .rpt-next{
-    margin-top:8px;padding:8px;text-align:center;
-    background:#2a2510;border:2px solid #5a5530;font-size:9px;color:#a09870;
-  }
-  .rpt-next .target{color:#ffe066;font-size:11px}
-
-  /* 스탯 변화 표시 */
-  .rpt-change{font-size:8px;margin-top:2px}
-  .rpt-change.up{color:#44ff44}
-  .rpt-change.down{color:#ff4444}
-
-  /* ===== 채용 시트 ===== */
   .sh-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:100}
   .sh-bg.open{display:block}
-  .sh{
-    position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);
-    width:100%;max-width:480px;max-height:60vh;overflow-y:auto;
-    background:#3a3520;border:2px solid #5a5530;border-bottom:none;
-    padding:12px 8px;z-index:101;transition:transform 0.3s;
-  }
+  .sh{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:480px;max-height:65vh;overflow-y:auto;background:#3a3520;border:2px solid #5a5530;border-bottom:none;padding:12px 8px;z-index:101;transition:transform 0.3s}
   .sh-bg.open .sh{transform:translateX(-50%) translateY(0)}
   .sh h3{font-size:11px;color:#ffe066;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #5a5530}
 
-  .hr{
-    display:flex;align-items:center;gap:8px;padding:8px 6px;
-    background:#2a2510;border:2px solid #4a4520;margin-bottom:4px;cursor:pointer;
-  }
-  .hr:active{background:#4a4520;border-color:#ffe066}
-  .hr.locked{opacity:0.3;pointer-events:none}
-  .hr-ic{width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid}
-  .hr-info{flex:1}
-  .hr-info .t{font-size:10px;font-weight:bold}
-  .hr-info .d{font-size:8px;color:#8a8060}
-  .hr-cost{font-size:9px;color:#66cc44;font-weight:bold}
-
-  /* ===== 하단바 ===== */
-  .bbar{
-    position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-    width:100%;max-width:480px;z-index:50;
-    background:#3a3520;border-top:3px solid #5a5530;
-    padding:6px 8px;padding-bottom:max(6px,env(safe-area-inset-bottom));
-    display:flex;gap:4px;
-  }
-  .bb{
-    flex:1;padding:8px 0;border:2px solid;font-family:inherit;
-    font-size:9px;cursor:pointer;text-align:center;
-    box-shadow:2px 2px 0 rgba(0,0,0,0.3);transition:all 0.1s;
-  }
-  .bb:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,0.3)}
-  .bb.pri{background:#4a6a2a;border-color:#66aa44;color:#ccff88}
-  .bb.sec{background:#2a2510;border-color:#5a5530;color:#a09870}
-
-  /* 토스트 */
-  .toast{
-    position:fixed;top:44px;left:50%;transform:translateX(-50%);z-index:200;
-    background:#3a3520;border:2px solid #66cc44;color:#ccff88;
-    padding:6px 14px;font-size:9px;display:none;
-    box-shadow:2px 2px 0 rgba(0,0,0,0.5);font-family:inherit;
-  }
-  .toast.bad{border-color:#cc4444;color:#ff8888}
-
-  /* ===== 인트로 화면 ===== */
-  .intro{
-    position:fixed;top:0;left:0;width:100%;height:100%;z-index:500;
-    background:#1a1a10;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    max-width:480px;margin:0 auto;
-  }
+  /* 인트로 */
+  .intro{position:fixed;top:0;left:0;width:100%;height:100%;z-index:500;background:#1a1a10;display:flex;flex-direction:column;align-items:center;justify-content:center;max-width:480px;margin:0 auto}
   .intro.hidden{display:none}
-
-  /* 타이틀 */
-  .intro-title{
-    text-align:center;margin-bottom:40px;
-  }
+  .intro-title{text-align:center;margin-bottom:40px}
   .intro-title .logo{font-size:48px;margin-bottom:12px}
   .intro-title h1{font-size:18px;color:#ffe066;text-shadow:2px 2px 0 #806000;letter-spacing:2px}
   .intro-title .sub{font-size:9px;color:#8a8060;margin-top:6px}
-  .intro-start{
-    padding:12px 40px;background:#4a6a2a;border:2px solid #66aa44;color:#ccff88;
-    font-family:inherit;font-size:12px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,0.4);
-    animation:pulse 1.5s ease-in-out infinite;
-  }
-  .intro-start:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,0.4)}
+  .intro-start{padding:12px 40px;background:#4a6a2a;border:2px solid #66aa44;color:#ccff88;font-family:inherit;font-size:12px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,0.4);animation:pulse 1.5s ease-in-out infinite}
+  .intro-start:active{transform:translate(1px,1px)}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
 
-  /* NPC 대화 */
-  .npc-screen{
-    position:fixed;top:0;left:0;width:100%;height:100%;z-index:500;
-    background:#1a1a10;max-width:480px;margin:0 auto;display:none;
-    flex-direction:column;
-  }
+  .npc-screen{position:fixed;top:0;left:0;width:100%;height:100%;z-index:500;background:#1a1a10;max-width:480px;margin:0 auto;display:none;flex-direction:column}
   .npc-screen.active{display:flex}
-  .npc-scene{
-    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    padding:20px;
-  }
-  .npc-luna{
-    width:80px;height:80px;background:linear-gradient(135deg,#4a6a2a,#66aa44);
-    border:3px solid #3a5520;display:flex;align-items:center;justify-content:center;
-    font-size:36px;margin-bottom:16px;box-shadow:3px 3px 0 rgba(0,0,0,0.4);
-  }
+  .npc-scene{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+  .npc-luna{width:80px;height:80px;background:linear-gradient(135deg,#4a6a2a,#66aa44);border:3px solid #3a5520;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:16px;box-shadow:3px 3px 0 rgba(0,0,0,0.4)}
   .npc-name{font-size:11px;color:#ffe066;margin-bottom:20px}
-  .npc-dialog{
-    width:100%;background:#3a3520;border:2px solid #5a5530;padding:16px;
-    margin:0 12px;box-shadow:2px 2px 0 rgba(0,0,0,0.4);
-    min-height:80px;position:relative;
-  }
-  .npc-text{font-size:11px;color:#f0e8d0;line-height:1.6}
+  .npc-dialog{width:100%;background:#3a3520;border:2px solid #5a5530;padding:16px;box-shadow:2px 2px 0 rgba(0,0,0,0.4);min-height:80px}
+  .npc-text{font-size:11px;color:#f0e8d0;line-height:1.6;white-space:pre-line}
   .npc-tap{font-size:8px;color:#8a8060;text-align:right;margin-top:8px;animation:pulse 1.2s ease-in-out infinite}
-  .npc-input{
-    width:100%;padding:10px;background:#2a2510;border:2px solid #5a5530;
-    color:#ffe066;font-family:inherit;font-size:13px;text-align:center;
-    margin-top:12px;
-  }
-  .npc-input::placeholder{color:#5a5530}
-  .npc-confirm{
-    margin-top:12px;padding:10px 30px;background:#4a6a2a;border:2px solid #66aa44;
-    color:#ccff88;font-family:inherit;font-size:11px;cursor:pointer;
-    box-shadow:2px 2px 0 rgba(0,0,0,0.4);
-  }
+  .npc-input{width:100%;padding:10px;background:#2a2510;border:2px solid #5a5530;color:#ffe066;font-family:inherit;font-size:13px;text-align:center;margin-top:12px}
+  .npc-confirm{margin-top:12px;padding:10px 30px;background:#4a6a2a;border:2px solid #66aa44;color:#ccff88;font-family:inherit;font-size:11px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,0.4)}
+  .hr{display:flex;align-items:center;gap:8px;padding:8px 6px;background:#2a2510;border:2px solid #4a4520;margin-bottom:4px;cursor:pointer}
+  .hr:active{background:#4a4520}
+  .hr.locked{opacity:0.3;pointer-events:none}
+  .hr-info{flex:1}.hr-info .t{font-size:10px;font-weight:bold}.hr-info .d{font-size:8px;color:#8a8060}
+  .hr-cost{font-size:9px;color:#66cc44;font-weight:bold}
+  .hr-ic{width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid}
 </style>
 </head>
 <body>
 
-<!-- 인트로 타이틀 -->
 <div class="intro" id="introScreen">
   <div class="intro-title">
     <div class="logo">🏢</div>
@@ -269,11 +104,10 @@
   <button class="intro-start" onclick="startIntro()">▸ 시작하기</button>
 </div>
 
-<!-- 도입부 대화 -->
 <div class="npc-screen" id="npcScreen">
-  <div class="npc-scene">
+  <div class="npc-scene" id="npcScene">
     <div class="npc-luna" id="npcAvatar">🏢</div>
-    <div class="npc-name" style="color:#ffe066">회사 설립</div>
+    <div class="npc-name" id="npcNameEl"></div>
     <div class="npc-dialog" id="npcDialog" onclick="nextDialog()">
       <div class="npc-text" id="npcText"></div>
       <div class="npc-tap" id="npcTap">탭하여 계속 ▸</div>
@@ -282,22 +116,14 @@
   </div>
 </div>
 
-<!-- 게임 화면 (처음엔 숨김) -->
 <div id="gameScreen" style="display:none">
-
 <div class="hud">
   <div class="hud-left">
-    <div class="hud-day" id="hudDay">DAY 001</div>
-    <div class="hud-grade" id="hudGrade">🏠 개인사무실</div>
-    <div class="exp-wrap">
-      <span class="exp-lbl">EXP</span>
-      <div class="exp-bar"><div class="exp-fill" id="expBar" style="width:0%"></div></div>
-    </div>
+    <div class="hud-day" id="hudDay"></div>
+    <div class="hud-grade" id="hudGrade">수호컴퍼니</div>
   </div>
   <div class="hud-right">
-    <div class="hud-stat"><div class="val" id="hudKpi" style="color:#ffcc00">0%</div><div class="lbl">KPI</div></div>
-    <div class="hud-stat"><div class="val" id="hudEmp">2</div><div class="lbl">직원</div></div>
-    <div class="hud-stat"><div class="val" id="hudMoney" style="color:#66cc44">50K</div><div class="lbl">자금</div></div>
+    <div class="hud-stat"><div class="val" id="hudMoney" style="color:#66cc44">0</div><div class="lbl">자금</div></div>
   </div>
 </div>
 
@@ -305,17 +131,11 @@
   <canvas class="office-canvas" id="canvas"></canvas>
 </div>
 
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('missions')">📋 루틴</button>
-  <button class="tab" onclick="switchTab('projects')">💼 사업</button>
-  <button class="tab" onclick="switchTab('employees')">👥 직원</button>
-</div>
-
 <div class="content" id="content"></div>
 
 <div class="sh-bg" id="shBg" onclick="closeSheet()">
   <div class="sh" onclick="event.stopPropagation()">
-    <h3>▸ <span id="shTitle">직원 채용</span></h3>
+    <h3>▸ <span id="shTitle"></span></h3>
     <div id="shBody"></div>
   </div>
 </div>
@@ -323,1195 +143,508 @@
 <div class="toast" id="toast"></div>
 
 <div class="bbar">
-  <button class="bb pri" onclick="newDay()">📅 다음 날</button>
+  <button class="bb pri" onclick="nextDay()">📅 다음 날</button>
+</div>
 </div>
 
-</div><!-- /gameScreen -->
-
 <script>
-const G=[
-  {name:'개인사무실',icon:'🏠',minKpi:0,maxDept:4,exp:100,wins:1,desks:2,plants:1,
-   wall:'#d4c8a8',wl:'#c8bc98',trim:'#8B7355',f1:'#B8864E',f2:'#A67842',fh:'#C4925A'},
-  {name:'스타트업',icon:'🏢',minKpi:40,maxDept:3,exp:300,wins:2,desks:3,plants:1,
-   wall:'#ccd4d8',wl:'#bcc8cc',trim:'#6688aa',f1:'#a8a098',f2:'#989088',fh:'#b8b0a8'},
-  {name:'중소기업',icon:'🏗️',minKpi:55,maxDept:4,exp:600,wins:2,desks:4,plants:2,
-   wall:'#d8d4cc',wl:'#ccc8c0',trim:'#887744',f1:'#B8864E',f2:'#A67842',fh:'#C4925A'},
-  {name:'중견기업',icon:'🏛️',minKpi:65,maxDept:5,exp:1000,wins:3,desks:5,plants:2,
-   wall:'#e0dcd4',wl:'#d4d0c4',trim:'#aa9966',f1:'#c49a6c',f2:'#b08850',fh:'#d4a878'},
-  {name:'대기업',icon:'🏙️',minKpi:75,maxDept:6,exp:2000,wins:3,desks:6,plants:3,
-   wall:'#e8e4dc',wl:'#dcd8cc',trim:'#bbaa88',f1:'#889898',f2:'#788888',fh:'#99a8a8'},
-  {name:'글로벌기업',icon:'🌍',minKpi:85,maxDept:6,exp:9999,wins:4,desks:8,plants:3,
-   wall:'#f0ece4',wl:'#e4e0d4',trim:'#ccbb99',f1:'#3a3a3a',f2:'#2a2a2a',fh:'#4a4a4a'},
+// ===== 제작 가능 기능 목록 =====
+const CRAFTS=[
+  {id:'routine_add',name:'루틴 등록 기능',desc:'루틴을 추가할 수 있게 됩니다',time:10,reward:500,icon:'📋',req:[]},
+  {id:'routine_check',name:'루틴 체크 기능',desc:'루틴 달성을 체크할 수 있습니다',time:15,reward:500,icon:'✅',req:['routine_add']},
+  {id:'kpi_bar',name:'KPI 표시',desc:'팀의 KPI를 확인할 수 있습니다',time:20,reward:800,icon:'📊',req:['routine_check']},
+  {id:'hire_system',name:'채용 시스템',desc:'새 직원을 채용할 수 있습니다',time:30,reward:1000,icon:'👔',req:['kpi_bar']},
+  {id:'new_team',name:'팀 확장',desc:'새 팀을 추가할 수 있습니다',time:40,reward:1500,icon:'🏢',req:['hire_system']},
+  {id:'biz_tab',name:'사업 수주',desc:'사업을 수주받을 수 있습니다',time:50,reward:2000,icon:'💼',req:['new_team']},
+  {id:'notify',name:'알림 기능',desc:'루틴 알림을 설정할 수 있습니다',time:30,reward:1000,icon:'🔔',req:['routine_check']},
+  {id:'stats',name:'통계 리포트',desc:'상세 통계를 볼 수 있습니다',time:40,reward:1500,icon:'📈',req:['kpi_bar']},
 ];
+
 const E=[
-  {rank:'인턴',c:'#88aaaa',bg:'#556666',cost:2000,bonus:0,skill:'기본 알림',desc:'정해진 시간에 알림만'},
-  {rank:'사원',c:'#66aaee',bg:'#336699',cost:3500,bonus:5,skill:'API 연동',desc:'캘린더/건강앱 데이터 연동'},
-  {rank:'대리',c:'#66cc66',bg:'#338833',cost:3900,bonus:10,skill:'OS 제어',desc:'방해금지/알람 자동 설정'},
-  {rank:'과장',c:'#eeaa44',bg:'#aa6600',cost:6900,bonus:15,skill:'오버레이 잔소리',desc:'화면 위에 캐릭터가 나타나 독촉'},
-  {rank:'부장',c:'#cc88ee',bg:'#774499',cost:9900,bonus:20,skill:'AI 분석',desc:'패턴 분석 + 맞춤 루틴 제안'},
-  {rank:'임원',c:'#ee6666',bg:'#993333',cost:14900,bonus:30,skill:'풀 자동화',desc:'자율 에이전트, 선제적 실행'},
+  {rank:'인턴',c:'#88aaaa',bg:'#556666',cost:2000,bonus:0,speed:1,skill:'기본 알림',desc:'정해진 시간에 알림만'},
+  {rank:'사원',c:'#66aaee',bg:'#336699',cost:3500,bonus:5,speed:1.5,skill:'API 연동',desc:'캘린더/건강앱 데이터 연동'},
+  {rank:'대리',c:'#66cc66',bg:'#338833',cost:5900,bonus:10,speed:2,skill:'OS 제어',desc:'방해금지/알람 자동 설정'},
+  {rank:'과장',c:'#eeaa44',bg:'#aa6600',cost:8900,bonus:15,speed:2.5,skill:'오버레이 잔소리',desc:'화면 위 캐릭터가 독촉'},
+  {rank:'부장',c:'#cc88ee',bg:'#774499',cost:12900,bonus:20,speed:3,skill:'AI 분석',desc:'패턴 분석 + 맞춤 루틴'},
+  {rank:'임원',c:'#ee6666',bg:'#993333',cost:19900,bonus:30,speed:4,skill:'풀 자동화',desc:'자율 에이전트'},
 ];
-const D=[
-  {id:'exercise',name:'운동팀',icon:'💪',hint:'운동 관련 루틴',
-    q1:'요즘 운동을 하고 있나요?',
-    opts1:['전혀 안 함','가끔 걷는 정도','주 1~2회','주 3회 이상'],
-    q2:'어떤 운동에 관심 있나요?',
-    opts2:['걷기','스트레칭','가벼운 홈트','러닝']},
-  {id:'sleep',name:'수면팀',icon:'😴',hint:'수면 관련 루틴',
-    q1:'요즘 보통 몇 시에 자나요?',
-    opts1:['23시쯤','24시쯤','새벽 1시쯤','새벽 2시쯤','새벽 3시쯤','새벽 4시 이후'],
-    q2:'_dynamic_sleep',
-    opts2:[]},
-  {id:'study',name:'학습팀',icon:'📚',hint:'학습 관련 루틴',
-    q1:'요즘 따로 공부하고 있나요?',
-    opts1:['전혀 안 함','가끔 생각날 때','하루 30분 미만','하루 30분 이상'],
-    q2:'무엇을 공부하고 싶나요?',
-    opts2:['영어','코딩/개발','자격증 준비','독서','기타']},
-  {id:'health',name:'건강팀',icon:'🥗',hint:'건강 관련 루틴',
-    q1:'요즘 건강 관리를 하고 있나요?',
-    opts1:['전혀 신경 안 씀','물 정도만','영양제는 챙김','식단까지 관리'],
-    q2:'뭘 시작해보고 싶나요?',
-    opts2:['물 자주 마시기','영양제 챙기기','간식 줄이기','채소 한 끼']},
-  {id:'finance',name:'재정팀',icon:'💰',hint:'재정 관련 루틴',
-    q1:'요즘 돈 관리를 하고 있나요?',
-    opts1:['쓰는 대로 삶','대충 감으로','가계부 가끔','꼼꼼히 관리'],
-    q2:'뭘 시작해보고 싶나요?',
-    opts2:['지출 기록하기','커피값 아끼기','충동구매 참기','소액 저축']},
-  {id:'mental',name:'멘탈팀',icon:'🧘',hint:'멘탈 관련 루틴',
-    q1:'요즘 마음 관리를 하고 있나요?',
-    opts1:['전혀 안 함','가끔 산책 정도','명상이나 일기 가끔','꾸준히 하는 중'],
-    q2:'뭘 해보고 싶나요?',
-    opts2:['심호흡/명상','짧은 일기','감사한 일 적기','5분 산책']},
+
+const DEPT_TEMPLATES=[
+  {id:'exercise',name:'운동팀',icon:'💪'},
+  {id:'sleep',name:'수면팀',icon:'😴'},
+  {id:'study',name:'학습팀',icon:'📚'},
+  {id:'health',name:'건강팀',icon:'🥗'},
+  {id:'finance',name:'재정팀',icon:'💰'},
+  {id:'mental',name:'멘탈팀',icon:'🧘'},
 ];
-const NM=['김수호','이하늘','박지민','최윤서','정다은','강민준','조서연','윤태호','한소율','임재현','송예린','오동현','나영호','문서진','백승우','허지연'];
+
+const NAMES=['김수호','이하늘','박지민','최윤서','정다은','강민준','조서연','윤태호','한소율','임재현','송예린','오동현'];
 const SK=['#FFDBB4','#E8B88A','#D4A574','#C68642'];
-const HR=['#222','#4A2800','#8B4513','#333','#1a1a1a'];
-
+const HR=['#222','#4A2800','#8B4513','#333'];
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
-let S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:'',projects:[],office:null,planTeams:[]};
 
-function rN(){const a=NM.filter(n=>!S.used.includes(n));const n=a.length?rnd(a):rnd(NM);S.used.push(n);return n;}
+let S={
+  money:0,day:1,founded:false,companyName:'',
+  depts:[],emps:[],used:[],
+  unlocked:[], // 해금된 기능 ID
+  crafting:null, // {craftId, empIdx, startTime, duration}
+  missions:[], // 루틴
+};
 
-function mkEmp(gi){return{name:rN(),gi,mood:'normal',skin:rnd(SK),hair:rnd(HR),waveT:0};}
+function rN(){const a=NAMES.filter(n=>!S.used.includes(n));const n=a.length?rnd(a):rnd(NAMES);S.used.push(n);return n;}
+function mkEmp(gi){return{name:rN(),gi,skin:rnd(SK),hair:rnd(HR),state:'idle',mood:'normal'};}
+function has(id){return S.unlocked.includes(id);}
 
-// ===== 인트로 시스템 =====
+// ===== 인트로 =====
 let introStep=0;
-
-const OFFICES=[
-  {name:'원룸 사무실',cost:5000,maxDept:2,icon:'🏠',desc:'책상 2개, 좁지만 시작하기 좋은'},
-  {name:'공유 오피스',cost:15000,maxDept:3,icon:'🏢',desc:'공용 회의실 포함, 3팀까지'},
-  {name:'소형 사무실',cost:30000,maxDept:4,icon:'🏗️',desc:'독립 공간, 4팀까지'},
-  {name:'층 사무실',cost:50000,maxDept:5,icon:'🏛️',desc:'한 층 전체, 5팀까지'},
+const STORIES=[
+  {icon:'💼',msg:'당신은 오늘,\n모든 것을 바꾸기로 결심했습니다.'},
+  {icon:'📊',msg:'운동, 수면, 공부, 건강...\n혼자서는 관리가 안 되는 것들.'},
+  {icon:'🏢',msg:'그래서 생각했습니다.\n\n"회사를 만들자.\n나를 관리해줄 회사를."'},
+  {icon:'👔',msg:'직원을 뽑고, 팀을 꾸리고\n그들이 기능을 하나씩\n만들어줄 겁니다.'},
+  {icon:'🚀',msg:'처음엔 아무 기능도 없습니다.\n직원이 일해야 기능이 생깁니다.\n\n준비 되셨나요?'},
 ];
 
 function startIntro(){
   document.getElementById('introScreen').classList.add('hidden');
   document.getElementById('npcScreen').classList.add('active');
-  introStep=0;
-  showStep();
+  introStep=0;showIntroStep();
 }
 
-function showStep(){
-  const scene=document.getElementById('npcScene');
-  const avatar=document.getElementById('npcAvatar');
-  const npcName=document.querySelector('.npc-name');
-  const dialog=document.getElementById('npcDialog');
-  const text=document.getElementById('npcText');
-  const tap=document.getElementById('npcTap');
-  const extra=document.getElementById('npcExtra');
+function showIntroStep(){
+  const av=document.getElementById('npcAvatar');
+  const nm=document.getElementById('npcNameEl');
+  const tx=document.getElementById('npcText');
+  const tp=document.getElementById('npcTap');
+  const ex=document.getElementById('npcExtra');
+  const dg=document.getElementById('npcDialog');
 
-  if(introStep<=4){
-    // 서사 (스토리) - 탭으로 진행
-    const stories=[
-      {icon:'💼',msg:'당신은 오늘,\n모든 것을 바꾸기로 결심했습니다.'},
-      {icon:'📊',msg:'운동, 수면, 공부, 건강...\n혼자서는 관리가 안 되는 것들.'},
-      {icon:'🏢',msg:'그래서 생각했습니다.\n\n"회사를 만들자.\n나를 관리해줄 회사를."'},
-      {icon:'👔',msg:'직원을 뽑고, 팀을 꾸리고\n그들에게 당신의 목표를\n맡기는 겁니다.'},
-      {icon:'🚀',msg:'자, 그럼 시작해볼까요?\n\n사업계획서를 작성하면\n투자를 받을 수 있습니다.\n\n몇 가지만 고르면 됩니다.'},
-    ];
-    const s=stories[introStep];
-    avatar.textContent=s.icon;
-    npcName.textContent='';
-    text.textContent=s.msg;
-    tap.style.display='block';
-    tap.textContent='탭하여 계속 ▸';
-    dialog.onclick=()=>{introStep++;showStep();};
-    extra.innerHTML='';
-
-  } else if(introStep===5){
-    // 회사 이름 입력 (서사에서 자연스럽게 이어짐)
-    avatar.textContent='🏢';
-    npcName.textContent='';
-    text.textContent='모든 회사에는 이름이 필요합니다.\n\n당신의 회사, 뭐라고 부를까요?';
-    tap.style.display='none';
-    dialog.onclick=null;
-    extra.innerHTML=`
-      <input class="npc-input" id="nameInput" type="text" placeholder="회사 이름" maxlength="10">
-      <br>
-      <button class="npc-confirm" onclick="bpStepName()">▸ 다음</button>
-    `;
-    setTimeout(()=>{const inp=document.getElementById('nameInput');if(inp)inp.focus();},300);
-
-  } else if(introStep===6){
-    // 사업계획서 - 주력 분야
-    avatar.textContent='📋';
-    npcName.textContent='사업계획서 작성';
-    const picking=S._bpPicking||0;
-    const already=S.planTeams||[];
-    const avail=D.filter(t=>!already.includes(t.id));
-
-    if(picking>=1||avail.length===0){
-      // 1개 골랐으면 계획서 완성으로
-      introStep=9;showStep();return;
-    }
-
-    text.textContent='가장 관심 있는 분야는\n무엇인가요?';
-    tap.style.display='none';
-    dialog.onclick=null;
-
-    const labels={exercise:'운동',sleep:'수면',study:'학습',health:'건강',finance:'돈 관리',mental:'마음 관리'};
-    const descs={exercise:'체력, 다이어트, 근력 등',sleep:'수면 패턴, 숙면, 기상 등',study:'공부, 독서, 자격증 등',health:'식단, 영양, 체중 등',finance:'절약, 저축, 가계부 등',mental:'명상, 일기, 휴식 등'};
-    const opts=avail.map(t=>`<div class="hr" onclick="bpPickTeam('${t.id}')">
-      <div class="hr-ic" style="background:#4a4520;border-color:#8a8060;font-size:16px">${t.icon}</div>
-      <div class="hr-info"><div class="t" style="color:#ffe066">${labels[t.id]||t.name}</div>
-      <div class="d">${descs[t.id]||t.hint}</div></div>
-    </div>`).join('');
-
-    extra.innerHTML=`<div style="margin-top:8px">${opts}</div>
-      `;
-
-  } else if(introStep===9){
-    // 사업계획서 완성 & 리뷰
-    avatar.textContent='📄';
-    npcName.textContent='사업계획서 완성';
-
-    const teamNames=(S.planTeams||[]).map(tid=>{const t=D.find(x=>x.id===tid);return t?t.icon+' '+t.name:'';}).join(', ');
-    // 세부 루틴도 표시
-    const details=(S.planTeams||[]).map(tid=>{
-      const t=D.find(x=>x.id===tid);
-      const d=S._teamDetails?S._teamDetails[tid]:null;
-      if(!t)return'';
-      let line=`▸ ${t.icon} ${t.name}`;
-      if(d) line+=`: ${d.what} ${tid==='sleep'?'→ '+d.howMuch+'까지':d.howMuch}`;
-      return line;
-    }).join('\n');
-    const plan=`[ ${S.companyName} 사업계획서 ]\n\n${details}`;
-    text.textContent=plan;
-    tap.style.display='block';
-    tap.textContent='탭하여 심사 결과 확인 ▸';
-    dialog.onclick=()=>{introStep=10;showStep();};
-    extra.innerHTML='';
-
-  } else if(introStep===10){
-    // 투자 심사 중... (연출)
-    avatar.textContent='⏳';
-    npcName.textContent='';
-    text.textContent='사업계획서를 제출했습니다.\n\n투자 심사가 진행 중입니다...';
-    tap.style.display='none';
-    dialog.onclick=null;
-    extra.innerHTML='';
-    // 2초 후 자동 전환
-    setTimeout(()=>{introStep=11;showStep();},2000);
-
-  } else if(introStep===11){
-    // 투자 결과
-    avatar.textContent='💰';
-    npcName.textContent='';
+  if(introStep<STORIES.length){
+    av.textContent=STORIES[introStep].icon;nm.textContent='';
+    tx.textContent=STORIES[introStep].msg;
+    tp.style.display='block';tp.textContent='탭하여 계속 ▸';
+    dg.onclick=()=>{introStep++;showIntroStep();};
+    ex.innerHTML='';
+  } else if(introStep===STORIES.length){
+    // 회사 이름
+    av.textContent='🏢';nm.textContent='';
+    tx.textContent='모든 회사에는 이름이 필요합니다.\n\n당신의 회사, 뭐라고 부를까요?';
+    tp.style.display='none';dg.onclick=null;
+    ex.innerHTML=`<input class="npc-input" id="nameInput" placeholder="회사 이름" maxlength="10"><br><button class="npc-confirm" onclick="introSetName()">▸ 다음</button>`;
+    setTimeout(()=>{const i=document.getElementById('nameInput');if(i)i.focus();},300);
+  } else if(introStep===STORIES.length+1){
+    // 투자
+    av.textContent='💰';nm.textContent='';
     S.money=8000;
-    text.textContent=`심사 결과: 승인!\n\n시드 투자금: 8,000원\n\n큰 금액은 아니지만\n누구나 처음은 작은 사무실부터.`;
-    tap.style.display='block';
-    tap.textContent='탭하여 계속 ▸';
-    dialog.onclick=()=>{introStep=12;showStep();};
-    extra.innerHTML='';
-
-  } else if(introStep===12){
-    // 사무실 임대
-    avatar.textContent='🏠';
-    npcName.textContent='사무실 임대';
-    text.textContent='사무실을 선택하세요.';
-    tap.style.display='none';
-    dialog.onclick=null;
-
-    const opts=OFFICES.map((o,i)=>{
-      const afford=o.cost<=S.money;
-      return `<div class="hr ${afford?'':'locked'}" onclick="${afford?'rentOffice('+i+')':''}">
-        <div class="hr-ic" style="background:#4a4520;border-color:#8a8060;font-size:16px">${o.icon}</div>
-        <div class="hr-info">
-          <div class="t" style="color:#ffe066">${o.name}</div>
-          <div class="d">${o.desc} · 최대 ${o.maxDept}팀</div>
-        </div>
-        <div class="hr-cost" style="color:${afford?'#66cc44':'#ff6666'}">${o.cost.toLocaleString()}원</div>
-      </div>`;
-    }).join('');
-
-    extra.innerHTML=`<div style="margin-top:8px">${opts}</div>
-      <div style="font-size:9px;color:#8a8060;margin-top:6px">보유 자금: <span style="color:#66cc44">${S.money.toLocaleString()}원</span></div>`;
-
-  } else if(introStep===13){
-    // 직원 채용 안내
-    const dept=S.depts[S._hireIdx];
-    if(!dept||S._hireIdx>=S.depts.length){
-      // 모든 팀 채용 완료 → 게임 시작
-      introStep=14;showStep();return;
-    }
-    avatar.textContent=dept.icon;
-    npcName.textContent='';
-    text.textContent=`${dept.name}에 첫 직원을\n채용해야 합니다.\n\n어떤 등급의 직원을 뽑을까요?`;
-    tap.style.display='none';
-    dialog.onclick=null;
-
-    const affordable=E.filter(g=>g.cost<=S.money);
-    const opts=E.map((g,gi)=>{
-      const afford=g.cost<=S.money;
-      const locked=gi>2; // 튜토리얼에선 대리까지만
-      const dis=!afford||locked;
-      return `<div class="hr ${dis?'locked':''}" onclick="${dis?'':'tutorialHire('+gi+')'}">
-        <div class="hr-ic" style="background:${g.bg};border-color:${g.c};font-size:12px">★</div>
-        <div class="hr-info">
-          <div class="t" style="color:${g.c}">${g.rank}</div>
-          <div class="d">${g.skill}</div>
-          <div class="d" style="color:#8a8060">${g.desc}</div>
-        </div>
-        <div class="hr-cost" style="color:${afford&&!locked?'#66cc44':'#ff6666'}">${g.cost?g.cost.toLocaleString()+'원':'무료'}</div>
-      </div>`;
-    }).join('');
-
-    extra.innerHTML=`<div style="margin-top:8px">${opts}</div>
-      <div style="font-size:9px;color:#8a8060;margin-top:6px">보유 자금: <span style="color:#66cc44">${S.money.toLocaleString()}원</span></div>`;
-
-  } else if(introStep===14){
-    // 모든 준비 완료
-    avatar.textContent='🎉';
-    npcName.textContent='';
-    const empCount=S.depts.reduce((s,d)=>s+d.emps.length,0);
-    text.textContent=`모든 준비가 끝났습니다!\n\n${S.companyName}\n팀 ${S.depts.length}개 · 직원 ${empCount}명\n\n이제 시작합니다.`;
-    tap.style.display='block';
-    tap.textContent='▸ 게임 시작';
-    dialog.onclick=()=>{
+    tx.textContent=`${S.companyName}\n\n시드 투자금 8,000원이\n입금되었습니다.\n\n사무실을 임대하세요.`;
+    tp.style.display='block';tp.textContent='탭하여 계속 ▸';
+    dg.onclick=()=>{introStep++;showIntroStep();};
+    ex.innerHTML='';
+  } else if(introStep===STORIES.length+2){
+    // 사무실
+    av.textContent='🏠';nm.textContent='';
+    tx.textContent='사무실을 선택하세요.';
+    tp.style.display='none';dg.onclick=null;
+    const afford=5000<=S.money;
+    ex.innerHTML=`<div style="margin-top:8px">
+      <div class="hr ${afford?'':'locked'}" onclick="${afford?'introRentOffice()':''}">
+        <div class="hr-ic" style="background:#4a4520;border-color:#8a8060;font-size:16px">🏠</div>
+        <div class="hr-info"><div class="t" style="color:#ffe066">원룸 사무실</div><div class="d">책상 2개, 좁지만 시작하기 좋은</div></div>
+        <div class="hr-cost">5,000원</div>
+      </div>
+      <div class="hr locked"><div class="hr-ic" style="background:#4a4520;border-color:#5a5530;font-size:16px">🏢</div><div class="hr-info"><div class="t" style="color:#5a5530">공유 오피스</div><div class="d">🔒 자금 부족</div></div><div class="hr-cost" style="color:#ff6666">15,000원</div></div>
+    </div><div style="font-size:9px;color:#8a8060;margin-top:6px">보유: <span style="color:#66cc44">${S.money.toLocaleString()}원</span></div>`;
+  } else if(introStep===STORIES.length+3){
+    // 첫 직원 채용
+    av.textContent='👔';nm.textContent='';
+    tx.textContent='사무실이 생겼습니다!\n\n이제 첫 직원을 채용하세요.\n직원이 있어야 일이 시작됩니다.';
+    tp.style.display='none';dg.onclick=null;
+    const afford=E[0].cost<=S.money;
+    ex.innerHTML=`<div style="margin-top:8px">
+      <div class="hr ${afford?'':'locked'}" onclick="${afford?'introHire(0)':''}">
+        <div class="hr-ic" style="background:${E[0].bg};border-color:${E[0].c};font-size:12px">★</div>
+        <div class="hr-info"><div class="t" style="color:${E[0].c}">${E[0].rank}</div><div class="d">${E[0].skill} · ${E[0].desc}</div></div>
+        <div class="hr-cost">${E[0].cost.toLocaleString()}원</div>
+      </div>
+    </div><div style="font-size:9px;color:#8a8060;margin-top:6px">보유: <span style="color:#66cc44">${S.money.toLocaleString()}원</span></div>`;
+  } else if(introStep===STORIES.length+4){
+    // 완료
+    av.textContent='🎉';nm.textContent='';
+    tx.textContent=`${S.companyName} 개업 준비 완료!\n\n${S.emps[0].name} ${E[S.emps[0].gi].rank}이\n대기하고 있습니다.\n\n클릭해서 일을 시키세요!`;
+    tp.style.display='block';tp.textContent='▸ 시작';
+    dg.onclick=()=>{
       document.getElementById('npcScreen').classList.remove('active');
       document.getElementById('gameScreen').style.display='block';
-      init();
+      S.founded=true;setupCanvas();renderAll();requestAnimationFrame(gameLoop);
       toast(`🏢 ${S.companyName} 개업!`);
     };
-    extra.innerHTML='';
+    ex.innerHTML='';
   }
 }
 
-function tutorialHire(gi){
-  const g=E[gi];
-  if(g.cost>S.money)return;
-  S.money-=g.cost;
-  const dept=S.depts[S._hireIdx];
-  dept.emps.push(mkEmp(gi));
-  dept.kpi=10;
-  const emp=dept.emps.at(-1);
-
-  // 채용 결과 보여주기
-  const avatar=document.getElementById('npcAvatar');
-  const text=document.getElementById('npcText');
-  const tap=document.getElementById('npcTap');
-  const extra=document.getElementById('npcExtra');
-  const dialog=document.getElementById('npcDialog');
-
-  avatar.textContent='👔';
-  text.textContent=`${dept.name}에\n${emp.name} ${g.rank} 채용 완료!\n\n스킬: ${g.skill}`;
-  tap.style.display='block';
-  tap.textContent='탭하여 계속 ▸';
-  extra.innerHTML='';
-  dialog.onclick=()=>{
-    S._hireIdx++;
-    introStep=13;showStep();
-  };
+function introSetName(){
+  const v=document.getElementById('nameInput').value.trim();
+  if(!v)return;
+  S.companyName=v;introStep++;showIntroStep();
+}
+function introRentOffice(){
+  S.money-=5000;introStep++;showIntroStep();
+}
+function introHire(gi){
+  if(E[gi].cost>S.money)return;
+  S.money-=E[gi].cost;
+  S.emps.push(mkEmp(gi));
+  introStep++;showIntroStep();
 }
 
-function bpStepName(){
-  const inp=document.getElementById('nameInput');
-  const name=inp?inp.value.trim():'';
-  if(!name){inp.style.borderColor='#cc4444';return;}
-  S.companyName=name;
-  S.planTeams=[];
-  S._bpPicking=0;
-  introStep=6;showStep();
-}
-
-function bpPickTeam(tid){
-  if(!S.planTeams)S.planTeams=[];
-  if(!S._teamDetails)S._teamDetails={};
-  S.planTeams.push(tid);
-  S._bpPicking=(S._bpPicking||0)+1;
-  S._currentTeamId=tid;
-
-  // 먼저 현재 상태 물어보기
-  const t=D.find(x=>x.id===tid);
-  const avatar=document.getElementById('npcAvatar');
-  const text=document.getElementById('npcText');
-  const tap=document.getElementById('npcTap');
-  const extra=document.getElementById('npcExtra');
-  const dialog=document.getElementById('npcDialog');
-
-  avatar.textContent=t.icon;
-  text.textContent=t.q1;
-  tap.style.display='none';
-  dialog.onclick=null;
-
-  const opts=t.opts1.map(o=>`<div class="hr" onclick="bpCurrentState('${o}')">
-    <div class="hr-info"><div class="t" style="color:#ffe066">${o}</div></div>
-  </div>`).join('');
-  extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
-}
-
-function bpCurrentState(choice){
-  const tid=S._currentTeamId;
-  const t=D.find(x=>x.id===tid);
-  if(!S._teamDetails[tid])S._teamDetails[tid]={};
-  S._teamDetails[tid].current=choice;
-
-  const avatar=document.getElementById('npcAvatar');
-  const text=document.getElementById('npcText');
-  const tap=document.getElementById('npcTap');
-  const extra=document.getElementById('npcExtra');
-  const dialog=document.getElementById('npcDialog');
-
-  // 현재 상태에 대한 반응 + 세부 항목으로
-  const reactions={
-    exercise:{'전혀 안 함':'괜찮아요, 처음이 제일 어렵죠.\n작은 것부터 시작합시다.','가끔 걷는 정도':'좋아요! 이미 시작은 한 거네요.','주 1~2회':'나쁘지 않아요!\n조금만 더 꾸준히 해봅시다.','주 3회 이상':'대단해요!\n루틴으로 만들어서 유지해봅시다.'},
-    sleep:null, // 수면은 별도 처리
-    study:{'전혀 안 함':'괜찮아요.\n하루 15분부터 시작해봅시다.','가끔 생각날 때':'좋아요, 습관으로 만들면 됩니다.','하루 30분 미만':'이미 하고 있네요!\n루틴으로 굳혀봅시다.','하루 30분 이상':'훌륭해요!\n꾸준히 이어갑시다.'},
-    health:{'전혀 신경 안 씀':'작은 것 하나부터 시작하면 됩니다.','물 정도만':'좋아요! 거기서 하나만 더.','영양제는 챙김':'잘하고 있네요. 루틴으로 만들어봅시다.','식단까지 관리':'대단해요! 유지하는 게 중요합니다.'},
-    finance:{'쓰는 대로 삶':'솔직하시네요.\n아주 작은 것부터 해봅시다.','대충 감으로':'감이라도 있으면 시작이 쉬워요.','가계부 가끔':'좋아요! 꾸준히만 하면 됩니다.','꼼꼼히 관리':'훌륭합니다! 루틴으로 고정합시다.'},
-    mental:{'전혀 안 함':'괜찮아요.\n5분이면 충분합니다.','가끔 산책 정도':'좋은 시작이에요!','명상이나 일기 가끔':'이미 하고 있네요. 루틴화만 하면 됩니다.','꾸준히 하는 중':'대단해요! 계속 이어갑시다.'},
-  };
-
-  // 수면은 bpDetailPick1로 바로
-  if(tid==='sleep'){
-    bpDetailPick1(choice);
-    return;
-  }
-
-  const react=reactions[tid]?reactions[tid][choice]:'알겠습니다!';
-  avatar.textContent=t.icon;
-  text.textContent=`${react}\n\n그럼, ${t.q2}`;
-  tap.style.display='none';
-  dialog.onclick=null;
-
-  const opts=t.opts2.map(o=>`<div class="hr" onclick="bpDetailPick1('${o}')">
-    <div class="hr-info"><div class="t" style="color:#ffe066">${o}</div></div>
-  </div>`).join('');
-  extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
-}
-
-function bpDetailPick1(choice){
-  const tid=S._currentTeamId;
-  const t=D.find(x=>x.id===tid);
-  if(!S._teamDetails[tid])S._teamDetails[tid]={};
-  S._teamDetails[tid].what=choice;
-
-  const avatar=document.getElementById('npcAvatar');
-  const text=document.getElementById('npcText');
-  const tap=document.getElementById('npcTap');
-  const extra=document.getElementById('npcExtra');
-  const dialog=document.getElementById('npcDialog');
-
-  avatar.textContent=t.icon;
-  tap.style.display='none';
-  dialog.onclick=null;
-
-  // 운동/학습: 현재 상태 기반으로 목표량 제시
-  if(tid==='exercise'){
-    const current=S._teamDetails[tid].current;
-    const levelMap={'전혀 안 함':0,'가끔 걷는 정도':1,'주 1~2회':2,'주 3회 이상':3};
-    const lv=levelMap[current]||0;
-    const goals=lv<=1?['10분','15분','20분']:['20분','30분','40분'];
-
-    text.textContent=`${choice}!\n좋습니다.\n\n${current==='전혀 안 함'?'처음이니까 아주 짧게.':'지금 수준에서 조금만 더.'}\n하루에 얼마나?`;
-    const opts=goals.map(o=>`<div class="hr" onclick="bpDetailPick2('${o}')">
-      <div class="hr-info"><div class="t" style="color:#ffe066">${o}</div></div>
-    </div>`).join('');
-    extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
-    return;
-  }
-
-  if(tid==='study'){
-    const current=S._teamDetails[tid].current;
-    const levelMap={'전혀 안 함':0,'가끔 생각날 때':1,'하루 30분 미만':2,'하루 30분 이상':3};
-    const lv=levelMap[current]||0;
-    const goals=lv<=1?['10분','15분','20분']:['30분','40분','50분'];
-
-    text.textContent=`${choice}!\n\n${lv<=1?'처음이니까 부담 없이.':'지금 페이스에서 살짝만 더.'}\n하루에 얼마나?`;
-    const opts=goals.map(o=>`<div class="hr" onclick="bpDetailPick2('${o}')">
-      <div class="hr-info"><div class="t" style="color:#ffe066">${o}</div></div>
-    </div>`).join('');
-    extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
-    return;
-  }
-
-  // 수면팀: 현재 취침 시간 기반으로 목표 생성
-  if(tid==='sleep'){
-    const timeMap={'23시쯤':23,'24시쯤':24,'새벽 1시쯤':25,'새벽 2시쯤':26,'새벽 3시쯤':27,'새벽 4시 이후':28};
-    const current=timeMap[choice]||25;
-    const goals=[];
-    // 15분, 30분, 1시간 일찍
-    for(const [label,mins] of [['15분 일찍',15],['30분 일찍',30],['1시간 일찍',60]]){
-      const target=current*60 - mins; // 분 단위
-      const h=Math.floor(target/60);
-      const m=target%60;
-      const hh=h>=24?h-24:h;
-      const prefix=h>=24?'새벽 ':'';
-      const timeStr=`${prefix}${hh}시${m?` ${m}분`:''}`;
-      goals.push({label:`${label} → ${timeStr}`,value:timeStr});
-    }
-
-    text.textContent=`${choice}에 자는군요.\n\n처음이니까 욕심 내지 말고\n조금만 당겨봅시다.`;
-
-    const opts=goals.map(g=>`<div class="hr" onclick="bpDetailPick2('${g.value}')">
-      <div class="hr-info"><div class="t" style="color:#ffe066">${g.label}</div></div>
-    </div>`).join('');
-    extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
-    return;
-  }
-
-  // 건강/재정/멘탈: 현재 상태에 따라 난이도 조절
-  const current=S._teamDetails[tid]?S._teamDetails[tid].current:'';
-  const isLow=current.includes('전혀')||current.includes('쓰는 대로')||current.includes('대충');
-
-  text.textContent=`${choice}!\n\n${isLow?'가볍게 시작해봅시다.\n하루에 어느 정도?':'좋아요, 어느 정도로 해볼까요?'}`;
-
-  let goals;
-  if(tid==='health') goals=isLow?['하루 한 번만','생각날 때']:['하루 두 번','매 끼니'];
-  else if(tid==='finance') goals=isLow?['일주일에 한 번','하루 한 번']:['하루 한 번','매일 꼼꼼히'];
-  else goals=isLow?['5분','10분']:['10분','15분','20분'];
-
-  const opts=goals.map(o=>`<div class="hr" onclick="bpDetailPick2('${o}')">
-    <div class="hr-info"><div class="t" style="color:#ffe066">${o}</div></div>
-  </div>`).join('');
-  extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
-}
-
-function bpDetailPick2(choice){
-  const tid=S._currentTeamId;
-  const t=D.find(x=>x.id===tid);
-  S._teamDetails[tid].howMuch=choice;
-
-  // 격려 + 다음 팀 or 목표로
-  const avatar=document.getElementById('npcAvatar');
-  const text=document.getElementById('npcText');
-  const tap=document.getElementById('npcTap');
-  const extra=document.getElementById('npcExtra');
-  const dialog=document.getElementById('npcDialog');
-
-  const detail=S._teamDetails[tid];
-  avatar.textContent='✓';
-  if(tid==='sleep'){
-    text.textContent=`수면 계획 완료!\n\n▸ 현재: ${detail.what}\n▸ 목표: ${detail.howMuch}까지 취침`;
-  } else {
-    text.textContent=`계획 완료!\n\n▸ ${detail.what}\n▸ 하루 ${detail.howMuch}`;
-  }
-  tap.style.display='block';
-  tap.textContent='탭하여 계속 ▸';
-  extra.innerHTML='';
-  dialog.onclick=()=>{introStep=6;showStep();};
-}
-
-function bpSkipTeam(){
-  introStep=9;showStep();
-}
-
-
-function rentOffice(idx){
-  const o=OFFICES[idx];
-  if(o.cost>S.money)return;
-  S.money-=o.cost;
-  S.office=o;
-  S.founded=true;
-  S.day=1;
-
-  // 사업계획서 기반으로 팀 + 루틴 자동 생성
-  S.planTeams.forEach(tid=>{
-    const t=D.find(x=>x.id===tid);
-    if(!t)return;
-    const detail=S._teamDetails?S._teamDetails[tid]:null;
-    const missions=[];
-    if(detail){
-      // 세부 선택을 루틴으로 변환
-      if(tid==='sleep'){
-        missions.push({text:`${detail.howMuch}까지 취침`,st:'todo'});
-      } else {
-        missions.push({text:`${detail.what} ${detail.howMuch}`,st:'todo'});
-      }
-    }
-    S.depts.push({...t,kpi:0,emps:[],missions});
-  });
-
-
-
-  // 직원 채용 튜토리얼로
-  introStep=13;
-  S._hireIdx=0;
-  showStep();
-}
-
-function init(){
-  setupCanvas();render();requestAnimationFrame(loop);
-}
-
-// ===== CANVAS =====
-let cv,cx,W,H,PX,aT=0,clickC=-1,clickTO,waveChars={},bubbleData=[],clickMsg='';
+// ===== 캔버스 =====
+let cv,cx,W,H,PX=3,aT=0;
 
 function setupCanvas(){
   cv=document.getElementById('canvas');
   const r=cv.parentElement.getBoundingClientRect();
-  PX=3;W=Math.floor(r.width/PX);H=Math.floor(r.height/PX);
+  W=Math.floor(r.width/PX);H=Math.floor(r.height/PX);
   cv.width=W;cv.height=H;cv.style.imageRendering='pixelated';
   cx=cv.getContext('2d');cx.imageSmoothingEnabled=false;
-  cv.addEventListener('click',onCvClick);
+  cv.onclick=onCanvasClick;
 }
 
-function onCvClick(e){
+function onCanvasClick(e){
   const r=cv.getBoundingClientRect();
   const mx=(e.clientX-r.left)/PX,my=(e.clientY-r.top)/PX;
-  let ci=0;
-  S.depts.forEach((d,di)=>{
-    d.emps.forEach((emp,ei)=>{
-      const p=charPosInDept(di,ei);
-      if(mx>=p.x-8&&mx<=p.x+8&&my>=p.y-18&&my<=p.y+12){
-        clickC=ci;waveChars[ci]=aT;
-        const dk=d.kpi;
-        clickMsg=dk>=50?rnd(['화이팅!','최고!','열심히!','좋아요!','파이팅!']):rnd(['힘들어요..','ㅠㅠ','사직서..','CEO님..','야근싫어..']);
-        clearTimeout(clickTO);clickTO=setTimeout(()=>{clickC=-1;},3000);return;
-      }
-      ci++;
-    });
+  S.emps.forEach((emp,i)=>{
+    const p=empPos(i);
+    if(mx>=p.x-10&&mx<=p.x+10&&my>=p.y-20&&my<=p.y+5){
+      onEmpClick(i);
+    }
   });
 }
 
-function charPosInDept(di,ei){
-  const nd=S.depts.length;
-  const fy=Math.floor(H*0.55);
-  const dw=Math.floor(W/nd);
-  const sx=di*dw;
-  const cols=Math.max(1,Math.floor((dw-4)/20));
-  const col=ei%cols, row=Math.floor(ei/cols);
-  return{x:sx+12+col*20, y:fy+14+row*22};
-}
-
-function loop(ts){aT=ts/1000;draw();renderBubbles();requestAnimationFrame(loop);}
-
-function renderBubbles(){
-  // 말풍선 레이어
-  let el=document.getElementById('bubbleLayer');
-  if(!el){
-    el=document.createElement('div');
-    el.id='bubbleLayer';
-    el.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:15';
-    document.getElementById('officeWrap').appendChild(el);
+function empPos(i){
+  if(S.emps[i].state==='working'){
+    // 책상 위치
+    const dx=15+i*30,dy=Math.floor(H*0.55)+10;
+    return{x:dx,y:dy};
   }
-  let html='';
-  // 말풍선
-  bubbleData.forEach(b=>{
-    html+=`<div style="position:absolute;left:${b.x}px;top:${b.y}px;transform:translateX(-50%);background:#fffde0;color:#3a2a10;font-size:13px;font-weight:bold;padding:5px 12px;border:2px solid #8a7a50;box-shadow:2px 2px 0 rgba(0,0,0,0.3);white-space:nowrap;font-family:inherit;z-index:20">${b.msg}<div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid #8a7a50"></div></div>`;
-  });
-  el.innerHTML=html;
-
-  // 간판 레이어
-  let sl=document.getElementById('signLayer');
-  if(!sl){
-    sl=document.createElement('div');
-    sl.id='signLayer';
-    sl.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:12';
-    document.getElementById('officeWrap').appendChild(sl);
-  }
-  const nd=S.depts.length;
-  const fy=Math.floor(H*0.55);
-  const dwPx=Math.floor(cv.parentElement.getBoundingClientRect().width/nd);
-  let sh='';
-  S.depts.forEach((dept,di)=>{
-    const lx=di*dwPx+6;
-    const ly=fy*PX-36;
-    sh+=`<div style="position:absolute;left:${lx}px;top:${ly}px;width:${dwPx-12}px;text-align:center;font-size:10px;color:#ffe8c0;font-weight:bold;text-shadow:1px 1px 0 #3a2a10;font-family:inherit;white-space:nowrap;overflow:hidden">${dept.name}</div>`;
-  });
-  sl.innerHTML=sh;
+  // 서있는 위치
+  return{x:20+i*25, y:Math.floor(H*0.55)-2};
 }
 
-function draw(){
+function gameLoop(ts){
+  aT=ts/1000;
+  updateCrafting();
+  drawOffice();
+  requestAnimationFrame(gameLoop);
+}
+
+function updateCrafting(){
+  if(!S.crafting)return;
+  const elapsed=(Date.now()-S.crafting.startTime)/1000;
+  if(elapsed>=S.crafting.duration){
+    // 제작 완료!
+    S.unlocked.push(S.crafting.craftId);
+    const craft=CRAFTS.find(c=>c.id===S.crafting.craftId);
+    S.money+=craft.reward;
+    S.emps[S.crafting.empIdx].state='idle';
+    toast(`✅ ${craft.name} 완성! +${craft.reward}원`);
+    S.crafting=null;
+    renderAll();
+  }
+}
+
+function drawOffice(){
   if(!cx)return;
-  const g=G[S.gi];
+  const fy=Math.floor(H*0.55);
 
   // 벽
-  cx.fillStyle=g.wall;cx.fillRect(0,0,W,H*0.55);
-  cx.fillStyle=g.wl;
-  for(let y=0;y<H*0.55;y+=10)cx.fillRect(0,y,W,1);
+  cx.fillStyle='#d4c8a8';cx.fillRect(0,0,W,fy);
+  cx.fillStyle='#c8bc98';
+  for(let y=0;y<fy;y+=10)cx.fillRect(0,y,W,1);
+  cx.fillStyle='#8B7355';cx.fillRect(0,fy-2,W,4);
 
-  // 걸레받이
-  const fy=Math.floor(H*0.55);
-  cx.fillStyle=g.trim;cx.fillRect(0,fy-2,W,4);
-
-  // 바닥 (깔끔한 단색 나무 톤)
-  cx.fillStyle=g.f1;cx.fillRect(0,fy+2,W,H-fy);
-  // 살짝 밝은 가로줄만
-  cx.fillStyle=g.fh;
-  for(let y=fy+2;y<H;y+=8){
-    cx.fillRect(0,y,W,3);
-  }
+  // 바닥
+  cx.fillStyle='#B8864E';cx.fillRect(0,fy+2,W,H-fy);
+  cx.fillStyle='#C4925A';
+  for(let y=fy+2;y<H;y+=8)cx.fillRect(0,y,W,3);
 
   // 창문
-  for(let i=0;i<g.wins;i++){
-    const wx=6+i*24,wy=4;
-    cx.fillStyle='#eee';cx.fillRect(wx,wy,18,16);
-    cx.fillStyle='#88ccee';cx.fillRect(wx+2,wy+2,6,5);
-    cx.fillStyle='#aaddff';cx.fillRect(wx+10,wy+2,6,5);
-    cx.fillStyle='#77bbdd';cx.fillRect(wx+2,wy+9,6,5);
-    cx.fillStyle='#99ccee';cx.fillRect(wx+10,wy+9,6,5);
-    cx.fillStyle='#eee';cx.fillRect(wx+8,wy,2,16);cx.fillRect(wx,wy+7,18,2);
-  }
+  cx.fillStyle='#eee';cx.fillRect(8,6,18,16);
+  cx.fillStyle='#88ccee';cx.fillRect(10,8,6,5);cx.fillStyle='#aaddff';cx.fillRect(18,8,6,5);
+  cx.fillStyle='#77bbdd';cx.fillRect(10,15,6,5);cx.fillStyle='#99ccee';cx.fillRect(18,15,6,5);
+  cx.fillStyle='#eee';cx.fillRect(16,6,2,16);cx.fillRect(8,13,18,2);
 
-  // 화분 (벽 쪽)
-  for(let i=0;i<g.plants;i++){
-    const px=W-8-i*16,py=fy-1;
-    cx.fillStyle='#8B4513';cx.fillRect(px,py,7,5);
-    cx.fillStyle='#44bb44';cx.fillRect(px-1,py-4,9,5);
-    cx.fillStyle='#66dd66';cx.fillRect(px+1,py-6,5,3);
-  }
-
-  // 부서 구분선 + 간판
-  const nd=S.depts.length;
-  const dw=Math.floor(W/nd);
-  S.depts.forEach((dept,di)=>{
-    const sx=di*dw;
-    if(di>0){
-      cx.fillStyle='#887755';cx.fillRect(sx,fy-2,2,H-fy+2);
-      cx.fillStyle='#aa9966';cx.fillRect(sx+1,fy-2,1,H-fy+2);
+  // 책상 (일하는 직원 수만큼)
+  S.emps.forEach((emp,i)=>{
+    if(emp.state==='working'){
+      const p=empPos(i);
+      // 의자
+      cx.fillStyle='#666';cx.fillRect(p.x-4,p.y-4,9,2);
+      cx.fillStyle='#555';cx.fillRect(p.x-4,p.y-2,1,5);cx.fillRect(p.x+4,p.y-2,1,5);
+      cx.fillStyle='#777';cx.fillRect(p.x-4,p.y+3,9,2);
+      // 책상
+      cx.fillStyle='#A0782C';cx.fillRect(p.x-6,p.y+4,13,4);
+      cx.fillStyle='#B8864E';cx.fillRect(p.x-5,p.y+5,11,2);
+      cx.fillStyle='#8B6914';cx.fillRect(p.x-5,p.y+8,2,3);cx.fillRect(p.x+5,p.y+8,2,3);
+      // 모니터
+      cx.fillStyle='#333';cx.fillRect(p.x-3,p.y+1,7,4);
+      cx.fillStyle='#66ddff';cx.fillRect(p.x-2,p.y+2,5,2);
     }
-    // 간판 배경만 캔버스 (글자는 HTML)
-    cx.fillStyle='#5a4a30';cx.fillRect(sx+3,fy-12,dw-8,10);
-    cx.fillStyle='#7a6a50';cx.fillRect(sx+4,fy-11,dw-10,8);
   });
 
-  // 캐릭터 + 책상 + 의자 (부서별)
-  bubbleData=[];
-  let ci=0;
-  S.depts.forEach((dept,di)=>{
-    dept.emps.forEach((emp,ei)=>{
-      const p=charPosInDept(di,ei);
-      const isWaving=waveChars[ci]!==undefined&&(aT-waveChars[ci])<2.0;
-      drawDesk(p.x,p.y);
-      drawChar(p.x,p.y,emp,E[emp.gi],dept.kpi,ci===clickC,isWaving,ci);
-      if(ci===clickC){
-        bubbleData.push({x:p.x*PX, y:p.y*PX-50, msg:clickMsg});
+  // 캐릭터
+  S.emps.forEach((emp,i)=>{
+    const p=empPos(i);
+    const eg=E[emp.gi];
+    const t=aT+i*2.3;
+
+    if(emp.state==='working'){
+      // 앉아서 타이핑
+      const wb=Math.sin(t*2)*0.5;
+      cx.fillStyle=eg.bg;cx.fillRect(p.x-3,Math.round(p.y-4+wb),7,4);
+      cx.fillStyle=eg.c;cx.fillRect(p.x,Math.round(p.y-4+wb),1,2);
+      // 타이핑 손
+      cx.fillStyle=eg.bg;cx.fillRect(p.x-4,p.y-3,1,3);cx.fillRect(p.x+3,p.y-3,1,3);
+      const tL=Math.sin(t*8)>0?-1:0,tR=Math.sin(t*8+Math.PI)>0?-1:0;
+      cx.fillStyle=emp.skin;cx.fillRect(p.x-4,p.y+tL,1,1);cx.fillRect(p.x+3,p.y+tR,1,1);
+      // 머리
+      const hy=Math.round(p.y-10+Math.sin(t*1.5)*0.3);
+      cx.fillStyle=emp.skin;cx.fillRect(p.x-3,hy,7,6);
+      cx.fillStyle=emp.hair;cx.fillRect(p.x-3,hy-2,8,3);cx.fillRect(p.x-4,hy-1,1,3);cx.fillRect(p.x+5,hy-1,1,3);
+      // 눈 (모니터 보는 중, 가끔 깜빡임)
+      const blink=Math.sin(t*3)>0.95;
+      if(blink){cx.fillStyle='#222';cx.fillRect(p.x-2,hy+3,2,1);cx.fillRect(p.x+1,hy+3,2,1);}
+      else{cx.fillStyle='#222';cx.fillRect(p.x-2,hy+2,2,2);cx.fillRect(p.x+1,hy+2,2,2);cx.fillStyle='#fff';cx.fillRect(p.x-2,hy+2,1,1);cx.fillRect(p.x+1,hy+2,1,1);}
+      // 타이핑 이펙트
+      if(Math.sin(t*6)>0.3){cx.fillStyle='rgba(255,255,100,0.4)';cx.fillRect(p.x-2+Math.round(Math.sin(t*12)*2),p.y+3,1,1);}
+      // 프로그래스 (제작 중이면)
+      if(S.crafting&&S.crafting.empIdx===i){
+        const pct=Math.min(1,(Date.now()-S.crafting.startTime)/1000/S.crafting.duration);
+        cx.fillStyle='#1a1a10';cx.fillRect(p.x-8,p.y-15,16,3);
+        cx.fillStyle='#66aa44';cx.fillRect(p.x-8,p.y-15,Math.round(16*pct),3);
+        cx.fillStyle='#ffe066';cx.fillRect(p.x-8+Math.round(16*pct)-1,p.y-15,1,3);
       }
-      ci++;
-    });
-  });
-}
-
-// 책상 + 의자 그리기
-function drawDesk(x,y){
-  x=Math.round(x);y=Math.round(y);
-
-  // 의자 (캐릭터 뒤쪽)
-  // 등받이
-  cx.fillStyle='#555';cx.fillRect(x-4,y-6,9,2);
-  cx.fillStyle='#444';cx.fillRect(x-4,y-4,1,6);cx.fillRect(x+4,y-4,1,6);
-  // 좌석
-  cx.fillStyle='#666';cx.fillRect(x-4,y+2,9,3);
-  // 다리
-  cx.fillStyle='#444';cx.fillRect(x-1,y+5,3,3);
-
-  // 책상 (캐릭터 앞)
-  // 상판
-  cx.fillStyle='#A0782C';cx.fillRect(x-6,y+3,13,4);
-  cx.fillStyle='#B8864E';cx.fillRect(x-5,y+4,11,2);
-  // 다리
-  cx.fillStyle='#8B6914';cx.fillRect(x-5,y+7,2,4);cx.fillRect(x+5,y+7,2,4);
-  // 모니터
-  cx.fillStyle='#333';cx.fillRect(x-3,y-1,7,5);
-  cx.fillStyle='#66ddff';cx.fillRect(x-2,y,5,3);
-  // 모니터 받침
-  cx.fillStyle='#444';cx.fillRect(x-1,y+3,3,1);
-}
-
-function drawChar(x,y,emp,eg,kpi,bubble,isWaving,ci){
-  x=Math.round(x);y=Math.round(y);
-  const t=aT+ci*1.7; // 캐릭터마다 타이밍 다르게
-
-  // 일하는 애니메이션: 몸이 살짝 앞뒤로
-  const workBob=isWaving?0:Math.sin(t*2)*0.5;
-  const headTilt=isWaving?0:Math.sin(t*1.5)*0.3;
-
-  // 몸 (양복)
-  cx.fillStyle=eg.bg;cx.fillRect(x-3,Math.round(y-5+workBob),7,5);
-  // 넥타이
-  cx.fillStyle=eg.c;cx.fillRect(x,Math.round(y-5+workBob),1,3);
-
-  // 팔 + 타이핑 애니메이션
-  cx.fillStyle=eg.bg;
-  if(isWaving){
-    cx.fillRect(x-4,y-4,1,3);
-    const wave=Math.sin(aT*10)*1;
-    cx.fillRect(x+3,y-7,1,3);
-    cx.fillStyle=emp.skin;
-    cx.fillRect(x+3,Math.round(y-9+wave),2,2);
-    cx.fillStyle=emp.skin;cx.fillRect(x-4,y-1,1,1);
-  } else {
-    // 타이핑: 양손이 번갈아 움직임
-    const typeL=Math.sin(t*8)>0?-1:0;
-    const typeR=Math.sin(t*8+Math.PI)>0?-1:0;
-    cx.fillRect(x-4,y-4,1,3);
-    cx.fillRect(x+3,y-4,1,3);
-    cx.fillStyle=emp.skin;
-    cx.fillRect(x-4,y-1+typeL,1,1);
-    cx.fillRect(x+3,y-1+typeR,1,1);
-  }
-
-  // 머리 (살짝 움직임)
-  const hy=Math.round(y-11+headTilt);
-  cx.fillStyle=emp.skin;cx.fillRect(x-3,hy,7,6);
-  cx.fillStyle=emp.hair;cx.fillRect(x-3,hy-2,8,3);cx.fillRect(x-4,hy-1,1,3);cx.fillRect(x+5,hy-1,1,3);
-
-  // 눈
-  if(isWaving){
-    cx.fillStyle='#222';
-    cx.fillRect(x-2,hy+2,2,1);cx.fillRect(x-3,hy+1,1,1);cx.fillRect(x,hy+1,1,1);
-    cx.fillRect(x+1,hy+2,2,1);cx.fillRect(x+1,hy+1,1,1);cx.fillRect(x+3,hy+1,1,1);
-    cx.fillStyle='#cc7766';cx.fillRect(x-1,hy+4,3,1);
-  } else if(emp.mood==='bad'){
-    // 힘없는 눈 + 가끔 한숨
-    cx.fillStyle='#888';cx.fillRect(x-2,hy+2,1,1);cx.fillRect(x+2,hy+2,1,1);
-    cx.fillStyle='#aa7777';cx.fillRect(x-1,hy+4,3,1);
-    // 한숨 이펙트
-    if(Math.sin(t*0.5)>0.8){
-      cx.fillStyle='rgba(150,150,200,0.5)';
-      cx.fillRect(x+5,Math.round(hy-2+Math.sin(t)*2),2,1);
-    }
-  } else {
-    // 모니터 보면서 일하는 눈 (가끔 깜빡임)
-    const blink=Math.sin(t*3)>0.95;
-    if(blink){
-      cx.fillStyle='#222';cx.fillRect(x-2,hy+3,2,1);cx.fillRect(x+1,hy+3,2,1);
     } else {
-      cx.fillStyle='#222';cx.fillRect(x-2,hy+2,2,2);cx.fillRect(x+1,hy+2,2,2);
-      cx.fillStyle='#fff';cx.fillRect(x-2,hy+2,1,1);cx.fillRect(x+1,hy+2,1,1);
-    }
-    if(emp.mood==='great'||emp.mood==='good'){
-      cx.fillStyle='#cc7766';cx.fillRect(x-1,hy+4,3,1);
-    }
-  }
-
-  // 작업 이펙트 (인사 중이 아닐 때)
-  if(!isWaving){
-    // 타이핑 파티클 (키보드 위에 작은 점)
-    if(Math.sin(t*6)>0.3){
-      cx.fillStyle='rgba(255,255,100,0.4)';
-      cx.fillRect(x-2+Math.round(Math.sin(t*12)*2),y+2,1,1);
-    }
-
-    // 기분 좋으면 음표
-    if(emp.mood==='great'&&Math.sin(t*0.8)>0.5){
-      const ny=hy-4+Math.sin(t*2)*2;
-      cx.fillStyle='#ffcc00';
-      cx.fillRect(x+5,Math.round(ny),1,2);cx.fillRect(x+6,Math.round(ny),1,1);
-    }
-
-    // 기분 나쁘면 느린 움직임 + 졸림 표시
-    if(emp.mood==='bad'&&Math.sin(t*0.3)>0.7){
-      cx.fillStyle='#aaa';cx.font='3px monospace';cx.textAlign='left';
-      cx.fillText('z',x+5,Math.round(hy-3+Math.sin(t)*1));
-      cx.fillText('z',x+6,Math.round(hy-5+Math.sin(t*0.8)*1));
-    }
-
-    // 가끔 모니터에 빛 반짝
-    if(Math.sin(t*1.2+ci*3)>0.9){
-      cx.fillStyle='rgba(100,220,255,0.3)';
-      cx.fillRect(x-2,y-1,5,3);
-    }
-  }
-}
-
-// ===== TABS =====
-function switchTab(t){
-  S.tab=t;
-  document.querySelectorAll('.tab').forEach((b,i)=>{b.classList.toggle('active',['missions','projects','employees'][i]===t);});
-  renderContent();
-}
-
-function renderContent(){
-  const c=document.getElementById('content');
-  if(S.tab==='missions')renderMissions(c);
-  else if(S.tab==='projects')renderProjects(c);
-  else if(S.tab==='employees')renderEmployees(c);
-  else renderReport(c);
-}
-
-function renderMissions(c){
-  let h='';
-  if(S.depts.length===0){
-    h+=`<div class="rc"><div class="rc-body" style="text-align:center;padding:20px"><div style="font-size:14px;color:#ffe066;margin-bottom:8px">${S.companyName||'회사'}</div><div style="font-size:9px;color:#a09870;margin-bottom:12px">첫 번째 팀을 만들어보세요!</div></div></div>`;
-    h+=`<div class="add-c" onclick="addDept()">+ 첫 번째 팀 만들기</div>`;
-    c.innerHTML=h;return;
-  }
-  S.depts.forEach((d,di)=>{
-    const hasEmp=d.emps.length>0;
-    const kc=d.kpi>=70?'high':d.kpi>=40?'mid':'low';
-    h+=`<div class="rc"><div class="rc-head"><div class="rc-title">${d.icon} ${d.name}</div>`;
-    if(hasEmp) h+=`<div class="rc-badge ${kc}">${d.kpi}%</div>`;
-    h+=`</div><div class="rc-body">`;
-
-    if(!hasEmp){
-      // 직원 없음 → 채용 유도
-      h+=`<div style="text-align:center;padding:12px 0">
-        <div style="font-size:9px;color:#8a8060;margin-bottom:8px">아직 직원이 없습니다</div>
-        <div class="add-c" onclick="openSheet(${di})" style="margin:0;padding:10px;font-size:10px">👔 직원 채용하기</div>
-      </div>`;
-    } else {
-      // KPI바
-      if(d.missions.length>0) h+=`<div class="kbar"><div class="kbar-fill ${kc}" style="width:${d.kpi}%"></div></div>`;
-      // 미션(루틴) 표시
-      d.missions.forEach((m,mi)=>{
-        const cls=m.st==='done'?'done':m.st==='fail'?'fail':'';
-        const ck=m.st==='done'?'✓':m.st==='fail'?'✕':'';
-        const act=m.st==='todo'?`onclick="doM(${di},${mi})"`:m.st==='fail'?`onclick="retry(${di},${mi})"`:''
-        h+=`<div class="mi ${cls}" ${act}><div class="mi-ck">${ck}</div><div class="mi-txt">${m.text}</div></div>`;
-      });
-      // 루틴 추가 버튼
-      h+=`<div class="mi" onclick="addRoutine(${di})" style="justify-content:center;color:#8a8060;border-style:dashed">+ 루틴 추가</div>`;
-    }
-    h+=`</div></div>`;
-  });
-  if(S.depts.length<G[S.gi].maxDept) h+=`<div class="add-c" onclick="addDept()">+ 새 팀 만들기</div>`;
-  c.innerHTML=h;
-}
-
-function renderEmployees(c){
-  let h='';
-  S.depts.forEach((d,di)=>{
-    h+=`<div class="rc"><div class="rc-head"><div class="rc-title">${d.icon} ${d.name}</div><div style="font-size:8px;color:#66cc44;cursor:pointer" onclick="openSheet(${di})">+ 채용</div></div><div class="rc-body">`;
-    d.emps.forEach(emp=>{
-      const g=E[emp.gi];
-      const m=emp.mood==='great'?'★':emp.mood==='good'?'♪':emp.mood==='bad'?'✕':'·';
-      h+=`<div class="er"><div class="er-face" style="background:${g.bg};border-color:${g.c}">${m}</div><div class="er-info"><div class="n">${emp.name} <span style="color:${g.c}">${g.rank}</span></div><div class="r" style="color:${g.c}">${g.skill}</div><div class="r" style="color:#8a8060">${g.desc}</div></div></div>`;
-    });
-    if(d.emps.length===0) h+=`<div style="text-align:center;padding:10px;font-size:9px;color:#8a8060">직원이 없습니다</div>`;
-    h+=`</div></div>`;
-  });
-  c.innerHTML=h;
-}
-
-// ===== 프로젝트 (목표) =====
-function renderProjects(c){
-  let h='';
-
-  // 진행중 프로젝트
-  S.projects.forEach((p,pi)=>{
-    const elapsed=S.day-p.startDay;
-    const remaining=p.duration-elapsed;
-    const pct=calcProjectProgress(p);
-    const pc=pct>=80?'high':pct>=40?'mid':'low';
-    const statusTxt=remaining<=0?(pct>=p.goal?'✓ 성공':'✕ 실패'):`D-${remaining}`;
-    const statusColor=remaining<=0?(pct>=p.goal?'#66ff66':'#ff6666'):(remaining<=3?'#ff6666':'#ffe066');
-
-    h+=`<div class="rc ${remaining<=0?(pct>=p.goal?'good':'danger'):''}">
-      <div class="rc-head">
-        <div class="rc-title">${p.icon} ${p.name}</div>
-        <div class="rc-badge" style="color:${statusColor};border-color:${statusColor}">${statusTxt}</div>
-      </div>
-      <div class="rc-body">
-        <div style="font-size:8px;color:#8a8060;margin-bottom:6px">${p.desc}</div>
-        <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:4px">
-          <span>진행률</span><span style="color:${pc==='high'?'#66ff66':pc==='mid'?'#ffcc00':'#ff6666'}">${pct}%</span>
-        </div>
-        <div class="kbar"><div class="kbar-fill ${pc}" style="width:${pct}%"></div></div>
-        <div style="font-size:8px;color:#8a8060;margin-top:4px">
-          투입 팀: ${p.teams.map(tid=>{const d=S.depts.find(x=>x.id===tid);return d?d.icon+d.name:'?';}).join(', ')||'없음'}
-        </div>
-        <div style="font-size:8px;color:#8a8060">기간: ${p.duration}일 | 목표 달성률: ${p.goal}%</div>
-        <div style="font-size:8px;color:#ffe066;margin-top:2px">보상: EXP +${p.reward.exp} · 자금 +${p.reward.money.toLocaleString()}원</div>
-      </div>
-    </div>`;
-
-    // 기간 지났으면 정산
-    if(remaining<=0&&!p.settled){
-      p.settled=true;
-      if(pct>=p.goal){
-        S.exp+=p.reward.exp;S.money+=p.reward.money;
-        toast(`🎉 ${p.name} 프로젝트 성공!`);
-      } else {
-        S.depts.forEach(d=>{if(p.teams.includes(d.id))d.kpi=Math.max(0,d.kpi-10);});
-        toast(`${p.name} 프로젝트 실패..`,true);
+      // 서있는 상태
+      const idle=Math.sin(t*0.8)*0.5;
+      // 그림자
+      cx.fillStyle='rgba(0,0,0,0.2)';cx.fillRect(p.x-3,p.y+1,7,2);
+      // 발
+      cx.fillStyle='#333';cx.fillRect(p.x-3,p.y-1,2,2);cx.fillRect(p.x+1,p.y-1,2,2);
+      // 몸
+      cx.fillStyle=eg.bg;cx.fillRect(p.x-3,Math.round(p.y-7+idle),7,6);
+      cx.fillStyle=eg.c;cx.fillRect(p.x,Math.round(p.y-7+idle),1,3);
+      // 팔
+      cx.fillStyle=eg.bg;cx.fillRect(p.x-4,Math.round(p.y-6+idle),1,4);cx.fillRect(p.x+4,Math.round(p.y-6+idle),1,4);
+      cx.fillStyle=emp.skin;cx.fillRect(p.x-4,Math.round(p.y-2+idle),1,1);cx.fillRect(p.x+4,Math.round(p.y-2+idle),1,1);
+      // 머리
+      const hy=Math.round(p.y-13+idle);
+      cx.fillStyle=emp.skin;cx.fillRect(p.x-3,hy,7,6);
+      cx.fillStyle=emp.hair;cx.fillRect(p.x-3,hy-2,8,3);cx.fillRect(p.x-4,hy-1,1,3);cx.fillRect(p.x+5,hy-1,1,3);
+      // 눈 (주위 둘러보기)
+      const look=Math.sin(t*0.5)>0?1:0;
+      cx.fillStyle='#222';cx.fillRect(p.x-2+look,hy+2,2,2);cx.fillRect(p.x+1+look,hy+2,2,2);
+      cx.fillStyle='#fff';cx.fillRect(p.x-2+look,hy+2,1,1);cx.fillRect(p.x+1+look,hy+2,1,1);
+      // 말풍선: "..."  또는 "💤"
+      if(Math.sin(t*0.3)>0.2){
+        cx.fillStyle='rgba(255,255,240,0.9)';cx.fillRect(p.x+4,hy-5,8,6);
+        cx.fillStyle='#5a5530';cx.fillRect(p.x+4,hy-5,8,1);cx.fillRect(p.x+4,hy,8,1);cx.fillRect(p.x+4,hy-5,1,6);cx.fillRect(p.x+11,hy-5,1,6);
+        cx.fillStyle='#888';cx.font='4px monospace';cx.textAlign='center';cx.fillText('...',p.x+8,hy-1);
       }
+      // 이름
+      cx.fillStyle='rgba(0,0,0,0.6)';cx.fillRect(p.x-9,p.y+3,18,5);
+      cx.fillStyle='#fff';cx.font='4px monospace';cx.textAlign='center';cx.fillText(emp.name,p.x,p.y+7);
     }
   });
-
-  // 새 프로젝트 만들기
-  h+=`<div class="add-c" onclick="openNewProject()">+ 새 목표 등록</div>`;
-  c.innerHTML=h;
 }
 
-function activeProjects(){return S.projects.filter(p=>!p.settled);}
+// ===== 직원 클릭 → 일 시키기 =====
+function onEmpClick(idx){
+  const emp=S.emps[idx];
+  if(emp.state==='working'){
+    if(S.crafting&&S.crafting.empIdx===idx){
+      const craft=CRAFTS.find(c=>c.id===S.crafting.craftId);
+      const elapsed=(Date.now()-S.crafting.startTime)/1000;
+      const pct=Math.min(100,Math.round(elapsed/S.crafting.duration*100));
+      toast(`${craft.name} 제작 중... ${pct}%`);
+    }
+    return;
+  }
+  // 할 수 있는 작업 목록
+  const available=CRAFTS.filter(c=>!S.unlocked.includes(c.id)&&c.req.every(r=>S.unlocked.includes(r)));
+  if(available.length===0){
+    toast('지금 만들 수 있는 기능이 없습니다');return;
+  }
 
-function calcProjectProgress(p){
-  // 투입된 팀들의 평균 KPI × 루틴 달성률
-  if(!p.teams.length)return 0;
-  const teamDepts=S.depts.filter(d=>p.teams.includes(d.id));
-  if(!teamDepts.length)return 0;
-  const avgKpi=Math.round(teamDepts.reduce((s,d)=>s+d.kpi,0)/teamDepts.length);
-  return Math.min(100,avgKpi);
-}
-
-function openNewProject(){
-  document.getElementById('shTitle').textContent='새 목표 등록';
-  const teamOpts=S.depts.map(d=>`<label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:10px;cursor:pointer"><input type="checkbox" class="pj-team" value="${d.id}"> ${d.icon} ${d.name}</label>`).join('');
-
-  document.getElementById('shBody').innerHTML=`
-    <div style="padding:8px">
-      <div style="font-size:9px;color:#8a8060;margin-bottom:4px">목표 이름</div>
-      <input id="pjName" type="text" placeholder="예: OPIc IH 달성" maxlength="20"
-        style="width:100%;padding:8px;background:#2a2510;border:2px solid #5a5530;color:#ffe066;font-family:inherit;font-size:11px;margin-bottom:8px">
-
-      <div style="font-size:9px;color:#8a8060;margin-bottom:4px">설명 (선택)</div>
-      <input id="pjDesc" type="text" placeholder="예: 영어 공부 꾸준히 해서 IH 취득" maxlength="40"
-        style="width:100%;padding:8px;background:#2a2510;border:2px solid #5a5530;color:#f0e8d0;font-family:inherit;font-size:10px;margin-bottom:8px">
-
-      <div style="font-size:9px;color:#8a8060;margin-bottom:4px">투입 팀</div>
-      <div style="background:#2a2510;border:2px solid #5a5530;padding:8px;margin-bottom:8px">${teamOpts||'<span style="font-size:9px;color:#5a5530">팀이 없습니다</span>'}</div>
-
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <div style="flex:1">
-          <div style="font-size:9px;color:#8a8060;margin-bottom:4px">기간 (일)</div>
-          <select id="pjDuration" style="width:100%;padding:8px;background:#2a2510;border:2px solid #5a5530;color:#ffe066;font-family:inherit;font-size:10px">
-            <option value="7">7일</option>
-            <option value="14">14일</option>
-            <option value="30" selected>30일</option>
-            <option value="60">60일</option>
-            <option value="90">90일</option>
-          </select>
-        </div>
-        <div style="flex:1">
-          <div style="font-size:9px;color:#8a8060;margin-bottom:4px">목표 달성률</div>
-          <select id="pjGoal" style="width:100%;padding:8px;background:#2a2510;border:2px solid #5a5530;color:#ffe066;font-family:inherit;font-size:10px">
-            <option value="50">50%</option>
-            <option value="60">60%</option>
-            <option value="70" selected>70%</option>
-            <option value="80">80%</option>
-            <option value="90">90%</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="hr" onclick="confirmProject()" style="justify-content:center;background:#4a6a2a;border-color:#66aa44">
-        <div class="hr-info" style="text-align:center"><div class="t" style="color:#ccff88">▸ 프로젝트 수주</div></div>
-      </div>
-    </div>`;
-  document.getElementById('shBg').classList.add('open');
-  setTimeout(()=>{const inp=document.getElementById('pjName');if(inp)inp.focus();},300);
-}
-
-function confirmProject(){
-  const name=document.getElementById('pjName').value.trim();
-  if(!name){document.getElementById('pjName').style.borderColor='#cc4444';return;}
-  const desc=document.getElementById('pjDesc').value.trim();
-  const duration=parseInt(document.getElementById('pjDuration').value);
-  const goal=parseInt(document.getElementById('pjGoal').value);
-  const teams=[...document.querySelectorAll('.pj-team:checked')].map(cb=>cb.value);
-
-  const icons=['🎯','📈','🏆','⭐','🚀','💎'];
-  const rewardExp=Math.round(duration*goal/10);
-  const rewardMoney=duration*500;
-
-  S.projects.push({
-    name, desc: desc||name, icon:rnd(icons),
-    teams, duration, goal,
-    startDay:S.day, settled:false,
-    reward:{exp:rewardExp, money:rewardMoney}
-  });
-
-  toast(`🎯 ${name} 프로젝트 수주!`);
-  closeSheet();renderContent();
-}
-
-function renderReport(c){
-  const avg=S.depts.length?Math.round(S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length):0;
-  const tot=S.depts.reduce((s,d)=>s+d.emps.length,0);
-  const g=G[S.gi];
-
-  let dr=S.depts.map(d=>{
-    const kc=d.kpi>=70?'high':d.kpi>=40?'mid':'low';
-    const color=d.kpi>=70?'#44aa22':d.kpi>=40?'#ccaa00':'#aa2222';
-    return `<div class="rpt-dept">
-      <span>${d.icon} ${d.name}</span>
-      <div style="display:flex;align-items:center;gap:6px">
-        <div class="rpt-bar-mini"><div class="rpt-bar-fill" style="width:${d.kpi}%;background:${color};height:100%"></div></div>
-        <span style="color:${color};font-weight:bold;min-width:28px;text-align:right">${d.kpi}%</span>
-      </div>
-    </div>`;
-  }).join('');
-
-  c.innerHTML=`<div class="rc">
-    <div class="rc-body">
-      <div class="rpt-header">
-        <div class="icon">${g.icon}</div>
-        <div class="grade">${g.name}</div>
-        <div class="sub">LV.${S.lv} · DAY ${String(S.day).padStart(3,'0')}</div>
-      </div>
-      <div class="rpt-stats">
-        <div class="rpt-stat"><div class="v" style="color:${avg>=70?'#66ff66':avg>=40?'#ffcc00':'#ff6666'}">${avg}%</div><div class="l">평균 KPI</div></div>
-        <div class="rpt-stat"><div class="v" style="color:#88ccff">${tot}명</div><div class="l">총 직원</div></div>
-        <div class="rpt-stat"><div class="v" style="color:#66cc44">${(S.money/1000).toFixed(0)}K</div><div class="l">보유 자금</div></div>
-      </div>
-      <div style="font-size:9px;color:#a09870;padding:4px 0;border-bottom:2px solid #5a5530;margin-bottom:4px">▸ 부서별 성과</div>
-      ${dr}
-      <div class="rpt-next">
-        <div>다음 등급</div>
-        <div class="target">${S.gi<5?G[S.gi+1].icon+' '+G[S.gi+1].name:'🏆 최고 등급!'}</div>
-        <div style="margin-top:4px">EXP ${S.exp} / ${g.exp}</div>
-        <div class="kbar" style="margin-top:4px;margin-bottom:0"><div class="kbar-fill" style="width:${Math.min(100,S.exp/g.exp*100)}%;background:#66cc44"></div></div>
-      </div>
-    </div>
-  </div>` + (activeProjects().length?`<div class="rc"><div class="rc-head"><div class="rc-title">🎯 진행중 프로젝트</div></div><div class="rc-body">${activeProjects().map(p=>{
-    const pct=calcProjectProgress(p);const rem=p.duration-(S.day-p.startDay);
-    return `<div class="rpt-dept"><span>${p.icon} ${p.name}</span><span style="color:${rem<=3?'#ff6666':'#ffe066'};font-size:9px">D-${rem} · ${pct}%</span></div>`;
-  }).join('')}</div></div>`:'');
-}
-
-function addRoutine(di){
-  document.getElementById('shTitle').textContent=S.depts[di].name+' 루틴 추가';
-  const b=document.getElementById('shBody');
-  b.innerHTML=`
-    <div style="padding:8px">
-      <input id="routineInput" type="text" placeholder="루틴 이름 (예: 러닝 30분)" maxlength="20"
-        style="width:100%;padding:10px;background:#2a2510;border:2px solid #5a5530;color:#ffe066;font-family:inherit;font-size:11px;margin-bottom:8px">
-      <div class="hr" onclick="confirmRoutine(${di})" style="justify-content:center;background:#4a6a2a;border-color:#66aa44">
-        <div class="hr-info" style="text-align:center"><div class="t" style="color:#ccff88">▸ 추가</div></div>
-      </div>
-    </div>`;
-  document.getElementById('shBg').classList.add('open');
-  setTimeout(()=>{const inp=document.getElementById('routineInput');if(inp)inp.focus();},300);
-}
-
-function confirmRoutine(di){
-  const inp=document.getElementById('routineInput');
-  const name=inp?inp.value.trim():'';
-  if(!name){inp.style.borderColor='#cc4444';return;}
-  S.depts[di].missions.push({text:name,st:'todo'});
-  if(S.depts[di].kpi===0)S.depts[di].kpi=10;
-  toast(`루틴 추가: ${name}`);
-  closeSheet();render();
-}
-
-// ===== ACTIONS =====
-function doM(di,mi){
-  const d=S.depts[di];if(d.missions[mi].st!=='todo')return;
-  d.missions[mi].st='done';
-  const bonus=d.emps.reduce((s,e)=>s+E[e.gi].bonus,0);
-  const gain=Math.min(18,8+Math.floor(bonus/4));
-  d.kpi=Math.min(100,d.kpi+gain);
-  S.exp+=10+Math.floor(bonus/3);S.money+=500;
-  d.emps.forEach(e=>{e.mood=d.kpi>=70?'great':d.kpi>=50?'good':'normal';});
-  toast(`✓ ${d.missions[mi].text} +${gain}%`);
-  checkUp();updateLuna();renderContent();
-}
-function retry(di,mi){S.depts[di].missions[mi].st='todo';renderContent();}
-
-function newDay(){
-  S.day++;
-  S.depts.forEach(d=>{
-    d.missions.forEach(m=>{if(m.st==='todo')m.st='fail';});
-    const f=d.missions.filter(m=>m.st==='fail').length;
-    if(f)d.kpi=Math.max(0,d.kpi-f*6);
-    d.kpi=Math.max(0,d.kpi-2);
-    d.emps.forEach(e=>{e.mood=d.kpi<30?'bad':d.kpi<50?'normal':e.mood;});
-    // 유저가 만든 루틴 유지, 상태만 리셋
-    d.missions.forEach(m=>m.st='todo');
-  });
-  checkDown();updateLuna();toast(`DAY ${String(S.day).padStart(3,'0')}`);render();
-}
-
-function addDept(){
-  const maxD=S.office?S.office.maxDept:G[S.gi].maxDept;
-  if(S.depts.length>=maxD)return toast('사무실 공간 부족! 더 큰 사무실로 이전하세요',true);
-  // 이미 만든 팀 제외
-  const made=S.depts.map(d=>d.id);
-  const avail=D.filter(t=>!made.includes(t.id));
-  if(!avail.length)return toast('모든 팀을 만들었습니다',true);
-
-  document.getElementById('shTitle').textContent='팀 선택';
-  const b=document.getElementById('shBody');
-  b.innerHTML=avail.map(t=>{
-    return `<div class="hr" onclick="createDept('${t.id}')">
-      <div class="hr-ic" style="background:#4a4520;border-color:#8a8060;font-size:16px">${t.icon}</div>
-      <div class="hr-info"><div class="t" style="color:#ffe066">${t.name}</div>
-      <div class="d">${t.hint}</div></div>
+  document.getElementById('shTitle').textContent=`${emp.name}에게 시킬 작업`;
+  const eg=E[emp.gi];
+  const speed=eg.speed;
+  document.getElementById('shBody').innerHTML=available.map(c=>{
+    const time=Math.round(c.time/speed);
+    return `<div class="btn" onclick="startCraft('${c.id}',${idx})">
+      <div class="ic" style="background:#4a4520;border-color:#8a8060;font-size:14px">${c.icon}</div>
+      <div class="info"><div class="t" style="color:#ffe066">${c.name}</div><div class="d">${c.desc}</div><div class="d" style="color:#88aaaa">제작 시간: ${time}초</div></div>
+      <div class="cost" style="color:#66cc44">+${c.reward}원</div>
     </div>`;
   }).join('');
   document.getElementById('shBg').classList.add('open');
 }
 
-function createDept(id){
-  const t=D.find(x=>x.id===id);if(!t)return;
-  S.depts.push({...t,kpi:0,emps:[],missions:[]});
-  toast(`${t.name} 창설!`);
-  closeSheet();render();
+function startCraft(craftId,empIdx){
+  if(S.crafting){toast('이미 제작 중입니다',true);return;}
+  const craft=CRAFTS.find(c=>c.id===craftId);
+  const eg=E[S.emps[empIdx].gi];
+  const duration=craft.time/eg.speed;
+
+  S.crafting={craftId,empIdx,startTime:Date.now(),duration};
+  S.emps[empIdx].state='working';
+  closeSheet();
+  toast(`${S.emps[empIdx].name}이(가) ${craft.name} 제작 시작!`);
+  renderAll();
 }
 
-function checkUp(){const g=G[S.gi];if(S.exp>=g.exp&&S.gi<5){S.exp-=g.exp;S.gi++;S.lv++;toast(`★ ${G[S.gi].name} 승급!`);}}
-function checkDown(){if(S.gi<=0)return;const avg=S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length;if(avg<G[S.gi-1].minKpi){S.gi--;S.lv=Math.max(1,S.lv-1);toast(`${G[S.gi].name} 강등..`,true);}}
-
-// ===== HIRE =====
-let hDi=0;
-function openSheet(di){
-  hDi=di;
-  document.getElementById('shTitle').textContent=S.depts[di].name+' 채용';
-  const b=document.getElementById('shBody');
-  b.innerHTML=E.map((g,gi)=>{
-    const lk=gi>S.gi+2,br=g.cost>S.money,dis=lk||br;
-    return `<div class="hr ${dis?'locked':''}" onclick="${dis?'':'hire('+gi+')'}">
-      <div class="hr-ic" style="background:${g.bg};border-color:${g.c}">★</div>
-      <div class="hr-info"><div class="t" style="color:${g.c}">${g.rank}</div>
-      <div class="d" style="color:${g.c}">${g.skill}</div>
-      <div class="d">${lk?'🔒 등급 부족':br?'💸 자금 부족':g.desc}</div></div>
-      <div class="hr-cost">${g.cost?g.cost.toLocaleString()+'원':'무료'}</div>
-    </div>`;
-  }).join('');
-  document.getElementById('shBg').classList.add('open');
-}
-function openSheetAll(){if(S.depts.length)openSheet(0);}
 function closeSheet(){document.getElementById('shBg').classList.remove('open');}
-function hire(gi){
-  const g=E[gi];if(g.cost>S.money)return;
-  S.money-=g.cost;
-  const dept=S.depts[hDi];
-  dept.emps.push(mkEmp(gi));
-  toast(`${dept.emps.at(-1).name} ${g.rank} 채용!`);
-  closeSheet();render();
+
+// ===== 메인 화면 렌더 =====
+function renderAll(){
+  document.getElementById('hudDay').textContent=`DAY ${String(S.day).padStart(3,'0')}`;
+  document.getElementById('hudGrade').textContent=S.companyName||'';
+  document.getElementById('hudMoney').textContent=S.money.toLocaleString()+'원';
+
+  const c=document.getElementById('content');
+  let h='';
+
+  // 제작 진행 상태
+  if(S.crafting){
+    const craft=CRAFTS.find(cr=>cr.id===S.crafting.craftId);
+    const emp=S.emps[S.crafting.empIdx];
+    h+=`<div class="card"><div class="card-head"><div class="card-title">🔨 제작 중</div></div><div class="card-body">
+      <div style="font-size:10px;margin-bottom:4px">${craft.icon} ${craft.name}</div>
+      <div style="font-size:8px;color:#8a8060;margin-bottom:6px">${emp.name} 작업 중...</div>
+      <div class="prog-wrap"><div class="prog-fill" id="craftProg" style="width:0%"></div></div>
+    </div></div>`;
+  }
+
+  // 루틴 (해금됐으면)
+  if(has('routine_check')){
+    h+=`<div class="card"><div class="card-head"><div class="card-title">📋 루틴</div></div><div class="card-body">`;
+    if(S.missions.length===0&&has('routine_add')){
+      h+=`<div class="mi" onclick="addRoutine()" style="justify-content:center;color:#8a8060;border-style:dashed">+ 루틴 추가</div>`;
+    }
+    S.missions.forEach((m,mi)=>{
+      const cls=m.done?'done':'';
+      h+=`<div class="mi ${cls}" onclick="toggleRoutine(${mi})"><div class="mi-ck">${m.done?'✓':''}</div><div class="mi-txt">${m.text}</div></div>`;
+    });
+    if(S.missions.length>0&&has('routine_add')){
+      h+=`<div class="mi" onclick="addRoutine()" style="justify-content:center;color:#8a8060;border-style:dashed;font-size:9px">+ 루틴 추가</div>`;
+    }
+    h+=`</div></div>`;
+  } else if(has('routine_add')&&!has('routine_check')){
+    h+=`<div class="card"><div class="card-head"><div class="card-title">📋 루틴</div></div><div class="card-body">
+      <div style="font-size:9px;color:#8a8060;text-align:center;padding:8px">루틴 체크 기능을 제작해야 합니다</div>
+    </div></div>`;
+  }
+
+  // 직원 상태
+  h+=`<div class="card"><div class="card-head"><div class="card-title">👥 직원</div></div><div class="card-body">`;
+  S.emps.forEach((emp,i)=>{
+    const eg=E[emp.gi];
+    const stateText=emp.state==='working'?'⚙️ 작업 중':'💤 대기 중';
+    h+=`<div class="btn" onclick="onEmpClick(${i})"><div class="ic" style="background:${eg.bg};border-color:${eg.c};font-size:10px">${emp.state==='working'?'⚙️':'💤'}</div>
+      <div class="info"><div class="t">${emp.name} <span style="color:${eg.c}">${eg.rank}</span></div><div class="d">${stateText}</div></div></div>`;
+  });
+  if(has('hire_system')){
+    h+=`<div class="btn" onclick="openHire()" style="justify-content:center;border-style:dashed"><div class="info" style="text-align:center"><div class="t" style="color:#8a8060">+ 직원 채용</div></div></div>`;
+  }
+  h+=`</div></div>`;
+
+  // 해금된 기능 목록
+  const unlockCount=S.unlocked.length;
+  const totalCount=CRAFTS.length;
+  h+=`<div class="card"><div class="card-head"><div class="card-title">🔓 해금 ${unlockCount}/${totalCount}</div></div><div class="card-body">`;
+  CRAFTS.forEach(cr=>{
+    const done=S.unlocked.includes(cr.id);
+    const avail=!done&&cr.req.every(r=>S.unlocked.includes(r));
+    h+=`<div style="font-size:9px;padding:3px 0;color:${done?'#66cc44':avail?'#ffe066':'#4a4520'}">${done?'✅':avail?'🔨':'🔒'} ${cr.name}${done?' · 완료':''}</div>`;
+  });
+  h+=`</div></div>`;
+
+  c.innerHTML=h;
+
+  // 프로그래스 바 업데이트
+  if(S.crafting){
+    updateProgBar();
+  }
 }
 
-function updateLuna(){}
-
-function toast(m,bad){const t=document.getElementById('toast');t.textContent=m;t.className='toast'+(bad?' bad':'');t.style.display='block';setTimeout(()=>t.style.display='none',2000);}
-
-function render(){
-  const g=G[S.gi];
-  document.getElementById('hudDay').textContent=S.founded?`DAY ${String(S.day).padStart(3,'0')}`:'';
-  document.getElementById('hudGrade').textContent=S.founded?(S.companyName||'')+(S.office?' · '+S.office.icon+S.office.name:''):'수호컴퍼니';
-  document.getElementById('expBar').style.width=Math.min(100,S.exp/g.exp*100)+'%';
-  const avg=S.depts.length?Math.round(S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length):0;
-  document.getElementById('hudKpi').textContent=avg+'%';
-  document.getElementById('hudKpi').style.color=avg>=70?'#66ff66':avg>=40?'#ffcc00':'#ff6666';
-  document.getElementById('hudEmp').textContent=S.depts.reduce((s,d)=>s+d.emps.length,0);
-  document.getElementById('hudMoney').textContent=(S.money/1000).toFixed(0)+'K';
-  renderContent();updateLuna();
+function updateProgBar(){
+  if(!S.crafting)return;
+  const bar=document.getElementById('craftProg');
+  if(!bar)return;
+  const pct=Math.min(100,(Date.now()-S.crafting.startTime)/1000/S.crafting.duration*100);
+  bar.style.width=pct+'%';
+  if(pct<100)requestAnimationFrame(updateProgBar);
 }
 
-function resetGame(){
-  if(!confirm('리셋?'))return;
-  S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:'',projects:[],office:null,planTeams:[]};
-  document.getElementById('gameScreen').style.display='none';
-  document.getElementById('introScreen').classList.remove('hidden');
-  document.getElementById('npcScreen').classList.remove('active');
-  document.getElementById('npcExtra').innerHTML='';
-  document.getElementById('npcTap').style.display='block';
-  dialogIdx=0;
+// ===== 루틴 =====
+function addRoutine(){
+  document.getElementById('shTitle').textContent='루틴 추가';
+  document.getElementById('shBody').innerHTML=`<div style="padding:8px">
+    <input id="routineInput" type="text" placeholder="예: 걷기 15분" maxlength="20" style="width:100%;padding:10px;background:#2a2510;border:2px solid #5a5530;color:#ffe066;font-family:inherit;font-size:11px;margin-bottom:8px">
+    <div class="btn" onclick="confirmRoutine()" style="justify-content:center;background:#4a6a2a;border-color:#66aa44"><div class="info" style="text-align:center"><div class="t" style="color:#ccff88">▸ 추가</div></div></div>
+  </div>`;
+  document.getElementById('shBg').classList.add('open');
+  setTimeout(()=>{const i=document.getElementById('routineInput');if(i)i.focus();},300);
 }
 
-// 인트로 화면부터 시작 (init은 설립 후 호출)
+function confirmRoutine(){
+  const v=document.getElementById('routineInput').value.trim();
+  if(!v)return;
+  S.missions.push({text:v,done:false});
+  closeSheet();renderAll();
+  toast(`루틴 추가: ${v}`);
+}
+
+function toggleRoutine(mi){
+  if(!has('routine_check'))return;
+  S.missions[mi].done=!S.missions[mi].done;
+  if(S.missions[mi].done){
+    S.money+=100;
+    toast(`✅ ${S.missions[mi].text} +100원`);
+  }
+  renderAll();
+}
+
+// ===== 채용 =====
+function openHire(){
+  document.getElementById('shTitle').textContent='직원 채용';
+  document.getElementById('shBody').innerHTML=E.map((g,gi)=>{
+    const afford=g.cost<=S.money;
+    return `<div class="btn ${afford?'':'locked'}" onclick="${afford?'hireEmp('+gi+')':''}">
+      <div class="ic" style="background:${g.bg};border-color:${g.c};font-size:12px">★</div>
+      <div class="info"><div class="t" style="color:${g.c}">${g.rank}</div><div class="d">${g.skill} · ${g.desc}</div><div class="d" style="color:#88aaaa">제작 속도: x${g.speed}</div></div>
+      <div class="cost" style="color:${afford?'#66cc44':'#ff6666'}">${g.cost.toLocaleString()}원</div>
+    </div>`;
+  }).join('');
+  document.getElementById('shBg').classList.add('open');
+}
+
+function hireEmp(gi){
+  if(E[gi].cost>S.money)return;
+  S.money-=E[gi].cost;
+  S.emps.push(mkEmp(gi));
+  closeSheet();renderAll();
+  toast(`${S.emps.at(-1).name} ${E[gi].rank} 채용!`);
+}
+
+// ===== 다음 날 =====
+function nextDay(){
+  S.day++;
+  S.missions.forEach(m=>m.done=false);
+  renderAll();
+  toast(`DAY ${String(S.day).padStart(3,'0')}`);
+}
+
+function toast(m,bad){const t=document.getElementById('toast');t.textContent=m;t.className='toast'+(bad?' bad':'');t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
 </script>
 </body>
 </html>
