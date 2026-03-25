@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수호플랜 - 가상 회사 시뮬레이션</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0f1923; color: #e0e0e0; min-height: 100vh; }
+
+  .header {
+    background: linear-gradient(135deg, #1a2a3a, #2a3a4a);
+    padding: 20px 30px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid #3a4a5a;
+  }
+  .header h1 { font-size: 1.4em; color: #fff; }
+  .header .company-name { color: #64b5f6; font-size: 0.9em; }
+  .header .money { background: #2a3a2a; padding: 8px 16px; border-radius: 20px; color: #81c784; font-weight: bold; }
+
+  .main { display: flex; gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; }
+  .left-panel { flex: 1; min-width: 280px; }
+  .right-panel { flex: 2; }
+
+  /* 회사 정보 카드 */
+  .company-card {
+    background: linear-gradient(135deg, #1e3a5f, #2a4a6a);
+    border-radius: 16px; padding: 24px; margin-bottom: 20px;
+    border: 1px solid #3a5a7a;
+  }
+  .company-level { font-size: 0.85em; color: #90caf9; margin-bottom: 4px; }
+  .company-title { font-size: 1.6em; font-weight: bold; margin-bottom: 12px; }
+  .exp-bar-wrap { background: #1a2a3a; border-radius: 10px; height: 20px; overflow: hidden; margin-bottom: 8px; }
+  .exp-bar { height: 100%; background: linear-gradient(90deg, #42a5f5, #64b5f6); border-radius: 10px; transition: width 0.5s; }
+  .exp-text { font-size: 0.8em; color: #90caf9; text-align: right; }
+
+  .stats-row { display: flex; gap: 12px; margin-top: 16px; }
+  .stat-box {
+    flex: 1; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 12px; text-align: center;
+  }
+  .stat-value { font-size: 1.4em; font-weight: bold; color: #fff; }
+  .stat-label { font-size: 0.75em; color: #90a4ae; margin-top: 4px; }
+
+  /* 루나 비서 */
+  .luna-card {
+    background: linear-gradient(135deg, #2a1a3a, #3a2a4a);
+    border-radius: 16px; padding: 20px; margin-bottom: 20px;
+    border: 1px solid #5a3a7a;
+  }
+  .luna-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .luna-avatar {
+    width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #9c27b0, #e040fb);
+    display: flex; align-items: center; justify-content: center; font-size: 1.2em;
+  }
+  .luna-name { font-weight: bold; color: #ce93d8; }
+  .luna-role { font-size: 0.8em; color: #9a7aaa; }
+  .luna-msg {
+    background: rgba(0,0,0,0.2); border-radius: 12px; padding: 14px; font-size: 0.9em;
+    line-height: 1.5; color: #e1bee7; border-left: 3px solid #9c27b0;
+  }
+
+  /* 부서 그리드 */
+  .dept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+
+  .dept-card {
+    background: #1a2a3a; border-radius: 16px; padding: 20px;
+    border: 1px solid #2a3a4a; transition: all 0.3s;
+  }
+  .dept-card:hover { border-color: #4a6a8a; transform: translateY(-2px); }
+  .dept-card.danger { border-color: #e57373; }
+  .dept-card.good { border-color: #81c784; }
+
+  .dept-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .dept-icon { font-size: 1.8em; }
+  .dept-name { font-size: 1.1em; font-weight: bold; }
+  .dept-kpi { font-size: 1.3em; font-weight: bold; }
+  .dept-kpi.high { color: #81c784; }
+  .dept-kpi.mid { color: #ffb74d; }
+  .dept-kpi.low { color: #e57373; }
+
+  .kpi-bar-wrap { background: #0f1923; border-radius: 8px; height: 10px; margin: 10px 0; overflow: hidden; }
+  .kpi-bar { height: 100%; border-radius: 8px; transition: width 0.5s; }
+  .kpi-bar.high { background: linear-gradient(90deg, #66bb6a, #81c784); }
+  .kpi-bar.mid { background: linear-gradient(90deg, #ffa726, #ffb74d); }
+  .kpi-bar.low { background: linear-gradient(90deg, #ef5350, #e57373); }
+
+  /* 직원 리스트 */
+  .employee { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #2a3a4a; }
+  .employee:last-child { border-bottom: none; }
+  .emp-avatar {
+    width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 0.9em; font-weight: bold; color: #fff;
+  }
+  .emp-info { flex: 1; }
+  .emp-name { font-size: 0.9em; font-weight: bold; }
+  .emp-rank { font-size: 0.75em; color: #78909c; }
+  .emp-mood { font-size: 1.1em; }
+
+  /* 미션 버튼 */
+  .mission-area { margin-top: 14px; }
+  .mission-btn {
+    width: 100%; padding: 10px; border: none; border-radius: 10px; cursor: pointer;
+    font-size: 0.9em; font-weight: bold; transition: all 0.2s; margin-bottom: 6px;
+  }
+  .mission-btn.todo {
+    background: linear-gradient(135deg, #1565c0, #1976d2); color: #fff;
+  }
+  .mission-btn.todo:hover { background: linear-gradient(135deg, #1976d2, #2196f3); }
+  .mission-btn.done {
+    background: #1a2a1a; color: #66bb6a; border: 1px solid #2a4a2a;
+  }
+  .mission-btn.fail {
+    background: #2a1a1a; color: #e57373; border: 1px solid #4a2a2a; cursor: pointer;
+  }
+
+  /* 채용 모달 */
+  .modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: #1a2a3a; border-radius: 20px; padding: 30px; max-width: 500px; width: 90%;
+    border: 1px solid #3a5a7a;
+  }
+  .modal h2 { margin-bottom: 20px; color: #64b5f6; }
+  .hire-option {
+    background: #0f1923; border: 1px solid #2a3a4a; border-radius: 12px; padding: 16px;
+    margin-bottom: 12px; cursor: pointer; transition: all 0.2s;
+  }
+  .hire-option:hover { border-color: #64b5f6; background: #1a2a3a; }
+  .hire-option .grade { font-weight: bold; font-size: 1.1em; }
+  .hire-option .cost { color: #81c784; font-size: 0.9em; margin-top: 4px; }
+  .hire-option .desc { color: #78909c; font-size: 0.85em; margin-top: 6px; }
+  .hire-option.locked { opacity: 0.4; cursor: not-allowed; }
+
+  .close-btn {
+    margin-top: 16px; width: 100%; padding: 12px; background: #2a3a4a; border: none;
+    border-radius: 10px; color: #fff; cursor: pointer; font-size: 0.95em;
+  }
+
+  /* 하단 액션바 */
+  .action-bar {
+    position: fixed; bottom: 0; left: 0; width: 100%; background: #1a2a3a;
+    border-top: 1px solid #2a3a4a; padding: 12px 20px; display: flex; gap: 10px;
+    justify-content: center; z-index: 50;
+  }
+  .action-btn {
+    padding: 10px 24px; border: none; border-radius: 12px; cursor: pointer;
+    font-weight: bold; font-size: 0.9em; transition: all 0.2s;
+  }
+  .action-btn.primary { background: linear-gradient(135deg, #1565c0, #42a5f5); color: #fff; }
+  .action-btn.secondary { background: #2a3a4a; color: #90caf9; }
+  .action-btn.danger { background: #4a1a1a; color: #e57373; }
+  .action-btn:hover { transform: scale(1.05); }
+
+  /* 토스트 */
+  .toast {
+    position: fixed; top: 20px; right: 20px; background: #2a4a2a; color: #81c784;
+    padding: 14px 24px; border-radius: 12px; z-index: 200; display: none;
+    border: 1px solid #3a6a3a; font-weight: bold; animation: slideIn 0.3s;
+  }
+  .toast.bad { background: #4a1a1a; color: #e57373; border-color: #6a2a2a; }
+  @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  .section-title { font-size: 1.1em; font-weight: bold; margin-bottom: 14px; color: #90caf9; }
+
+  body { padding-bottom: 80px; }
+
+  @media (max-width: 768px) {
+    .main { flex-direction: column; }
+    .dept-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>🏢 수호플랜 컴퍼니</h1>
+    <div class="company-name" id="companyName">CEO님의 회사</div>
+  </div>
+  <div class="money" id="money">💰 50,000원</div>
+</div>
+
+<div class="main">
+  <div class="left-panel">
+    <!-- 회사 정보 -->
+    <div class="company-card">
+      <div class="company-level" id="companyLevel">Lv.1</div>
+      <div class="company-title" id="companyGrade">개인사무실</div>
+      <div class="exp-bar-wrap">
+        <div class="exp-bar" id="expBar" style="width: 0%"></div>
+      </div>
+      <div class="exp-text" id="expText">0 / 100 EXP</div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-value" id="totalKpi">0%</div>
+          <div class="stat-label">총 KPI</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="totalEmp">2</div>
+          <div class="stat-label">직원 수</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="deptCount">2</div>
+          <div class="stat-label">부서 수</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 루나 비서 -->
+    <div class="luna-card">
+      <div class="luna-header">
+        <div class="luna-avatar">🌙</div>
+        <div>
+          <div class="luna-name">루나</div>
+          <div class="luna-role">비서실장 (COO)</div>
+        </div>
+      </div>
+      <div class="luna-msg" id="lunaMsg">
+        CEO님, 좋은 아침입니다! 오늘의 미션을 확인하고 부서별 KPI를 관리해주세요. 직원들이 CEO님을 기다리고 있습니다.
+      </div>
+    </div>
+
+    <!-- 경영 로그 -->
+    <div style="background:#1a2a3a; border-radius:16px; padding:20px; border:1px solid #2a3a4a;">
+      <div class="section-title">📋 경영 로그</div>
+      <div id="logArea" style="max-height:200px; overflow-y:auto; font-size:0.85em; color:#78909c;">
+        <div>🏢 회사가 설립되었습니다!</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="section-title">🏬 부서 관리</div>
+    <div class="dept-grid" id="deptGrid"></div>
+  </div>
+</div>
+
+<!-- 채용 모달 -->
+<div class="modal-overlay" id="hireModal">
+  <div class="modal">
+    <h2>👔 <span id="hireDeptName"></span> 직원 채용</h2>
+    <div id="hireOptions"></div>
+    <button class="close-btn" onclick="closeHireModal()">닫기</button>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<!-- 하단 액션바 -->
+<div class="action-bar">
+  <button class="action-btn secondary" onclick="newDay()">📅 다음 날</button>
+  <button class="action-btn primary" onclick="openHireModalGeneral()">👔 직원 채용</button>
+  <button class="action-btn secondary" onclick="monthlyReport()">📊 월간 보고</button>
+  <button class="action-btn danger" onclick="resetGame()">🔄 리셋</button>
+</div>
+
+<script>
+// ========== 게임 데이터 ==========
+const COMPANY_GRADES = [
+  { name: '개인사무실', minKpi: 0, maxDept: 2, icon: '🏠', expNeeded: 100 },
+  { name: '스타트업', minKpi: 40, maxDept: 3, icon: '🏢', expNeeded: 300 },
+  { name: '중소기업', minKpi: 55, maxDept: 4, icon: '🏗️', expNeeded: 600 },
+  { name: '중견기업', minKpi: 65, maxDept: 5, icon: '🏛️', expNeeded: 1000 },
+  { name: '대기업', minKpi: 75, maxDept: 6, icon: '🏙️', expNeeded: 2000 },
+  { name: '글로벌기업', minKpi: 85, maxDept: 6, icon: '🌍', expNeeded: 9999 },
+];
+
+const EMPLOYEE_GRADES = [
+  { rank: '인턴', color: '#78909c', cost: 0, bonus: 0, desc: '기본 알림만 가능' },
+  { rank: '사원', color: '#4fc3f7', cost: 0, bonus: 5, desc: '기본 통계 제공' },
+  { rank: '대리', color: '#81c784', cost: 3900, bonus: 10, desc: 'AI 코칭 + 맞춤 루틴 추천' },
+  { rank: '과장', color: '#ffb74d', cost: 6900, bonus: 15, desc: '자동 일정 조율 + 외부 연동' },
+  { rank: '부장', color: '#ce93d8', cost: 9900, bonus: 20, desc: '멀티 부서 분석 + 상관관계' },
+  { rank: '임원', color: '#ef5350', cost: 14900, bonus: 30, desc: '자율 에이전트 + 풀 자동화' },
+];
+
+const DEPT_TEMPLATES = [
+  { id: 'exercise', name: '운동부', icon: '💪', missions: ['러닝 30분', '스트레칭 15분', '근력운동 20분'] },
+  { id: 'sleep', name: '수면부', icon: '😴', missions: ['23시 전 취침', '7시간 이상 수면', '기상 후 햇빛 10분'] },
+  { id: 'study', name: '학습부', icon: '📚', missions: ['독서 30분', '강의 1개 수강', '노트 정리'] },
+  { id: 'health', name: '건강관리부', icon: '🥗', missions: ['물 8잔 마시기', '영양제 복용', '건강한 식사'] },
+  { id: 'finance', name: '재정부', icon: '💰', missions: ['가계부 기록', '불필요 지출 0건', '저축 목표 달성'] },
+  { id: 'mental', name: '멘탈케어부', icon: '🧘', missions: ['명상 10분', '감사일기 작성', '디지털 디톡스 1시간'] },
+];
+
+const NAMES = ['김수호','이하늘','박지민','최윤서','정다은','강민준','조서연','윤태호','한소율','임재현','송예린','오동현'];
+const MOODS = { good: '😊', normal: '😐', bad: '😰', great: '🤩' };
+
+// ========== 게임 상태 ==========
+let state = {
+  money: 50000,
+  exp: 0,
+  level: 1,
+  gradeIdx: 0,
+  day: 1,
+  departments: [],
+  log: ['🏢 회사가 설립되었습니다!'],
+  usedNames: [],
+};
+
+function randomName() {
+  const avail = NAMES.filter(n => !state.usedNames.includes(n));
+  if (avail.length === 0) return NAMES[Math.floor(Math.random() * NAMES.length)];
+  const name = avail[Math.floor(Math.random() * avail.length)];
+  state.usedNames.push(name);
+  return name;
+}
+
+function initGame() {
+  // 초기 2개 부서
+  state.departments = DEPT_TEMPLATES.slice(0, 2).map(t => ({
+    ...t,
+    kpi: 50,
+    employees: [
+      { name: randomName(), gradeIdx: 0, mood: 'normal' },
+      { name: randomName(), gradeIdx: 1, mood: 'normal' },
+    ],
+    missions: t.missions.map(m => ({ text: m, status: 'todo' })), // todo, done, fail
+  }));
+  render();
+}
+
+// ========== 렌더링 ==========
+function render() {
+  // 회사 등급
+  const grade = COMPANY_GRADES[state.gradeIdx];
+  document.getElementById('companyLevel').textContent = `Lv.${state.level}`;
+  document.getElementById('companyGrade').textContent = `${grade.icon} ${grade.name}`;
+  document.getElementById('companyName').textContent = `Day ${state.day} · ${grade.name}`;
+
+  const expPct = Math.min(100, (state.exp / grade.expNeeded) * 100);
+  document.getElementById('expBar').style.width = expPct + '%';
+  document.getElementById('expText').textContent = `${state.exp} / ${grade.expNeeded} EXP`;
+
+  // 총 KPI
+  const avgKpi = state.departments.length > 0
+    ? Math.round(state.departments.reduce((s, d) => s + d.kpi, 0) / state.departments.length)
+    : 0;
+  document.getElementById('totalKpi').textContent = avgKpi + '%';
+  document.getElementById('totalKpi').style.color = avgKpi >= 70 ? '#81c784' : avgKpi >= 40 ? '#ffb74d' : '#e57373';
+
+  const totalEmp = state.departments.reduce((s, d) => s + d.employees.length, 0);
+  document.getElementById('totalEmp').textContent = totalEmp;
+  document.getElementById('deptCount').textContent = state.departments.length;
+
+  // 돈
+  document.getElementById('money').textContent = `💰 ${state.money.toLocaleString()}원`;
+
+  // 부서 카드
+  const grid = document.getElementById('deptGrid');
+  grid.innerHTML = '';
+
+  state.departments.forEach((dept, di) => {
+    const kpiClass = dept.kpi >= 70 ? 'high' : dept.kpi >= 40 ? 'mid' : 'low';
+    const cardClass = dept.kpi < 30 ? 'danger' : dept.kpi >= 70 ? 'good' : '';
+
+    let empHtml = dept.employees.map(emp => {
+      const g = EMPLOYEE_GRADES[emp.gradeIdx];
+      return `<div class="employee">
+        <div class="emp-avatar" style="background:${g.color}">${emp.name[0]}</div>
+        <div class="emp-info">
+          <div class="emp-name">${emp.name}</div>
+          <div class="emp-rank">${g.rank} · 보너스 +${g.bonus}%</div>
+        </div>
+        <div class="emp-mood">${MOODS[emp.mood]}</div>
+      </div>`;
+    }).join('');
+
+    let missionHtml = dept.missions.map((m, mi) => {
+      if (m.status === 'done') {
+        return `<button class="mission-btn done">✅ ${m.text}</button>`;
+      } else if (m.status === 'fail') {
+        return `<button class="mission-btn fail" onclick="retryMission(${di},${mi})">❌ ${m.text} (재도전)</button>`;
+      } else {
+        return `<button class="mission-btn todo" onclick="completeMission(${di},${mi})">⬜ ${m.text}</button>`;
+      }
+    }).join('');
+
+    const card = document.createElement('div');
+    card.className = `dept-card ${cardClass}`;
+    card.innerHTML = `
+      <div class="dept-top">
+        <div>
+          <span class="dept-icon">${dept.icon}</span>
+          <span class="dept-name">${dept.name}</span>
+        </div>
+        <div class="dept-kpi ${kpiClass}">${dept.kpi}%</div>
+      </div>
+      <div class="kpi-bar-wrap">
+        <div class="kpi-bar ${kpiClass}" style="width:${dept.kpi}%"></div>
+      </div>
+      ${empHtml}
+      <div class="mission-area">
+        <div style="font-size:0.85em;color:#90a4ae;margin-bottom:8px;">오늘의 미션</div>
+        ${missionHtml}
+      </div>
+      <button style="margin-top:10px;width:100%;padding:8px;background:#2a3a4a;border:1px solid #3a5a7a;border-radius:8px;color:#64b5f6;cursor:pointer;font-size:0.85em;" onclick="openHireModal(${di})">
+        👔 직원 채용
+      </button>
+    `;
+    grid.appendChild(card);
+  });
+
+  // 로그
+  document.getElementById('logArea').innerHTML = state.log.slice(-10).reverse().map(l => `<div style="padding:4px 0;border-bottom:1px solid #1a2a3a">${l}</div>`).join('');
+}
+
+// ========== 미션 ==========
+function completeMission(di, mi) {
+  const dept = state.departments[di];
+  dept.missions[mi].status = 'done';
+
+  // KPI 상승 (직원 보너스 적용)
+  const bonus = dept.employees.reduce((s, e) => s + EMPLOYEE_GRADES[e.gradeIdx].bonus, 0);
+  const gain = Math.min(15, 8 + Math.floor(bonus / 5));
+  dept.kpi = Math.min(100, dept.kpi + gain);
+
+  // EXP & 돈
+  state.exp += 10 + Math.floor(bonus / 3);
+  state.money += 500;
+
+  // 직원 기분
+  dept.employees.forEach(e => {
+    if (dept.kpi >= 70) e.mood = 'great';
+    else if (dept.kpi >= 50) e.mood = 'good';
+    else e.mood = 'normal';
+  });
+
+  addLog(`✅ ${dept.name} - "${dept.missions[mi].text}" 달성! (KPI +${gain}%)`);
+  showToast(`${dept.missions[mi].text} 완료! +${gain}% KPI`);
+
+  checkLevelUp();
+  updateLuna();
+  render();
+}
+
+function retryMission(di, mi) {
+  state.departments[di].missions[mi].status = 'todo';
+  render();
+}
+
+// ========== 다음 날 ==========
+function newDay() {
+  state.day++;
+
+  state.departments.forEach(dept => {
+    // 미완료 미션 → 실패 처리
+    dept.missions.forEach(m => {
+      if (m.status === 'todo') m.status = 'fail';
+    });
+
+    // 실패한 미션 수만큼 KPI 하락
+    const fails = dept.missions.filter(m => m.status === 'fail').length;
+    if (fails > 0) {
+      const loss = fails * 6;
+      dept.kpi = Math.max(0, dept.kpi - loss);
+      addLog(`📉 ${dept.name} KPI -${loss}% (미완료 ${fails}건)`);
+
+      dept.employees.forEach(e => {
+        if (dept.kpi < 30) e.mood = 'bad';
+        else if (dept.kpi < 50) e.mood = 'normal';
+      });
+    }
+
+    // 미션 리셋
+    const template = DEPT_TEMPLATES.find(t => t.id === dept.id);
+    dept.missions = template.missions.map(m => ({ text: m, status: 'todo' }));
+  });
+
+  // 자연 감소
+  state.departments.forEach(d => {
+    d.kpi = Math.max(0, d.kpi - 2);
+  });
+
+  // 회사 등급 체크 (강등)
+  checkDemotion();
+
+  addLog(`📅 Day ${state.day} 시작`);
+  updateLuna();
+  render();
+}
+
+// ========== 레벨업 / 강등 ==========
+function checkLevelUp() {
+  const grade = COMPANY_GRADES[state.gradeIdx];
+  if (state.exp >= grade.expNeeded && state.gradeIdx < COMPANY_GRADES.length - 1) {
+    state.exp -= grade.expNeeded;
+    state.gradeIdx++;
+    state.level++;
+
+    const newGrade = COMPANY_GRADES[state.gradeIdx];
+
+    // 새 부서 해금
+    if (state.departments.length < newGrade.maxDept) {
+      const nextDept = DEPT_TEMPLATES[state.departments.length];
+      if (nextDept) {
+        state.departments.push({
+          ...nextDept,
+          kpi: 50,
+          employees: [{ name: randomName(), gradeIdx: 0, mood: 'normal' }],
+          missions: nextDept.missions.map(m => ({ text: m, status: 'todo' })),
+        });
+        addLog(`🎉 신규 부서 "${nextDept.name}" 설립!`);
+      }
+    }
+
+    addLog(`🚀 회사 승급! → ${newGrade.icon} ${newGrade.name}`);
+    showToast(`🚀 ${newGrade.name}으로 성장했습니다!`);
+  }
+}
+
+function checkDemotion() {
+  if (state.gradeIdx <= 0) return;
+  const avgKpi = state.departments.reduce((s, d) => s + d.kpi, 0) / state.departments.length;
+  const prevGrade = COMPANY_GRADES[state.gradeIdx - 1];
+
+  if (avgKpi < prevGrade.minKpi) {
+    state.gradeIdx--;
+    state.level = Math.max(1, state.level - 1);
+    const newGrade = COMPANY_GRADES[state.gradeIdx];
+    addLog(`⚠️ KPI 부족! 회사 강등 → ${newGrade.icon} ${newGrade.name}`);
+    showToast(`⚠️ ${newGrade.name}으로 강등되었습니다...`, true);
+  }
+}
+
+// ========== 채용 ==========
+let hireTargetDept = -1;
+
+function openHireModal(di) {
+  hireTargetDept = di;
+  document.getElementById('hireDeptName').textContent = state.departments[di].name;
+
+  const opts = document.getElementById('hireOptions');
+  opts.innerHTML = EMPLOYEE_GRADES.map((g, gi) => {
+    const canAfford = g.cost <= state.money;
+    const locked = gi > state.gradeIdx + 2;
+    const disabled = locked || !canAfford;
+
+    return `<div class="hire-option ${disabled ? 'locked' : ''}" onclick="${disabled ? '' : `hireEmployee(${gi})`}">
+      <div class="grade" style="color:${g.color}">${g.rank}</div>
+      <div class="cost">${g.cost === 0 ? '무료' : `월급 ${g.cost.toLocaleString()}원`}</div>
+      <div class="desc">${g.desc}</div>
+      ${locked ? '<div style="color:#e57373;font-size:0.8em;margin-top:4px;">🔒 회사 등급 부족</div>' : ''}
+      ${!canAfford && !locked ? '<div style="color:#e57373;font-size:0.8em;margin-top:4px;">💸 자금 부족</div>' : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('hireModal').classList.add('active');
+}
+
+function openHireModalGeneral() {
+  if (state.departments.length === 0) return;
+  openHireModal(0);
+}
+
+function closeHireModal() {
+  document.getElementById('hireModal').classList.remove('active');
+}
+
+function hireEmployee(gradeIdx) {
+  const g = EMPLOYEE_GRADES[gradeIdx];
+  if (g.cost > state.money) return;
+
+  state.money -= g.cost;
+  const dept = state.departments[hireTargetDept];
+  const emp = { name: randomName(), gradeIdx, mood: 'good' };
+  dept.employees.push(emp);
+
+  addLog(`👔 ${dept.name}에 ${g.rank} "${emp.name}" 채용! (${g.cost === 0 ? '무료' : g.cost.toLocaleString() + '원'})`);
+  showToast(`${emp.name} ${g.rank} 채용 완료!`);
+
+  closeHireModal();
+  updateLuna();
+  render();
+}
+
+// ========== 루나 메시지 ==========
+function updateLuna() {
+  const avgKpi = state.departments.length > 0
+    ? Math.round(state.departments.reduce((s, d) => s + d.kpi, 0) / state.departments.length)
+    : 0;
+
+  const msgs = [];
+
+  if (avgKpi >= 80) {
+    msgs.push('CEO님, 전 부서가 순항 중입니다! 이 기세라면 승급도 머지않았어요. 🚀');
+  } else if (avgKpi >= 60) {
+    msgs.push('CEO님, 전반적으로 양호합니다. 조금만 더 힘내면 목표 달성이 가능합니다!');
+  } else if (avgKpi >= 40) {
+    msgs.push('CEO님, 몇몇 부서의 KPI가 불안합니다. 미션을 확인해주세요.');
+  } else {
+    msgs.push('CEO님... 긴급 상황입니다. KPI가 심각하게 낮습니다. 직원들이 동요하고 있어요. 😰');
+  }
+
+  // 위험 부서 알림
+  const dangerDepts = state.departments.filter(d => d.kpi < 30);
+  if (dangerDepts.length > 0) {
+    msgs.push(`⚠️ ${dangerDepts.map(d => d.name).join(', ')} — 긴급 지원이 필요합니다!`);
+  }
+
+  // 미완료 미션
+  const todoCount = state.departments.reduce((s, d) => s + d.missions.filter(m => m.status === 'todo').length, 0);
+  if (todoCount > 0) {
+    msgs.push(`📋 오늘 남은 미션: ${todoCount}건`);
+  }
+
+  document.getElementById('lunaMsg').textContent = msgs.join('\n');
+}
+
+// ========== 월간 보고 ==========
+function monthlyReport() {
+  const avgKpi = state.departments.length > 0
+    ? Math.round(state.departments.reduce((s, d) => s + d.kpi, 0) / state.departments.length)
+    : 0;
+  const totalEmp = state.departments.reduce((s, d) => s + d.employees.length, 0);
+  const grade = COMPANY_GRADES[state.gradeIdx];
+
+  let report = `📊 월간 경영 보고서 (Day ${state.day})\n\n`;
+  report += `🏢 회사: ${grade.icon} ${grade.name} (Lv.${state.level})\n`;
+  report += `📈 평균 KPI: ${avgKpi}%\n`;
+  report += `👥 총 직원: ${totalEmp}명\n`;
+  report += `💰 자금: ${state.money.toLocaleString()}원\n\n`;
+  report += `[부서별 현황]\n`;
+  state.departments.forEach(d => {
+    const status = d.kpi >= 70 ? '🟢' : d.kpi >= 40 ? '🟡' : '🔴';
+    report += `${status} ${d.name}: ${d.kpi}% (직원 ${d.employees.length}명)\n`;
+  });
+
+  alert(report);
+}
+
+// ========== 유틸 ==========
+function addLog(msg) {
+  state.log.push(msg);
+}
+
+function showToast(msg, bad = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (bad ? ' bad' : '');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2500);
+}
+
+function resetGame() {
+  if (!confirm('정말 회사를 리셋하시겠습니까?')) return;
+  state = {
+    money: 50000, exp: 0, level: 1, gradeIdx: 0, day: 1,
+    departments: [], log: ['🏢 회사가 설립되었습니다!'], usedNames: [],
+  };
+  initGame();
+}
+
+// ========== 시작 ==========
+initGame();
+</script>
+
+</body>
+</html>
