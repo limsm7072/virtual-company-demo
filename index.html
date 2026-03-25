@@ -143,31 +143,25 @@
   <button class="bb sec" onclick="openTab('staff')"><div style="font-size:14px">👥</div><div>직원</div></button>
   <button class="bb pri" onclick="nextDay()"><div style="font-size:14px">📅</div><div>다음날</div></button>
   <button class="bb sec" onclick="openTab('shop')"><div style="font-size:14px">🛒</div><div>상점</div></button>
-  <button class="bb sec" onclick="openTab('unlock')"><div style="font-size:14px">🔓</div><div>해금</div></button>
+  <button class="bb sec" onclick="openTab('rnd')"><div style="font-size:14px">🔬</div><div>연구개발</div></button>
 </div>
 </div>
 
 <script>
-// ===== 제작 가능 기능 목록 =====
-const CRAFTS=[
-  // 인턴(0)이 만들 수 있는 것
-  {id:'routine_add',name:'루틴 등록 기능',desc:'루틴을 추가할 수 있게 됩니다',time:10,reward:500,icon:'📋',req:[],minRank:0},
-  {id:'routine_check',name:'루틴 체크 기능',desc:'루틴 달성을 체크할 수 있습니다',time:15,reward:500,icon:'✅',req:['routine_add'],minRank:0},
-  {id:'hire_system',name:'채용 시스템',desc:'새 직원을 채용할 수 있습니다',time:25,reward:1000,icon:'👔',req:['routine_check'],minRank:0},
-  // 사원(1) 이상
-  {id:'kpi_bar',name:'KPI 표시',desc:'성과를 수치로 확인합니다',time:20,reward:800,icon:'📊',req:['routine_check'],minRank:1},
-  {id:'notify',name:'알림 기능',desc:'루틴 알림을 보내줍니다',time:30,reward:1000,icon:'🔔',req:['routine_check'],minRank:1},
-  {id:'new_team',name:'팀 확장',desc:'새 팀을 추가할 수 있습니다',time:40,reward:1500,icon:'🏢',req:['hire_system'],minRank:1},
-  // 대리(2) 이상
-  {id:'auto_prod',name:'자동 생산',desc:'직원이 자동으로 수익을 생산합니다',time:50,reward:2000,icon:'⚡',req:['kpi_bar'],minRank:2},
-  {id:'stats',name:'통계 리포트',desc:'상세 통계를 볼 수 있습니다',time:40,reward:1500,icon:'📈',req:['kpi_bar'],minRank:2},
-  // 과장(3) 이상
-  {id:'biz_tab',name:'사업 수주',desc:'사업을 수주받아 큰 돈을 법니다',time:60,reward:3000,icon:'💼',req:['new_team'],minRank:3},
-  {id:'overlay',name:'오버레이 알림',desc:'화면 위에 캐릭터가 나타나 독촉',time:50,reward:2500,icon:'💬',req:['notify'],minRank:3},
-  // 부장(4) 이상
-  {id:'ai_coach',name:'AI 코칭',desc:'패턴 분석 + 맞춤 루틴 제안',time:80,reward:5000,icon:'🤖',req:['stats','auto_prod'],minRank:4},
-  // 임원(5)
-  {id:'full_auto',name:'풀 자동화',desc:'자율 에이전트, 선제적 실행',time:120,reward:10000,icon:'🚀',req:['ai_coach','overlay'],minRank:5},
+// ===== R&D (기능 해금) =====
+const PATENTS=[
+  {id:'routine_add',name:'루틴 등록 R&D',desc:'루틴을 추가할 수 있게 됩니다',cost:800,icon:'📋',req:[]},
+  {id:'routine_check',name:'루틴 체크 R&D',desc:'루틴 달성을 체크할 수 있습니다',cost:1000,icon:'✅',req:['routine_add']},
+  {id:'hire_system',name:'채용 시스템 R&D',desc:'새 직원을 채용할 수 있습니다',cost:2000,icon:'👔',req:['routine_check']},
+  {id:'kpi_bar',name:'KPI 시스템 R&D',desc:'성과를 수치로 확인합니다',cost:3000,icon:'📊',req:['routine_check']},
+  {id:'notify',name:'알림 기능 R&D',desc:'루틴 알림을 보내줍니다',cost:3000,icon:'🔔',req:['routine_check']},
+  {id:'new_team',name:'팀 확장 R&D',desc:'새 팀을 추가할 수 있습니다',cost:5000,icon:'🏢',req:['hire_system']},
+  {id:'auto_prod',name:'자동 생산 R&D',desc:'루틴 완료 시 보너스 수익',cost:8000,icon:'⚡',req:['kpi_bar']},
+  {id:'stats',name:'통계 리포트 R&D',desc:'상세 통계를 볼 수 있습니다',cost:6000,icon:'📈',req:['kpi_bar']},
+  {id:'biz_tab',name:'사업 수주 R&D',desc:'사업을 수주받아 큰 돈을 법니다',cost:10000,icon:'💼',req:['new_team']},
+  {id:'overlay',name:'오버레이 알림 R&D',desc:'화면 위 캐릭터가 독촉',cost:8000,icon:'💬',req:['notify']},
+  {id:'ai_coach',name:'AI 코칭 R&D',desc:'패턴 분석 + 맞춤 루틴 제안',cost:15000,icon:'🤖',req:['stats','auto_prod']},
+  {id:'full_auto',name:'풀 자동화 R&D',desc:'자율 에이전트, 선제적 실행',cost:30000,icon:'🚀',req:['ai_coach','overlay']},
 ];
 
 const E=[
@@ -366,72 +360,41 @@ function empPos(i){
 
 function gameLoop(ts){
   aT=ts/1000;
-  updateCrafting();
+  updateWorkers();
   drawOffice();
   requestAnimationFrame(gameLoop);
 }
 
-function updateCrafting(){
-  // 제작 완료 체크
-  if(S.crafting){
-    const elapsed=(Date.now()-S.crafting.startTime)/1000;
-    if(elapsed>=S.crafting.duration){
-      const empIdx=S.crafting.empIdx;
-      const emp=S.emps[empIdx];
-      const eg=E[emp.gi];
+function updateWorkers(){
+  if(!S.workers)S.workers=[];
+  const now=Date.now();
 
-      if(S.crafting.craftId==='_repeat'){
-        // 반복 생산 완료 → 돈 + 다시 반복
-        const income=Math.round(50*eg.speed*S.speedBonus);
-        S.money+=income;
-        S.crafting={craftId:'_repeat',empIdx,startTime:Date.now(),duration:8/eg.speed/S.speedBonus};
-        renderAll();
-      } else {
-        // 기능 제작 완료
-        S.unlocked.push(S.crafting.craftId);
-        const craft=CRAFTS.find(c=>c.id===S.crafting.craftId);
-        S.money+=craft.reward;
-        toast(`✅ ${craft.name} 완성! +${craft.reward}원`);
-
-        // 다음에 만들 수 있는 기능이 있으면 자동 이어서
-        const next=CRAFTS.find(c=>!S.unlocked.includes(c.id)&&c.req.every(r=>S.unlocked.includes(r))&&emp.gi>=c.minRank);
-        if(next){
-          S.crafting={craftId:next.id,empIdx,startTime:Date.now(),duration:next.time/eg.speed/S.speedBonus};
-          toast(`➡️ ${next.name} 제작 시작`);
-        } else {
-          // 만들 게 없으면 반복 생산 모드
-          S.crafting={craftId:'_repeat',empIdx,startTime:Date.now(),duration:8/eg.speed/S.speedBonus};
-        }
-        renderAll();
-      }
-    }
-  }
-
-  // 자동 생산 (해금된 경우)
-  if(has('auto_prod')){
-    if(!S._lastAutoProd)S._lastAutoProd=Date.now();
-    const now=Date.now();
-    if(now-S._lastAutoProd>=3000){ // 3초마다
-      let income=0;
-      S.emps.forEach(emp=>{
-        if(emp.state==='idle'){
-          // 대기 중인 직원도 자동으로 소액 생산
-          const eg=E[emp.gi];
-          income+=10*eg.speed;
-        }
-      });
-      // 루틴 완료 보너스: 완료된 루틴 수 × 배율
+  // 서류 작업
+  S.workers.forEach(w=>{
+    const elapsed=(now-w.startTime)/1000;
+    if(elapsed>=w.duration){
       const doneCount=S.missions.filter(m=>m.done).length;
-      const routineBonus=doneCount*50;
-      income+=routineBonus;
+      const routineBonus=has('auto_prod')?doneCount*20:0;
+      const total=w.income+routineBonus;
+      S.money+=total;
+      const eg=E[S.emps[w.empIdx].gi];
+      w.startTime=now;
+      w.duration=10/eg.speed/S.speedBonus;
+      w.income=Math.round(30*eg.speed);
+      document.getElementById('hudMoney').textContent=S.money.toLocaleString()+'원';
+    }
+  });
 
-      income=Math.round(income*S.speedBonus);
-      if(income>0){
-        S.money+=income;
-        S._lastAutoProd=now;
-        // 자동 수익은 조용히 (토스트 안 띄움), 화면만 갱신
-        document.getElementById('hudMoney').textContent=S.money.toLocaleString()+'원';
-      }
+  // 연구개발 완료 체크
+  if(S.research){
+    const elapsed=(now-S.research.startTime)/1000;
+    if(elapsed>=S.research.duration){
+      const p=PATENTS.find(x=>x.id===S.research.patentId);
+      S.unlocked.push(S.research.patentId);
+      S.emps[S.research.empIdx].state='idle';
+      toast(`🎉 ${p.name} 연구 완료!`);
+      S.research=null;
+      renderAll();
     }
   }
 }
@@ -538,12 +501,15 @@ function drawOffice(){
       else{cx.fillStyle='#222';cx.fillRect(p.x-2,hy+2,2,2);cx.fillRect(p.x+1,hy+2,2,2);cx.fillStyle='#fff';cx.fillRect(p.x-2,hy+2,1,1);cx.fillRect(p.x+1,hy+2,1,1);}
       // 타이핑 이펙트
       if(Math.sin(t*6)>0.3){cx.fillStyle='rgba(255,255,100,0.4)';cx.fillRect(p.x-2+Math.round(Math.sin(t*12)*2),p.y+3,1,1);}
-      // 프로그래스 (제작 중이면)
-      if(S.crafting&&S.crafting.empIdx===i){
-        const pct=Math.min(1,(Date.now()-S.crafting.startTime)/1000/S.crafting.duration);
+      // 프로그래스 (서류 작업)
+      const w=(S.workers||[]).find(w=>w.empIdx===i);
+      if(w){
+        const pct=Math.min(1,(Date.now()-w.startTime)/1000/w.duration);
         cx.fillStyle='#1a1a10';cx.fillRect(p.x-8,p.y-15,16,3);
         cx.fillStyle='#66aa44';cx.fillRect(p.x-8,p.y-15,Math.round(16*pct),3);
         cx.fillStyle='#ffe066';cx.fillRect(p.x-8+Math.round(16*pct)-1,p.y-15,1,3);
+        // 게이지 차면 +돈 이펙트
+        if(pct>=0.99){cx.fillStyle='#ffe066';cx.font='4px monospace';cx.textAlign='center';cx.fillText('+'+w.income,p.x,p.y-18);}
       }
     } else {
       // 서있는 상태
@@ -589,61 +555,35 @@ function renderCharLabels(){
     const eg=E[emp.gi];
     // 이름
     html+=`<div style="position:absolute;left:${sx}px;top:${sy+6*PX}px;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:#fff;font-size:10px;padding:1px 6px;white-space:nowrap;font-family:inherit">${emp.name}</div>`;
-    // 말풍선 (대기 중)
+    // 말풍선
     if(emp.state==='idle'){
-      html+=`<div style="position:absolute;left:${sx+12*PX}px;top:${sy-14*PX}px;background:#fffde0;color:#555;font-size:11px;padding:3px 8px;border:2px solid #aa9960;white-space:nowrap;font-family:inherit">할 일이 없어요...<div style="position:absolute;bottom:-6px;left:8px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #aa9960"></div></div>`;
+      html+=`<div style="position:absolute;left:${sx}px;top:${sy-16*PX}px;transform:translateX(-50%);background:#fffde0;color:#555;font-size:10px;padding:3px 8px;border:2px solid #aa9960;white-space:nowrap;font-family:inherit">할 일이 없어요...<div style="position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #aa9960"></div></div>`;
+    } else if(emp.state==='researching'){
+      const rp=S.research;
+      if(rp&&rp.empIdx===i){
+        const pct=Math.min(100,Math.round((Date.now()-rp.startTime)/1000/rp.duration*100));
+        const pat=PATENTS.find(x=>x.id===rp.patentId);
+        html+=`<div style="position:absolute;left:${sx}px;top:${sy-16*PX}px;transform:translateX(-50%);background:#2a2a40;color:#88aaff;font-size:10px;padding:3px 8px;border:2px solid #4466aa;white-space:nowrap;font-family:inherit">🔬 연구 ${pct}%<div style="position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #4466aa"></div></div>`;
+      }
     }
   });
   el.innerHTML=html;
 }
 
-// ===== 직원 클릭 → 일 시키기 =====
+// ===== 직원 클릭 → 서류작업 시작 =====
 function onEmpClick(idx){
   const emp=S.emps[idx];
   if(emp.state==='working'){
-    if(S.crafting&&S.crafting.empIdx===idx){
-      if(S.crafting.craftId==='_repeat'){
-        toast(`${emp.name}: 반복 생산 중`);
-      } else {
-        const craft=CRAFTS.find(c=>c.id===S.crafting.craftId);
-        const pct=Math.min(100,Math.round((Date.now()-S.crafting.startTime)/1000/S.crafting.duration*100));
-        toast(`${craft.name} 제작 중... ${pct}%`);
-      }
-    }
+    toast(`${emp.name}: 서류 작업 중...`);
     return;
   }
-  // 할 수 있는 작업 목록
+  // 바로 일 시작
+  emp.state='working';
   const eg=E[emp.gi];
-  const available=CRAFTS.filter(c=>!S.unlocked.includes(c.id)&&c.req.every(r=>S.unlocked.includes(r)));
-  if(available.length===0){
-    toast('지금 만들 수 있는 기능이 없습니다');return;
-  }
-
-  document.getElementById('shTitle').textContent=`${emp.name}에게 시킬 작업`;
-  const speed=eg.speed;
-  document.getElementById('shBody').innerHTML=available.map(c=>{
-    const canDo=emp.gi>=c.minRank;
-    const rankName=E[c.minRank].rank;
-    const time=Math.round(c.time/speed);
-    return `<div class="btn ${canDo?'':'locked'}" onclick="${canDo?`startCraft('${c.id}',${idx})`:''}">
-      <div class="ic" style="background:#4a4520;border-color:${canDo?'#8a8060':'#4a4520'};font-size:14px">${c.icon}</div>
-      <div class="info"><div class="t" style="color:${canDo?'#ffe066':'#5a5530'}">${c.name}</div><div class="d">${canDo?c.desc:'🔒 '+rankName+' 이상 필요'}</div>${canDo?`<div class="d" style="color:#88aaaa">제작: ${time}초</div>`:''}</div>
-      ${canDo?`<div class="cost" style="color:#66cc44">+${c.reward}원</div>`:''}
-    </div>`;
-  }).join('');
-  document.getElementById('shBg').classList.add('open');
-}
-
-function startCraft(craftId,empIdx){
-  if(S.crafting){toast('이미 제작 중입니다',true);return;}
-  const craft=CRAFTS.find(c=>c.id===craftId);
-  const eg=E[S.emps[empIdx].gi];
-  const duration=craft.time/eg.speed/S.speedBonus;
-
-  S.crafting={craftId,empIdx,startTime:Date.now(),duration};
-  S.emps[empIdx].state='working';
-  closeSheet();
-  toast(`${S.emps[empIdx].name}이(가) ${craft.name} 제작 시작!`);
+  const duration=10/eg.speed/S.speedBonus;
+  S.workers=S.workers||[];
+  S.workers.push({empIdx:idx,startTime:Date.now(),duration,income:Math.round(30*eg.speed)});
+  toast(`${emp.name} 서류 작업 시작!`);
   renderAll();
 }
 
@@ -679,9 +619,9 @@ function openTab(tab){
   } else if(tab==='staff'){
     S.emps.forEach((emp,i)=>{
       const eg=E[emp.gi];
-      const st=emp.state==='working'?'⚙️ 작업 중':'💤 대기 중';
+      const st=emp.state==='working'?'⚙️ 서류 작업 중':emp.state==='researching'?'🔬 연구 중':'💤 대기 중';
       h+=`<div class="btn" onclick="closeSheet();onEmpClick(${i})"><div class="ic" style="background:${eg.bg};border-color:${eg.c};font-size:10px">${emp.state==='working'?'⚙️':'💤'}</div>
-        <div class="info"><div class="t">${emp.name} <span style="color:${eg.c}">${eg.rank}</span></div><div class="d">${st} · ${eg.skill}</div></div></div>`;
+        <div class="info"><div class="t">${emp.name} <span style="color:${eg.c}">${eg.rank}</span></div><div class="d">${st}</div></div></div>`;
     });
     if(has('hire_system')){
       h+=`<div class="btn" onclick="closeSheet();openHire()" style="justify-content:center;border-style:dashed"><div class="info" style="text-align:center"><div class="t" style="color:#8a8060">+ 직원 채용</div></div></div>`;
@@ -705,20 +645,27 @@ function openTab(tab){
     });
     showSheet('🛒 상점',h);
 
-  } else if(tab==='unlock'){
+  } else if(tab==='rnd'){
     const unlockCount=S.unlocked.length;
-    const totalCount=CRAFTS.length;
-    h+=`<div style="font-size:10px;color:#ffe066;margin-bottom:8px">${unlockCount}/${totalCount} 해금</div>`;
-    CRAFTS.forEach(cr=>{
-      const done=S.unlocked.includes(cr.id);
-      const avail=!done&&cr.req.every(r=>S.unlocked.includes(r));
-      const rankOk=S.emps.some(e=>e.gi>=cr.minRank);
-      h+=`<div style="font-size:9px;padding:4px 0;color:${done?'#66cc44':avail&&rankOk?'#ffe066':avail?'#aa6622':'#4a4520'};display:flex;justify-content:space-between">
-        <span>${done?'✅':avail?'🔨':'🔒'} ${cr.name}</span>
-        <span>${done?'완료':avail&&!rankOk?E[cr.minRank].rank+' 필요':''}</span>
-      </div>`;
+    const totalCount=PATENTS.length;
+    h+=`<div style="font-size:10px;color:#ffe066;margin-bottom:8px">연구개발 ${unlockCount}/${totalCount}</div>`;
+    PATENTS.forEach(p=>{
+      const done=S.unlocked.includes(p.id);
+      const avail=!done&&p.req.every(r=>S.unlocked.includes(r));
+      const afford=p.cost<=S.money;
+      if(done){
+        h+=`<div class="btn locked"><div class="ic" style="background:#2a3a2a;border-color:#44aa44;font-size:12px">${p.icon}</div><div class="info"><div class="t" style="color:#44aa44">${p.name}</div><div class="d">개발 완료</div></div></div>`;
+      } else if(avail){
+        h+=`<div class="btn ${afford?'':'locked'}" onclick="${afford?`buyPatent('${p.id}')`:''}"}>
+          <div class="ic" style="background:#4a4520;border-color:#ffe066;font-size:12px">${p.icon}</div>
+          <div class="info"><div class="t" style="color:#ffe066">${p.name}</div><div class="d">${p.desc}</div></div>
+          <div class="cost" style="color:${afford?'#66cc44':'#ff6666'}">${p.cost.toLocaleString()}원</div>
+        </div>`;
+      } else {
+        h+=`<div class="btn locked"><div class="ic" style="background:#2a2510;border-color:#4a4520;font-size:12px">${p.icon}</div><div class="info"><div class="t" style="color:#4a4520">${p.name}</div><div class="d">🔒 선행 연구 필요</div></div></div>`;
+      }
     });
-    showSheet('🔓 해금 현황',h);
+    showSheet('🔬 연구개발',h);
   }
 }
 
@@ -778,6 +725,30 @@ function hireEmp(gi){
   S.emps.push(mkEmp(gi));
   closeSheet();renderAll();
   toast(`${S.emps.at(-1).name} ${E[gi].rank} 채용!`);
+}
+
+// ===== 연구개발 =====
+function buyPatent(id){
+  const p=PATENTS.find(x=>x.id===id);
+  if(!p||p.cost>S.money)return;
+  // 대기 중인 직원 필요
+  const idleIdx=S.emps.findIndex(e=>e.state==='idle');
+  if(idleIdx===-1){
+    toast('연구에 투입할 대기 직원이 없습니다!',true);return;
+  }
+  S.money-=p.cost;
+  // 직원을 서류작업에서 빼고 연구에 투입
+  const w=S.workers||[];
+  const wIdx=w.findIndex(x=>x.empIdx===idleIdx);
+  if(wIdx>=0)w.splice(wIdx,1);
+
+  S.emps[idleIdx].state='researching';
+  const eg=E[S.emps[idleIdx].gi];
+  const duration=p.cost/100/eg.speed; // 비쌀수록 오래 걸림
+  S.research={patentId:id,empIdx:idleIdx,startTime:Date.now(),duration};
+  closeSheet();
+  toast(`🔬 ${S.emps[idleIdx].name} → ${p.name} 연구 시작! (${Math.round(duration)}초)`);
+  renderAll();
 }
 
 // ===== 상점 =====
