@@ -252,14 +252,55 @@ function showIntroStep(){
     ex.innerHTML=`<input class="npc-input" id="nameInput" placeholder="회사 이름" maxlength="10"><br><button class="npc-confirm" onclick="introSetName()">▸ 다음</button>`;
     setTimeout(()=>{const i=document.getElementById('nameInput');if(i)i.focus();},300);
   } else if(introStep===STORIES.length+1){
-    // 투자
-    av.textContent='💰';nm.textContent='';
-    S.money=8000;
-    tx.textContent=`${S.companyName}\n\n시드 투자금 8,000원이\n입금되었습니다.\n\n사무실을 임대하세요.`;
+    // 사업계획서 안내
+    av.textContent='📋';nm.textContent='';
+    tx.textContent=`${S.companyName}\n\n좋은 이름이네요.\n\n투자를 받으려면\n사업계획서가 필요합니다.\n\n몇 가지만 고르면 됩니다.`;
     tp.style.display='block';tp.textContent='탭하여 계속 ▸';
     dg.onclick=()=>{introStep++;showIntroStep();};
     ex.innerHTML='';
   } else if(introStep===STORIES.length+2){
+    // 관심 분야 선택
+    av.textContent='📋';nm.textContent='사업계획서';
+    tx.textContent='가장 관심 있는 분야는\n무엇인가요?';
+    tp.style.display='none';dg.onclick=null;
+    const labels={exercise:'운동',sleep:'수면',study:'학습',health:'건강',finance:'돈 관리',mental:'마음 관리'};
+    const descs={exercise:'체력, 다이어트, 근력 등',sleep:'수면 패턴, 숙면, 기상 등',study:'공부, 독서, 자격증 등',health:'식단, 영양, 체중 등',finance:'절약, 저축, 가계부 등',mental:'명상, 일기, 휴식 등'};
+    const opts=DEPT_TEMPLATES.map(t=>`<div class="hr" onclick="introBpPick('${t.id}')">
+      <div class="hr-ic" style="background:#4a4520;border-color:#8a8060;font-size:16px">${t.icon}</div>
+      <div class="hr-info"><div class="t" style="color:#ffe066">${labels[t.id]}</div><div class="d">${descs[t.id]}</div></div>
+    </div>`).join('');
+    ex.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
+  } else if(introStep===STORIES.length+3){
+    // 현재 상태 질문
+    av.textContent=S._bpIcon||'📋';nm.textContent='사업계획서';
+    const qs={exercise:'요즘 운동을 하고 있나요?',sleep:'요즘 보통 몇 시에 자나요?',study:'요즘 따로 공부하고 있나요?',health:'요즘 건강 관리를 하고 있나요?',finance:'요즘 돈 관리를 하고 있나요?',mental:'요즘 마음 관리를 하고 있나요?'};
+    const os={
+      exercise:['전혀 안 함','가끔 걷는 정도','주 1~2회','주 3회 이상'],
+      sleep:['23시쯤','24시쯤','새벽 1시쯤','새벽 2시쯤','새벽 3시쯤','새벽 4시 이후'],
+      study:['전혀 안 함','가끔 생각날 때','하루 30분 미만','하루 30분 이상'],
+      health:['전혀 신경 안 씀','물 정도만','영양제는 챙김','식단까지 관리'],
+      finance:['쓰는 대로 삶','대충 감으로','가계부 가끔','꼼꼼히 관리'],
+      mental:['전혀 안 함','가끔 산책 정도','명상이나 일기 가끔','꾸준히 하는 중'],
+    };
+    tx.textContent=qs[S._bpField];
+    tp.style.display='none';dg.onclick=null;
+    ex.innerHTML=`<div style="margin-top:8px">${os[S._bpField].map(o=>`<div class="hr" onclick="introBpState('${o}')"><div class="hr-info"><div class="t" style="color:#ffe066">${o}</div></div></div>`).join('')}</div>`;
+  } else if(introStep===STORIES.length+4){
+    // 반응 + 계획서 완성
+    av.textContent='📄';nm.textContent='';
+    tx.textContent=`사업계획서 작성 완료!\n\n▸ 분야: ${S._bpLabel}\n▸ 현재: ${S._bpCurrent}\n\n투자 심사를 진행합니다...`;
+    tp.style.display='none';dg.onclick=null;
+    ex.innerHTML='';
+    setTimeout(()=>{introStep++;showIntroStep();},2000);
+  } else if(introStep===STORIES.length+5){
+    // 투자 결과
+    av.textContent='💰';nm.textContent='';
+    S.money=8000;
+    tx.textContent=`심사 결과: 승인!\n\n시드 투자금: 8,000원\n\n이 자금으로 사무실을 임대하고\n직원을 채용하세요.`;
+    tp.style.display='block';tp.textContent='탭하여 계속 ▸';
+    dg.onclick=()=>{introStep++;showIntroStep();};
+    ex.innerHTML='';
+  } else if(introStep===STORIES.length+6){
     // 사무실
     av.textContent='🏠';nm.textContent='';
     tx.textContent='사무실을 선택하세요.';
@@ -273,7 +314,7 @@ function showIntroStep(){
       </div>
       <div class="hr locked"><div class="hr-ic" style="background:#4a4520;border-color:#5a5530;font-size:16px">🏢</div><div class="hr-info"><div class="t" style="color:#5a5530">공유 오피스</div><div class="d">🔒 자금 부족</div></div><div class="hr-cost" style="color:#ff6666">15,000원</div></div>
     </div><div style="font-size:9px;color:#8a8060;margin-top:6px">보유: <span style="color:#66cc44">${S.money.toLocaleString()}원</span></div>`;
-  } else if(introStep===STORIES.length+3){
+  } else if(introStep===STORIES.length+7){
     // 첫 직원 채용
     av.textContent='👔';nm.textContent='';
     tx.textContent='사무실이 생겼습니다!\n\n이제 첫 직원을 채용하세요.\n직원이 있어야 일이 시작됩니다.';
@@ -286,7 +327,7 @@ function showIntroStep(){
         <div class="hr-cost">${E[0].cost.toLocaleString()}원</div>
       </div>
     </div><div style="font-size:9px;color:#8a8060;margin-top:6px">보유: <span style="color:#66cc44">${S.money.toLocaleString()}원</span></div>`;
-  } else if(introStep===STORIES.length+4){
+  } else if(introStep===STORIES.length+8){
     // 완료
     av.textContent='🎉';nm.textContent='';
     tx.textContent=`${S.companyName} 개업 준비 완료!\n\n${S.emps[0].name} ${E[S.emps[0].gi].rank}이\n대기하고 있습니다.\n\n클릭해서 일을 시키세요!`;
@@ -306,14 +347,27 @@ function introSetName(){
   if(!v)return;
   S.companyName=v;introStep++;showIntroStep();
 }
+function introBpPick(field){
+  S._bpField=field;
+  const t=DEPT_TEMPLATES.find(x=>x.id===field);
+  S._bpIcon=t?t.icon:'📋';
+  const labels={exercise:'운동',sleep:'수면',study:'학습',health:'건강',finance:'돈 관리',mental:'마음 관리'};
+  S._bpLabel=labels[field];
+  introStep++;showIntroStep();
+}
+function introBpState(choice){
+  S._bpCurrent=choice;
+  introStep++;showIntroStep();
+}
 function introRentOffice(){
-  S.money-=5000;introStep++;showIntroStep();
+  S.money-=5000;
+  introStep=STORIES.length+7;showIntroStep();
 }
 function introHire(gi){
   if(E[gi].cost>S.money)return;
   S.money-=E[gi].cost;
   S.emps.push(mkEmp(gi));
-  introStep++;showIntroStep();
+  introStep=STORIES.length+8;showIntroStep();
 }
 
 // ===== 캔버스 =====
