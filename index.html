@@ -2,99 +2,209 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>수호컴퍼니</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+  @font-face { font-family:'Dot'; src:url('https://fonts.gstatic.com/s/dotgothic16/v17/v6-QGYjBJFKgyw5nSoDAGE7L435YPFrT.woff2') format('woff2'); }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  body{font-family:'DotGothic16','Malgun Gothic',monospace;background:#0a0a1a;color:#eee;overflow-x:hidden;max-width:100vw}
+  body{
+    font-family:'Dot','DotGothic16','Malgun Gothic',monospace;background:#2a2a1a;color:#f0e8d0;
+    overflow-x:hidden;max-width:480px;margin:0 auto;
+    border-left:2px solid #4a4a2a;border-right:2px solid #4a4a2a;
+    min-height:100vh;image-rendering:pixelated;
+  }
 
-  .hud{position:sticky;top:0;z-index:50;background:#0c0c20;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #333366}
-  .hud-left{display:flex;flex-direction:column;gap:2px}
-  .hud-day{font-size:0.65em;color:#8888aa}
-  .hud-grade{font-size:1em;color:#ffcc00;text-shadow:0 0 6px rgba(255,204,0,0.5)}
-  .exp-bar{width:120px;height:6px;background:#1a1a30;border:1px solid #333366;margin-top:2px}
-  .exp-fill{height:100%;background:#44aaff;transition:width 0.5s}
-  .hud-right{display:flex;gap:14px}
-  .hud-stat{text-align:center}
-  .hud-stat .val{font-size:0.9em}
-  .hud-stat .lbl{font-size:0.55em;color:#6666aa}
+  /* ===== 레트로 HUD ===== */
+  .hud{
+    background:#3a3520;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;
+    border-bottom:3px solid #5a5530;position:sticky;top:0;z-index:50;
+  }
+  .hud-left{display:flex;flex-direction:column;gap:1px}
+  .hud-day{font-size:9px;color:#a09870}
+  .hud-grade{font-size:13px;color:#ffe066;text-shadow:1px 1px 0 #806000}
+  .exp-wrap{display:flex;align-items:center;gap:4px;margin-top:2px}
+  .exp-lbl{font-size:8px;color:#a09870}
+  .exp-bar{width:80px;height:8px;background:#1a1a10;border:2px solid #5a5530;image-rendering:pixelated}
+  .exp-fill{height:100%;background:#66cc44;transition:width 0.5s}
+  .hud-right{display:flex;gap:8px}
+  .hud-stat{text-align:center;background:#2a2510;padding:4px 8px;border:2px solid #5a5530}
+  .hud-stat .val{font-size:11px;font-weight:bold}
+  .hud-stat .lbl{font-size:7px;color:#8a8060}
 
-  .office-view{position:relative;width:100%;height:300px;overflow:hidden;background:#1a1a30;border-bottom:2px solid #333366}
-  .office-canvas{width:100%;height:100%;display:block}
+  /* ===== 오피스 캔버스 ===== */
+  .office-wrap{position:relative;width:100%;height:240px;background:#1a1a10;border-bottom:3px solid #5a5530;overflow:hidden}
+  .office-canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
 
-  .luna-box{position:absolute;top:8px;right:8px;z-index:20;background:rgba(20,10,40,0.92);border:2px solid #9933cc;padding:8px 10px;max-width:170px;box-shadow:2px 2px 0 #000}
-  .luna-box .lh{display:flex;align-items:center;gap:6px;margin-bottom:4px}
-  .luna-box .ld{width:18px;height:18px;background:linear-gradient(135deg,#9933cc,#cc66ff);border:2px solid #6600aa;display:flex;align-items:center;justify-content:center;font-size:10px}
-  .luna-box .ln{font-size:0.65em;color:#cc88ff}
-  .luna-box .lm{font-size:0.6em;color:#bb99dd;line-height:1.4}
+  /* 루나 */
+  .luna{
+    position:absolute;top:6px;right:6px;z-index:20;
+    background:#3a2a20;border:2px solid #cc8844;padding:6px 8px;max-width:160px;
+    box-shadow:2px 2px 0 rgba(0,0,0,0.5);
+  }
+  .luna .lh{display:flex;align-items:center;gap:4px;margin-bottom:3px}
+  .luna .la{width:14px;height:14px;background:#cc8844;border:1px solid #aa6622;display:flex;align-items:center;justify-content:center;font-size:8px}
+  .luna .ln{font-size:8px;color:#ffaa44}
+  .luna .lm{font-size:8px;color:#ddb888;line-height:1.3}
 
-  .tab-nav{display:flex;background:#0e0e22;border-bottom:2px solid #333366}
-  .tab-btn{flex:1;padding:10px 0;font-size:0.75em;color:#555588;background:none;border:none;cursor:pointer;font-family:inherit}
-  .tab-btn.active{color:#ffcc00;background:#16162e}
+  /* ===== 탭 (레트로 버튼) ===== */
+  .tabs{
+    display:flex;background:#3a3520;border-bottom:3px solid #5a5530;
+  }
+  .tab{
+    flex:1;padding:8px 0;font-size:10px;color:#8a8060;background:#2a2510;
+    border:none;border-right:2px solid #5a5530;cursor:pointer;font-family:inherit;
+    text-align:center;transition:all 0.1s;
+  }
+  .tab:last-child{border-right:none}
+  .tab.active{background:#4a4520;color:#ffe066;box-shadow:inset 0 -3px 0 #ffe066}
+  .tab:active{background:#5a5530}
 
-  .content{padding:12px;padding-bottom:70px}
+  /* ===== 컨텐츠 ===== */
+  .content{padding:8px;padding-bottom:60px}
 
-  .card{background:#14142a;border:2px solid #2a2a4a;margin-bottom:10px;padding:12px;box-shadow:2px 2px 0 #000}
-  .card.danger{border-color:#cc3333}
-  .card.good{border-color:#33aa33}
-  .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .card-title{font-size:0.85em}
-  .kpi-badge{padding:2px 8px;font-size:0.75em;font-weight:bold;border:2px solid}
-  .kpi-badge.high{color:#33ff33;border-color:#33aa33;background:#0a2a0a}
-  .kpi-badge.mid{color:#ffaa00;border-color:#aa7700;background:#2a1a0a}
-  .kpi-badge.low{color:#ff3333;border-color:#aa2222;background:#2a0a0a}
-  .bar{height:4px;background:#0a0a1a;border:1px solid #2a2a4a;margin-bottom:10px}
-  .bar-fill{height:100%;transition:width 0.5s}
-  .bar-fill.high{background:#33aa33}
-  .bar-fill.mid{background:#aa7700}
-  .bar-fill.low{background:#aa2222}
+  /* 레트로 카드 */
+  .rc{
+    background:#3a3520;border:2px solid #5a5530;margin-bottom:8px;
+    box-shadow:2px 2px 0 rgba(0,0,0,0.4);
+  }
+  .rc-head{
+    background:#4a4520;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;
+    border-bottom:2px solid #5a5530;
+  }
+  .rc-title{font-size:11px;color:#f0e8d0}
+  .rc-badge{
+    font-size:9px;padding:2px 6px;border:2px solid;font-weight:bold;
+  }
+  .rc-badge.high{color:#44ff44;border-color:#22aa22;background:#1a3a1a}
+  .rc-badge.mid{color:#ffcc00;border-color:#aa8800;background:#3a2a1a}
+  .rc-badge.low{color:#ff4444;border-color:#aa2222;background:#3a1a1a}
+  .rc-body{padding:6px 8px}
 
-  .m-item{display:flex;align-items:center;gap:8px;padding:8px;background:#0e0e20;border:1px solid #2a2a3a;margin-bottom:4px;cursor:pointer;transition:all 0.15s}
-  .m-item:active{background:#1a1a30;transform:scale(0.97)}
-  .m-check{width:16px;height:16px;border:2px solid #444466;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
-  .m-item.done .m-check{background:#228822;border-color:#33aa33;color:#fff}
-  .m-item.fail .m-check{background:#882222;border-color:#aa3333;color:#fff}
-  .m-item .m-text{font-size:0.75em;flex:1}
-  .m-item.done .m-text{color:#555;text-decoration:line-through}
+  /* KPI 바 (레트로) */
+  .kbar{height:8px;background:#1a1a10;border:2px solid #5a5530;margin-bottom:8px}
+  .kbar-fill{height:100%;transition:width 0.5s}
+  .kbar-fill.high{background:#44aa22}
+  .kbar-fill.mid{background:#ccaa00}
+  .kbar-fill.low{background:#aa2222}
 
-  .emp-row{display:flex;align-items:center;gap:8px;padding:8px;background:#0e0e20;border:1px solid #2a2a3a;margin-bottom:4px}
-  .emp-dot{width:24px;height:24px;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:11px}
-  .emp-row .info{flex:1}
-  .emp-row .info .n{font-size:0.75em}
-  .emp-row .info .r{font-size:0.6em}
+  /* 미션 아이템 (레트로 리스트) */
+  .mi{
+    display:flex;align-items:center;gap:6px;padding:6px;margin-bottom:3px;
+    background:#2a2510;border:1px solid #4a4520;cursor:pointer;
+  }
+  .mi:active{background:#4a4520;transform:scale(0.98)}
+  .mi-ck{
+    width:14px;height:14px;border:2px solid #5a5530;background:#1a1a10;
+    display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;
+  }
+  .mi.done .mi-ck{background:#22aa22;border-color:#44cc44;color:#fff}
+  .mi.fail .mi-ck{background:#aa2222;border-color:#cc4444;color:#fff}
+  .mi-txt{font-size:10px;flex:1}
+  .mi.done .mi-txt{color:#6a6a4a;text-decoration:line-through}
 
-  .add-card{border:2px dashed #333366;padding:20px;text-align:center;color:#444466;font-size:0.8em;cursor:pointer;margin-bottom:10px}
-  .add-card:active{border-color:#ffcc00;color:#ffcc00}
+  /* 직원 행 */
+  .er{
+    display:flex;align-items:center;gap:6px;padding:6px;margin-bottom:3px;
+    background:#2a2510;border:1px solid #4a4520;
+  }
+  .er-face{
+    width:20px;height:20px;border:2px solid;display:flex;align-items:center;
+    justify-content:center;font-size:10px;image-rendering:pixelated;
+  }
+  .er-info{flex:1}
+  .er-info .n{font-size:10px}
+  .er-info .r{font-size:8px}
+  .er-mood{font-size:12px}
 
-  .sheet-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:100}
-  .sheet-bg.open{display:block}
-  .sheet{position:fixed;bottom:0;left:0;width:100%;max-height:65vh;overflow-y:auto;background:#12122a;border:2px solid #333366;border-bottom:none;padding:16px 12px;z-index:101;transform:translateY(100%);transition:transform 0.3s}
-  .sheet-bg.open .sheet{transform:translateY(0)}
-  .sheet h3{font-size:0.85em;margin-bottom:12px;color:#ffcc00}
+  /* 부서추가 */
+  .add-c{
+    border:2px dashed #5a5530;padding:16px;text-align:center;color:#5a5530;
+    font-size:10px;cursor:pointer;margin-bottom:8px;
+  }
+  .add-c:active{border-color:#ffe066;color:#ffe066}
 
-  .hire-row{display:flex;align-items:center;gap:10px;padding:10px 8px;background:#0e0e20;border:1px solid #2a2a3a;margin-bottom:6px;cursor:pointer}
-  .hire-row:active{background:#1a1a30}
-  .hire-row.locked{opacity:0.3;pointer-events:none}
-  .hire-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid}
-  .hire-info{flex:1}
-  .hire-info .t{font-size:0.75em;font-weight:bold}
-  .hire-info .d{font-size:0.6em;color:#6666aa}
-  .hire-cost{font-size:0.7em;color:#33ff33}
+  /* ===== 리포트 (레트로 감성) ===== */
+  .rpt-header{text-align:center;padding:12px 0;border-bottom:2px dashed #5a5530;margin-bottom:8px}
+  .rpt-header .icon{font-size:24px}
+  .rpt-header .grade{font-size:14px;color:#ffe066;margin-top:4px;text-shadow:1px 1px 0 #806000}
+  .rpt-header .sub{font-size:8px;color:#8a8060}
 
-  .bottom-bar{position:fixed;bottom:0;left:0;width:100%;z-index:50;background:#0c0c20;border-top:2px solid #333366;padding:8px 12px;padding-bottom:max(8px,env(safe-area-inset-bottom));display:flex;gap:6px}
-  .bot-btn{flex:1;padding:10px 0;border:2px solid;font-family:inherit;font-size:0.7em;cursor:pointer;transition:all 0.15s}
-  .bot-btn:active{transform:scale(0.95)}
-  .bot-btn.primary{background:#1a3a6a;border-color:#4488cc;color:#88ccff}
-  .bot-btn.secondary{background:#1a1a30;border-color:#333366;color:#8888aa}
+  .rpt-stats{display:flex;gap:4px;margin-bottom:8px}
+  .rpt-stat{
+    flex:1;text-align:center;padding:8px 4px;
+    background:#2a2510;border:2px solid #5a5530;
+  }
+  .rpt-stat .v{font-size:16px;font-weight:bold}
+  .rpt-stat .l{font-size:7px;color:#8a8060;margin-top:2px}
 
-  .toast{position:fixed;top:50px;left:50%;transform:translateX(-50%);z-index:200;background:#0a2a0a;border:2px solid #33aa33;color:#33ff33;padding:8px 16px;font-size:0.7em;display:none;box-shadow:2px 2px 0 #000}
-  .toast.bad{background:#2a0a0a;border-color:#aa3333;color:#ff4444}
+  .rpt-dept{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:5px 6px;border-bottom:1px solid #3a3520;font-size:10px;
+  }
+  .rpt-dept:last-child{border-bottom:none}
+  .rpt-bar-mini{width:60px;height:6px;background:#1a1a10;border:1px solid #4a4520}
+  .rpt-bar-fill{height:100%}
 
-  .rpt-row{display:flex;gap:6px;margin-bottom:8px}
-  .rpt-box{text-align:center;padding:8px;background:#0e0e20;border:1px solid #2a2a3a}
-  .rpt-box .big{font-size:1.3em;font-weight:bold}
-  .rpt-box .sm{font-size:0.6em;color:#6666aa}
+  .rpt-next{
+    margin-top:8px;padding:8px;text-align:center;
+    background:#2a2510;border:2px solid #5a5530;font-size:9px;color:#a09870;
+  }
+  .rpt-next .target{color:#ffe066;font-size:11px}
+
+  /* 스탯 변화 표시 */
+  .rpt-change{font-size:8px;margin-top:2px}
+  .rpt-change.up{color:#44ff44}
+  .rpt-change.down{color:#ff4444}
+
+  /* ===== 채용 시트 ===== */
+  .sh-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:100}
+  .sh-bg.open{display:block}
+  .sh{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);
+    width:100%;max-width:480px;max-height:60vh;overflow-y:auto;
+    background:#3a3520;border:2px solid #5a5530;border-bottom:none;
+    padding:12px 8px;z-index:101;transition:transform 0.3s;
+  }
+  .sh-bg.open .sh{transform:translateX(-50%) translateY(0)}
+  .sh h3{font-size:11px;color:#ffe066;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #5a5530}
+
+  .hr{
+    display:flex;align-items:center;gap:8px;padding:8px 6px;
+    background:#2a2510;border:2px solid #4a4520;margin-bottom:4px;cursor:pointer;
+  }
+  .hr:active{background:#4a4520;border-color:#ffe066}
+  .hr.locked{opacity:0.3;pointer-events:none}
+  .hr-ic{width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid}
+  .hr-info{flex:1}
+  .hr-info .t{font-size:10px;font-weight:bold}
+  .hr-info .d{font-size:8px;color:#8a8060}
+  .hr-cost{font-size:9px;color:#66cc44;font-weight:bold}
+
+  /* ===== 하단바 ===== */
+  .bbar{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+    width:100%;max-width:480px;z-index:50;
+    background:#3a3520;border-top:3px solid #5a5530;
+    padding:6px 8px;padding-bottom:max(6px,env(safe-area-inset-bottom));
+    display:flex;gap:4px;
+  }
+  .bb{
+    flex:1;padding:8px 0;border:2px solid;font-family:inherit;
+    font-size:9px;cursor:pointer;text-align:center;
+    box-shadow:2px 2px 0 rgba(0,0,0,0.3);transition:all 0.1s;
+  }
+  .bb:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,0.3)}
+  .bb.pri{background:#4a6a2a;border-color:#66aa44;color:#ccff88}
+  .bb.sec{background:#2a2510;border-color:#5a5530;color:#a09870}
+
+  /* 토스트 */
+  .toast{
+    position:fixed;top:44px;left:50%;transform:translateX(-50%);z-index:200;
+    background:#3a3520;border:2px solid #66cc44;color:#ccff88;
+    padding:6px 14px;font-size:9px;display:none;
+    box-shadow:2px 2px 0 rgba(0,0,0,0.5);font-family:inherit;
+  }
+  .toast.bad{border-color:#cc4444;color:#ff8888}
 </style>
 </head>
 <body>
@@ -103,380 +213,267 @@
   <div class="hud-left">
     <div class="hud-day" id="hudDay">DAY 001</div>
     <div class="hud-grade" id="hudGrade">🏠 개인사무실</div>
-    <div class="exp-bar"><div class="exp-fill" id="expBar" style="width:0%"></div></div>
+    <div class="exp-wrap">
+      <span class="exp-lbl">EXP</span>
+      <div class="exp-bar"><div class="exp-fill" id="expBar" style="width:0%"></div></div>
+    </div>
   </div>
   <div class="hud-right">
-    <div class="hud-stat"><div class="val" id="hudKpi" style="color:#ffaa00">0%</div><div class="lbl">KPI</div></div>
+    <div class="hud-stat"><div class="val" id="hudKpi" style="color:#ffcc00">0%</div><div class="lbl">KPI</div></div>
     <div class="hud-stat"><div class="val" id="hudEmp">2</div><div class="lbl">직원</div></div>
-    <div class="hud-stat"><div class="val" id="hudMoney" style="color:#33ff33">50K</div><div class="lbl">자금</div></div>
+    <div class="hud-stat"><div class="val" id="hudMoney" style="color:#66cc44">50K</div><div class="lbl">자금</div></div>
   </div>
 </div>
 
-<div class="office-view" id="officeView">
-  <canvas class="office-canvas" id="officeCanvas"></canvas>
-  <div class="luna-box">
-    <div class="lh"><div class="ld">☽</div><div class="ln">루나 비서실장</div></div>
+<div class="office-wrap" id="officeWrap">
+  <canvas class="office-canvas" id="canvas"></canvas>
+  <div class="luna">
+    <div class="lh"><div class="la">☽</div><div class="ln">루나 비서실장</div></div>
     <div class="lm" id="lunaMsg">CEO님, 좋은 아침! 미션을 완료해주세요.</div>
   </div>
 </div>
 
-<div class="tab-nav">
-  <button class="tab-btn active" onclick="switchTab('missions')">▸ 미션</button>
-  <button class="tab-btn" onclick="switchTab('employees')">▸ 직원</button>
-  <button class="tab-btn" onclick="switchTab('report')">▸ 리포트</button>
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('missions')">📋 미션</button>
+  <button class="tab" onclick="switchTab('employees')">👥 직원</button>
+  <button class="tab" onclick="switchTab('report')">📊 리포트</button>
 </div>
 
 <div class="content" id="content"></div>
 
-<div class="sheet-bg" id="sheetBg" onclick="closeSheet()">
-  <div class="sheet" onclick="event.stopPropagation()">
-    <h3>▸ <span id="sheetTitle">직원 채용</span></h3>
-    <div id="sheetBody"></div>
+<div class="sh-bg" id="shBg" onclick="closeSheet()">
+  <div class="sh" onclick="event.stopPropagation()">
+    <h3>▸ <span id="shTitle">직원 채용</span></h3>
+    <div id="shBody"></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<div class="bottom-bar">
-  <button class="bot-btn secondary" onclick="newDay()">▸ 다음 날</button>
-  <button class="bot-btn primary" onclick="openSheetAll()">▸ 채용</button>
-  <button class="bot-btn secondary" onclick="resetGame()">▸ 리셋</button>
+<div class="bbar">
+  <button class="bb sec" onclick="newDay()">📅 다음 날</button>
+  <button class="bb pri" onclick="openSheetAll()">👔 채용</button>
+  <button class="bb sec" onclick="resetGame()">↻ 리셋</button>
 </div>
 
 <script>
-const GRADES=[
-  {name:'개인사무실',icon:'🏠',minKpi:0,maxDept:2,exp:100,wins:1,desks:2,plants:1,wall:'#d4c8a8',wallLine:'#c8bc98',trim:'#8B7355',floor1:'#B8864E',floor2:'#A67842',floorHi:'#C4925A'},
-  {name:'스타트업',icon:'🏢',minKpi:40,maxDept:3,exp:300,wins:2,desks:3,plants:1,wall:'#c8d4d8',wallLine:'#b8c8cc',trim:'#6688aa',floor1:'#a0a0a0',floor2:'#909090',floorHi:'#b0b0b0'},
-  {name:'중소기업',icon:'🏗️',minKpi:55,maxDept:4,exp:600,wins:2,desks:4,plants:2,wall:'#d0d0d8',wallLine:'#c0c0cc',trim:'#7777aa',floor1:'#B8864E',floor2:'#A67842',floorHi:'#C4925A'},
-  {name:'중견기업',icon:'🏛️',minKpi:65,maxDept:5,exp:1000,wins:3,desks:5,plants:2,wall:'#e0dcd4',wallLine:'#d4d0c4',trim:'#aa9966',floor1:'#c49a6c',floor2:'#b08850',floorHi:'#d4a878'},
-  {name:'대기업',icon:'🏙️',minKpi:75,maxDept:6,exp:2000,wins:3,desks:6,plants:3,wall:'#e8e4dc',wallLine:'#dcd8cc',trim:'#bbaa88',floor1:'#8a8a8a',floor2:'#777',floorHi:'#999'},
-  {name:'글로벌기업',icon:'🌍',minKpi:85,maxDept:6,exp:9999,wins:4,desks:8,plants:3,wall:'#f0ece4',wallLine:'#e4e0d4',trim:'#ccbb99',floor1:'#2a2a2a',floor2:'#222',floorHi:'#333'},
+const G=[
+  {name:'개인사무실',icon:'🏠',minKpi:0,maxDept:2,exp:100,wins:1,desks:2,plants:1,
+   wall:'#d4c8a8',wl:'#c8bc98',trim:'#8B7355',f1:'#B8864E',f2:'#A67842',fh:'#C4925A'},
+  {name:'스타트업',icon:'🏢',minKpi:40,maxDept:3,exp:300,wins:2,desks:3,plants:1,
+   wall:'#ccd4d8',wl:'#bcc8cc',trim:'#6688aa',f1:'#a8a098',f2:'#989088',fh:'#b8b0a8'},
+  {name:'중소기업',icon:'🏗️',minKpi:55,maxDept:4,exp:600,wins:2,desks:4,plants:2,
+   wall:'#d8d4cc',wl:'#ccc8c0',trim:'#887744',f1:'#B8864E',f2:'#A67842',fh:'#C4925A'},
+  {name:'중견기업',icon:'🏛️',minKpi:65,maxDept:5,exp:1000,wins:3,desks:5,plants:2,
+   wall:'#e0dcd4',wl:'#d4d0c4',trim:'#aa9966',f1:'#c49a6c',f2:'#b08850',fh:'#d4a878'},
+  {name:'대기업',icon:'🏙️',minKpi:75,maxDept:6,exp:2000,wins:3,desks:6,plants:3,
+   wall:'#e8e4dc',wl:'#dcd8cc',trim:'#bbaa88',f1:'#889898',f2:'#788888',fh:'#99a8a8'},
+  {name:'글로벌기업',icon:'🌍',minKpi:85,maxDept:6,exp:9999,wins:4,desks:8,plants:3,
+   wall:'#f0ece4',wl:'#e4e0d4',trim:'#ccbb99',f1:'#3a3a3a',f2:'#2a2a2a',fh:'#4a4a4a'},
 ];
-const EG=[
-  {rank:'인턴',c:'#78909c',bg:'#455a64',cost:0,bonus:0},
-  {rank:'사원',c:'#44aaff',bg:'#0277bd',cost:0,bonus:5},
-  {rank:'대리',c:'#44cc44',bg:'#2e7d32',cost:3900,bonus:10},
-  {rank:'과장',c:'#ffaa00',bg:'#e65100',cost:6900,bonus:15},
-  {rank:'부장',c:'#cc66ff',bg:'#6a1b9a',cost:9900,bonus:20},
-  {rank:'임원',c:'#ff4444',bg:'#b71c1c',cost:14900,bonus:30},
+const E=[
+  {rank:'인턴',c:'#88aaaa',bg:'#556666',cost:0,bonus:0},
+  {rank:'사원',c:'#66aaee',bg:'#336699',cost:0,bonus:5},
+  {rank:'대리',c:'#66cc66',bg:'#338833',cost:3900,bonus:10},
+  {rank:'과장',c:'#eeaa44',bg:'#aa6600',cost:6900,bonus:15},
+  {rank:'부장',c:'#cc88ee',bg:'#774499',cost:9900,bonus:20},
+  {rank:'임원',c:'#ee6666',bg:'#993333',cost:14900,bonus:30},
 ];
-const DEPTS=[
-  {id:'exercise',name:'운동부',icon:'💪',missions:['러닝 30분','스트레칭','근력운동']},
-  {id:'sleep',name:'수면부',icon:'😴',missions:['23시 취침','7시간 수면','아침 햇빛']},
-  {id:'study',name:'학습부',icon:'📚',missions:['독서 30분','강의 수강','노트 정리']},
-  {id:'health',name:'건강부',icon:'🥗',missions:['물 8잔','영양제','건강 식사']},
-  {id:'finance',name:'재정부',icon:'💰',missions:['가계부','절약 실천','저축']},
-  {id:'mental',name:'멘탈부',icon:'🧘',missions:['명상 10분','감사일기','디톡스']},
+const D=[
+  {id:'exercise',name:'운동부',icon:'💪',ms:['러닝 30분','스트레칭','근력운동']},
+  {id:'sleep',name:'수면부',icon:'😴',ms:['23시 취침','7시간 수면','아침 햇빛']},
+  {id:'study',name:'학습부',icon:'📚',ms:['독서 30분','강의 수강','노트 정리']},
+  {id:'health',name:'건강부',icon:'🥗',ms:['물 8잔','영양제','건강 식사']},
+  {id:'finance',name:'재정부',icon:'💰',ms:['가계부','절약 실천','저축']},
+  {id:'mental',name:'멘탈부',icon:'🧘',ms:['명상 10분','감사일기','디톡스']},
 ];
-const NAMES=['김수호','이하늘','박지민','최윤서','정다은','강민준','조서연','윤태호','한소율','임재현','송예린','오동현','나영호','문서진','백승우','허지연'];
-const SKIN_COLORS=['#FFDBB4','#E8B88A','#D4A574','#C68642'];
-const HAIR_COLORS=['#222222','#4A2800','#8B4513','#333333','#1a1a1a','#5C4033'];
-const SUIT_COLORS=['#2244aa','#225522','#555555','#443366','#664422','#224444'];
+const NM=['김수호','이하늘','박지민','최윤서','정다은','강민준','조서연','윤태호','한소율','임재현','송예린','오동현','나영호','문서진','백승우','허지연'];
+const SK=['#FFDBB4','#E8B88A','#D4A574','#C68642'];
+const HR=['#222','#4A2800','#8B4513','#333','#1a1a1a'];
 
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
-let S={money:50000,exp:0,level:1,gi:0,day:1,depts:[],used:[],tab:'missions'};
+let S={money:50000,exp:0,lv:1,gi:0,day:1,depts:[],used:[],tab:'missions'};
 
-function rndName(){const a=NAMES.filter(n=>!S.used.includes(n));const n=a.length?rnd(a):rnd(NAMES);S.used.push(n);return n;}
+function rN(){const a=NM.filter(n=>!S.used.includes(n));const n=a.length?rnd(a):rnd(NM);S.used.push(n);return n;}
+
+function mkEmp(gi){return{name:rN(),gi,mood:'normal',skin:rnd(SK),hair:rnd(HR),bob:Math.random()*Math.PI*2};}
 
 function init(){
-  S.depts=DEPTS.slice(0,2).map(t=>({
-    ...t,kpi:50,
-    emps:[
-      {name:rndName(),gi:0,mood:'normal',skin:rnd(SKIN_COLORS),hair:rnd(HAIR_COLORS),suit:rnd(SUIT_COLORS),bobOff:Math.random()*Math.PI*2},
-      {name:rndName(),gi:1,mood:'normal',skin:rnd(SKIN_COLORS),hair:rnd(HAIR_COLORS),suit:rnd(SUIT_COLORS),bobOff:Math.random()*Math.PI*2},
-    ],
-    missions:t.missions.map(m=>({text:m,status:'todo'})),
+  S.depts=D.slice(0,2).map(t=>({
+    ...t,kpi:50,emps:[mkEmp(0),mkEmp(1)],
+    missions:t.ms.map(m=>({text:m,st:'todo'})),
   }));
-  setupCanvas();
-  render();
-  requestAnimationFrame(animLoop);
+  setupCanvas();render();requestAnimationFrame(loop);
 }
 
-// ===== CANVAS PIXEL ART =====
-let canvas, ctx, cW, cH, PX;
-let animTime = 0;
-let clickedChar = -1;
-let clickTimeout = null;
+// ===== CANVAS =====
+let cv,cx,W,H,PX,aT=0,clickC=-1,clickTO;
 
 function setupCanvas(){
-  canvas = document.getElementById('officeCanvas');
-  const rect = canvas.parentElement.getBoundingClientRect();
-  // 픽셀 아트를 위해 낮은 해상도에서 스케일업
-  PX = 3; // 1 pixel = 3 screen pixels
-  cW = Math.floor(rect.width / PX);
-  cH = Math.floor(rect.height / PX);
-  canvas.width = cW;
-  canvas.height = cH;
-  canvas.style.imageRendering = 'pixelated';
-  ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-
-  canvas.addEventListener('click', onCanvasClick);
+  cv=document.getElementById('canvas');
+  const r=cv.parentElement.getBoundingClientRect();
+  PX=3;W=Math.floor(r.width/PX);H=Math.floor(r.height/PX);
+  cv.width=W;cv.height=H;cv.style.imageRendering='pixelated';
+  cx=cv.getContext('2d');cx.imageSmoothingEnabled=false;
+  cv.addEventListener('click',onCvClick);
 }
 
-function onCanvasClick(e){
-  const rect = canvas.getBoundingClientRect();
-  const mx = (e.clientX - rect.left) / PX;
-  const my = (e.clientY - rect.top) / PX;
-
-  // 캐릭터 클릭 감지
-  let ci = 0;
-  for(const dept of S.depts){
-    for(const emp of dept.emps){
-      const pos = getCharPos(ci);
-      if(mx >= pos.x-6 && mx <= pos.x+6 && my >= pos.y-16 && my <= pos.y+4){
-        clickedChar = ci;
-        clearTimeout(clickTimeout);
-        clickTimeout = setTimeout(()=>{ clickedChar=-1; }, 2500);
-        return;
-      }
-      ci++;
+function onCvClick(e){
+  const r=cv.getBoundingClientRect();
+  const mx=(e.clientX-r.left)/PX,my=(e.clientY-r.top)/PX;
+  let ci=0;
+  for(const d of S.depts)for(const emp of d.emps){
+    const p=charPos(ci);
+    if(mx>=p.x-8&&mx<=p.x+8&&my>=p.y-18&&my<=p.y+4){
+      clickC=ci;clearTimeout(clickTO);clickTO=setTimeout(()=>clickC=-1,2500);return;
     }
+    ci++;
   }
 }
 
-function getCharPos(idx){
-  const cols = Math.min(6, Math.floor(cW / 22));
-  const startX = 16;
-  const startY = cH - 18;
-  const col = idx % cols;
-  const row = Math.floor(idx / cols);
-  return { x: startX + col * 22, y: startY - row * 28 };
+function charPos(i){
+  const cols=Math.min(7,Math.floor(W/20));
+  return{x:12+(i%cols)*20, y:H-14-Math.floor(i/cols)*26};
 }
 
-function animLoop(ts){
-  animTime = ts / 1000;
-  drawOffice();
-  requestAnimationFrame(animLoop);
-}
+function loop(ts){aT=ts/1000;draw();requestAnimationFrame(loop);}
 
-function drawOffice(){
-  if(!ctx) return;
-  const g = GRADES[S.gi];
+function draw(){
+  if(!cx)return;
+  const g=G[S.gi];
 
-  // 배경 - 벽 (등급별 색상)
-  ctx.fillStyle = g.wall;
-  ctx.fillRect(0, 0, cW, cH * 0.6);
-  // 벽 무늬
-  ctx.fillStyle = g.wallLine;
-  for(let y = 0; y < cH*0.6; y += 12){
-    ctx.fillRect(0, y, cW, 1);
-  }
+  // 벽
+  cx.fillStyle=g.wall;cx.fillRect(0,0,W,H*0.55);
+  cx.fillStyle=g.wl;
+  for(let y=0;y<H*0.55;y+=10)cx.fillRect(0,y,W,1);
 
-  // 벽 하단 걸레받이
-  ctx.fillStyle = g.trim;
-  ctx.fillRect(0, Math.floor(cH*0.6)-2, cW, 4);
+  // 걸레받이
+  const fy=Math.floor(H*0.55);
+  cx.fillStyle=g.trim;cx.fillRect(0,fy-2,W,4);
 
-  // 바닥 - 나무 마루
-  const floorY = Math.floor(cH * 0.6) + 2;
-  for(let y = floorY; y < cH; y += 8){
-    for(let x = 0; x < cW; x += 16){
-      const shift = ((y/8|0) % 2) * 8;
-      ctx.fillStyle = g.floor1;
-      ctx.fillRect(x + shift, y, 15, 7);
-      ctx.fillStyle = g.floor2;
-      ctx.fillRect(x + shift, y+7, 15, 1);
-      ctx.fillStyle = g.floorHi;
-      ctx.fillRect(x + shift + 2, y+1, 11, 2);
+  // 바닥
+  for(let y=fy+2;y<H;y+=6){
+    for(let x=0;x<W;x+=14){
+      const sh=((y/6|0)%2)*7;
+      cx.fillStyle=g.f1;cx.fillRect(x+sh,y,13,5);
+      cx.fillStyle=g.f2;cx.fillRect(x+sh,y+5,13,1);
+      cx.fillStyle=g.fh;cx.fillRect(x+sh+2,y+1,9,2);
     }
   }
 
-  // 창문 (밝은 하늘색 + 흰 프레임)
-  for(let i = 0; i < g.wins; i++){
-    const wx = 8 + i * 28;
-    const wy = 6;
-    // 프레임
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(wx, wy, 20, 20);
-    // 유리
-    ctx.fillStyle = '#88ccee';
-    ctx.fillRect(wx+2, wy+2, 7, 7);
-    ctx.fillStyle = '#aaddff';
-    ctx.fillRect(wx+11, wy+2, 7, 7);
-    ctx.fillStyle = '#77bbdd';
-    ctx.fillRect(wx+2, wy+11, 7, 7);
-    ctx.fillStyle = '#99ccee';
-    ctx.fillRect(wx+11, wy+11, 7, 7);
-    // 창틀 십자
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(wx+9, wy, 2, 20);
-    ctx.fillRect(wx, wy+9, 20, 2);
+  // 창문
+  for(let i=0;i<g.wins;i++){
+    const wx=6+i*24,wy=4;
+    cx.fillStyle='#eee';cx.fillRect(wx,wy,18,16);
+    cx.fillStyle='#88ccee';cx.fillRect(wx+2,wy+2,6,5);
+    cx.fillStyle='#aaddff';cx.fillRect(wx+10,wy+2,6,5);
+    cx.fillStyle='#77bbdd';cx.fillRect(wx+2,wy+9,6,5);
+    cx.fillStyle='#99ccee';cx.fillRect(wx+10,wy+9,6,5);
+    cx.fillStyle='#eee';cx.fillRect(wx+8,wy,2,16);cx.fillRect(wx,wy+7,18,2);
   }
 
   // 책상
-  for(let i = 0; i < g.desks; i++){
-    const row = Math.floor(i / 4);
-    const col = i % 4;
-    const dx = 10 + col * 28;
-    const dy = floorY + 2 + row * 20;
-    // 책상 상판
-    ctx.fillStyle = '#8B6914';
-    ctx.fillRect(dx, dy, 18, 6);
-    ctx.fillStyle = '#A0782C';
-    ctx.fillRect(dx+1, dy+1, 16, 4);
-    // 다리
-    ctx.fillStyle = '#6B4F10';
-    ctx.fillRect(dx+2, dy+6, 2, 4);
-    ctx.fillRect(dx+14, dy+6, 2, 4);
-    // 모니터
-    ctx.fillStyle = '#444';
-    ctx.fillRect(dx+6, dy-5, 7, 5);
-    ctx.fillStyle = '#66ccff';
-    ctx.fillRect(dx+7, dy-4, 5, 3);
+  for(let i=0;i<g.desks;i++){
+    const row=Math.floor(i/5),col=i%5;
+    const dx=6+col*24,dy=fy+4+row*16;
+    cx.fillStyle='#A0782C';cx.fillRect(dx,dy,16,5);
+    cx.fillStyle='#B8864E';cx.fillRect(dx+1,dy+1,14,3);
+    cx.fillStyle='#8B6914';cx.fillRect(dx+2,dy+5,2,3);cx.fillRect(dx+12,dy+5,2,3);
+    cx.fillStyle='#444';cx.fillRect(dx+5,dy-4,6,4);
+    cx.fillStyle='#66ddff';cx.fillRect(dx+6,dy-3,4,2);
   }
 
   // 화분
-  for(let i = 0; i < g.plants; i++){
-    const px = cW - 12 - i * 18;
-    const py = floorY - 2;
-    // 화분
-    ctx.fillStyle = '#8B4513';
-    ctx.fillRect(px, py, 8, 6);
-    // 잎
-    ctx.fillStyle = '#33aa33';
-    ctx.fillRect(px-1, py-4, 10, 5);
-    ctx.fillStyle = '#55cc55';
-    ctx.fillRect(px+1, py-6, 6, 3);
+  for(let i=0;i<g.plants;i++){
+    const px=W-8-i*16,py=fy-1;
+    cx.fillStyle='#8B4513';cx.fillRect(px,py,7,5);
+    cx.fillStyle='#44bb44';cx.fillRect(px-1,py-4,9,5);
+    cx.fillStyle='#66dd66';cx.fillRect(px+1,py-6,5,3);
   }
 
   // 캐릭터
-  let ci = 0;
-  S.depts.forEach((dept, di) => {
-    dept.emps.forEach((emp, ei) => {
-      const pos = getCharPos(ci);
-      const bob = emp.mood !== 'bad' ? Math.sin(animTime * 3 + emp.bobOff) * 1.5 : 0;
-      drawPixelChar(pos.x, pos.y + bob, emp, EG[emp.gi], dept.kpi, ci === clickedChar, ci);
+  let ci=0;
+  S.depts.forEach(dept=>{
+    dept.emps.forEach(emp=>{
+      const p=charPos(ci);
+      const bob=emp.mood!=='bad'?Math.sin(aT*3+emp.bob)*1.2:0;
+      drawChar(p.x,p.y+bob,emp,E[emp.gi],dept.kpi,ci===clickC);
       ci++;
     });
   });
 }
 
-function drawPixelChar(x, y, emp, grade, kpi, showBubble, idx){
-  x = Math.round(x);
-  y = Math.round(y);
+function drawChar(x,y,emp,eg,kpi,bubble){
+  x=Math.round(x);y=Math.round(y);
 
   // 그림자
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.fillRect(x-4, y+1, 8, 2);
+  cx.fillStyle='rgba(0,0,0,0.25)';cx.fillRect(x-3,y+1,7,2);
 
   // 발
-  ctx.fillStyle = '#222';
-  ctx.fillRect(x-3, y-1, 3, 2);
-  ctx.fillRect(x+1, y-1, 3, 2);
+  cx.fillStyle='#333';cx.fillRect(x-3,y-1,2,2);cx.fillRect(x+1,y-1,2,2);
 
-  // 몸통 (양복)
-  ctx.fillStyle = grade.bg;
-  ctx.fillRect(x-4, y-8, 9, 7);
-  // 양복 하이라이트
-  ctx.fillStyle = grade.c;
-  ctx.fillRect(x-1, y-8, 1, 5); // 넥타이
+  // 몸 (양복)
+  cx.fillStyle=eg.bg;cx.fillRect(x-4,y-7,8,6);
+  // 넥타이
+  cx.fillStyle=eg.c;cx.fillRect(x-1,y-7,1,4);
 
   // 팔
-  ctx.fillStyle = grade.bg;
-  ctx.fillRect(x-5, y-7, 1, 4);
-  ctx.fillRect(x+5, y-7, 1, 4);
-  // 손
-  ctx.fillStyle = emp.skin;
-  ctx.fillRect(x-5, y-3, 1, 1);
-  ctx.fillRect(x+5, y-3, 1, 1);
+  cx.fillStyle=eg.bg;cx.fillRect(x-5,y-6,1,3);cx.fillRect(x+4,y-6,1,3);
+  cx.fillStyle=emp.skin;cx.fillRect(x-5,y-3,1,1);cx.fillRect(x+4,y-3,1,1);
 
   // 머리
-  ctx.fillStyle = emp.skin;
-  ctx.fillRect(x-4, y-14, 8, 6);
+  cx.fillStyle=emp.skin;cx.fillRect(x-3,y-13,7,6);
   // 머리카락
-  ctx.fillStyle = emp.hair;
-  ctx.fillRect(x-4, y-16, 9, 3);
-  ctx.fillRect(x-5, y-15, 1, 3);
-  ctx.fillRect(x+5, y-15, 1, 3);
+  cx.fillStyle=emp.hair;cx.fillRect(x-3,y-15,8,3);cx.fillRect(x-4,y-14,1,3);cx.fillRect(x+5,y-14,1,3);
 
   // 눈
-  if(emp.mood === 'bad'){
-    // 슬픈 눈
-    ctx.fillStyle = '#666';
-    ctx.fillRect(x-2, y-12, 1, 1);
-    ctx.fillRect(x+2, y-12, 1, 1);
-    // 입 (슬픔)
-    ctx.fillStyle = '#996666';
-    ctx.fillRect(x-1, y-9, 3, 1);
+  if(emp.mood==='bad'){
+    cx.fillStyle='#888';cx.fillRect(x-2,y-11,1,1);cx.fillRect(x+2,y-11,1,1);
+    cx.fillStyle='#aa7777';cx.fillRect(x-1,y-9,3,1);
   } else {
-    // 일반 눈
-    ctx.fillStyle = '#222';
-    ctx.fillRect(x-2, y-12, 2, 2);
-    ctx.fillRect(x+1, y-12, 2, 2);
-    // 눈 하이라이트
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(x-2, y-12, 1, 1);
-    ctx.fillRect(x+1, y-12, 1, 1);
-    // 입
-    ctx.fillStyle = '#cc6666';
-    if(emp.mood === 'great' || emp.mood === 'good'){
-      ctx.fillRect(x-1, y-9, 3, 1);
-      ctx.fillRect(x, y-9, 1, 1);
+    cx.fillStyle='#222';cx.fillRect(x-2,y-11,2,2);cx.fillRect(x+1,y-11,2,2);
+    cx.fillStyle='#fff';cx.fillRect(x-2,y-11,1,1);cx.fillRect(x+1,y-11,1,1);
+    if(emp.mood==='great'||emp.mood==='good'){
+      cx.fillStyle='#cc7766';cx.fillRect(x-1,y-8,3,1);
     }
   }
 
-  // 무드 아이콘
-  if(emp.mood === 'great'){
-    const starY = y - 19 + Math.sin(animTime*4+idx)*1;
-    ctx.fillStyle = '#ffcc00';
-    ctx.fillRect(x+4, Math.round(starY), 3, 3);
-    ctx.fillRect(x+5, Math.round(starY)-1, 1, 1);
-    ctx.fillRect(x+5, Math.round(starY)+3, 1, 1);
-    ctx.fillRect(x+3, Math.round(starY)+1, 1, 1);
-    ctx.fillRect(x+7, Math.round(starY)+1, 1, 1);
-  } else if(emp.mood === 'bad'){
-    const dY = y - 19 + Math.sin(animTime*2+idx)*1;
-    ctx.fillStyle = '#4488ff';
-    ctx.fillRect(x+5, Math.round(dY), 1, 2);
-    ctx.fillRect(x+6, Math.round(dY)+1, 1, 2);
+  // 무드
+  if(emp.mood==='great'){
+    const sy=y-18+Math.sin(aT*4)*1;
+    cx.fillStyle='#ffcc00';
+    cx.fillRect(x+4,Math.round(sy),2,2);cx.fillRect(x+5,Math.round(sy)-1,1,1);cx.fillRect(x+5,Math.round(sy)+2,1,1);
+  } else if(emp.mood==='bad'){
+    cx.fillStyle='#6688ff';cx.fillRect(x+4,Math.round(y-17+Math.sin(aT*2)),1,2);
   }
 
-  // 이름 표시
-  ctx.fillStyle = 'rgba(0,0,0,0.7)';
-  ctx.fillRect(x-10, y+3, 20, 5);
-  ctx.fillStyle = '#fff';
-  ctx.font = '4px monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText(emp.name, x, y+7);
+  // 이름
+  cx.fillStyle='rgba(0,0,0,0.7)';cx.fillRect(x-9,y+3,18,5);
+  cx.fillStyle='#fff';cx.font='4px monospace';cx.textAlign='center';
+  cx.fillText(emp.name,x,y+7);
 
-  // 직급 표시
-  ctx.fillStyle = grade.bg;
-  ctx.fillRect(x-6, y+8, 12, 5);
-  ctx.fillStyle = '#fff';
-  ctx.fillText(grade.rank, x, y+12);
+  // 직급
+  cx.fillStyle=eg.bg;cx.fillRect(x-5,y+8,11,5);
+  cx.fillStyle='#fff';cx.fillText(eg.rank,x,y+12);
 
   // 말풍선
-  if(showBubble){
-    const msg = kpi >= 50 ? rnd(['화이팅!','최고!','열심히!','좋아요!']) : rnd(['힘들어..','ㅠㅠ','사직서..','CEO님..']);
-    const bw = msg.length * 4 + 6;
-    const bx = x - bw/2;
-    const by = y - 24;
-
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(bx, by, bw, 8);
-    ctx.fillStyle = '#222';
-    ctx.fillRect(bx, by, bw, 1);
-    ctx.fillRect(bx, by+7, bw, 1);
-    ctx.fillRect(bx, by, 1, 8);
-    ctx.fillRect(bx+bw-1, by, 1, 8);
-    // 꼬리
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(x-1, by+8, 3, 2);
-    ctx.fillStyle = '#222';
-    ctx.fillRect(x-1, by+9, 1, 1);
-    ctx.fillRect(x+2, by+9, 1, 1);
-
-    ctx.fillStyle = '#222';
-    ctx.font = '5px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(msg, x, by+6);
+  if(bubble){
+    const msg=kpi>=50?rnd(['화이팅!','최고!','열심히!','좋아요!']):rnd(['힘들어..','ㅠㅠ','사직서..','CEO님..']);
+    const bw=msg.length*4+6,bx=x-bw/2,by=y-22;
+    cx.fillStyle='#fffde8';cx.fillRect(bx,by,bw,8);
+    cx.fillStyle='#5a5530';
+    cx.fillRect(bx,by,bw,1);cx.fillRect(bx,by+7,bw,1);
+    cx.fillRect(bx,by,1,8);cx.fillRect(bx+bw-1,by,1,8);
+    cx.fillStyle='#fffde8';cx.fillRect(x-1,by+8,3,2);
+    cx.fillStyle='#5a5530';cx.fillRect(x-1,by+9,1,1);cx.fillRect(x+2,by+9,1,1);
+    cx.fillStyle='#3a3520';cx.font='5px monospace';cx.fillText(msg,x,by+6);
   }
 }
 
 // ===== TABS =====
 function switchTab(t){
   S.tab=t;
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>{b.classList.toggle('active',['missions','employees','report'][i]===t);});
+  document.querySelectorAll('.tab').forEach((b,i)=>{b.classList.toggle('active',['missions','employees','report'][i]===t);});
   renderContent();
 }
 
@@ -491,30 +488,29 @@ function renderMissions(c){
   let h='';
   S.depts.forEach((d,di)=>{
     const kc=d.kpi>=70?'high':d.kpi>=40?'mid':'low';
-    const cc=d.kpi<30?'danger':d.kpi>=70?'good':'';
-    h+=`<div class="card ${cc}"><div class="card-header"><div class="card-title">${d.icon} ${d.name}</div><div class="kpi-badge ${kc}">${d.kpi}%</div></div><div class="bar"><div class="bar-fill ${kc}" style="width:${d.kpi}%"></div></div>`;
+    h+=`<div class="rc"><div class="rc-head"><div class="rc-title">${d.icon} ${d.name}</div><div class="rc-badge ${kc}">${d.kpi}%</div></div><div class="rc-body"><div class="kbar"><div class="kbar-fill ${kc}" style="width:${d.kpi}%"></div></div>`;
     d.missions.forEach((m,mi)=>{
-      const cls=m.status==='done'?'done':m.status==='fail'?'fail':'';
-      const ck=m.status==='done'?'✓':m.status==='fail'?'✕':'';
-      const act=m.status==='todo'?`onclick="doMission(${di},${mi})"`:m.status==='fail'?`onclick="retry(${di},${mi})"`:''
-      h+=`<div class="m-item ${cls}" ${act}><div class="m-check">${ck}</div><div class="m-text">${m.text}</div></div>`;
+      const cls=m.st==='done'?'done':m.st==='fail'?'fail':'';
+      const ck=m.st==='done'?'✓':m.st==='fail'?'✕':'';
+      const act=m.st==='todo'?`onclick="doM(${di},${mi})"`:m.st==='fail'?`onclick="retry(${di},${mi})"`:''
+      h+=`<div class="mi ${cls}" ${act}><div class="mi-ck">${ck}</div><div class="mi-txt">${m.text}</div></div>`;
     });
-    h+=`</div>`;
+    h+=`</div></div>`;
   });
-  if(S.depts.length<GRADES[S.gi].maxDept) h+=`<div class="add-card" onclick="addDept()">+ 새 부서 설립</div>`;
+  if(S.depts.length<G[S.gi].maxDept) h+=`<div class="add-c" onclick="addDept()">+ 새 부서 설립</div>`;
   c.innerHTML=h;
 }
 
 function renderEmployees(c){
   let h='';
   S.depts.forEach((d,di)=>{
-    h+=`<div class="card"><div class="card-header"><div class="card-title">${d.icon} ${d.name}</div><div style="font-size:0.65em;color:#44aaff;cursor:pointer" onclick="openSheet(${di})">+ 채용</div></div>`;
+    h+=`<div class="rc"><div class="rc-head"><div class="rc-title">${d.icon} ${d.name}</div><div style="font-size:8px;color:#66cc44;cursor:pointer" onclick="openSheet(${di})">+ 채용</div></div><div class="rc-body">`;
     d.emps.forEach(emp=>{
-      const g=EG[emp.gi];
-      const mood=emp.mood==='great'?'★':emp.mood==='good'?'♪':emp.mood==='bad'?'✕':'·';
-      h+=`<div class="emp-row"><div class="emp-dot" style="background:${g.bg};border-color:${g.c}">${mood}</div><div class="info"><div class="n">${emp.name}</div><div class="r" style="color:${g.c}">${g.rank} +${g.bonus}%</div></div></div>`;
+      const g=E[emp.gi];
+      const m=emp.mood==='great'?'★':emp.mood==='good'?'♪':emp.mood==='bad'?'✕':'·';
+      h+=`<div class="er"><div class="er-face" style="background:${g.bg};border-color:${g.c}">${m}</div><div class="er-info"><div class="n">${emp.name}</div><div class="r" style="color:${g.c}">${g.rank} · KPI +${g.bonus}%</div></div></div>`;
     });
-    h+=`</div>`;
+    h+=`</div></div>`;
   });
   c.innerHTML=h;
 }
@@ -522,19 +518,49 @@ function renderEmployees(c){
 function renderReport(c){
   const avg=S.depts.length?Math.round(S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length):0;
   const tot=S.depts.reduce((s,d)=>s+d.emps.length,0);
-  const g=GRADES[S.gi];
+  const g=G[S.gi];
+
   let dr=S.depts.map(d=>{
-    const s=d.kpi>=70?'▓':d.kpi>=40?'▒':'░';
-    return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a2a3a;font-size:0.75em"><span>${s} ${d.icon} ${d.name}</span><span>${d.kpi}%</span></div>`;
+    const kc=d.kpi>=70?'high':d.kpi>=40?'mid':'low';
+    const color=d.kpi>=70?'#44aa22':d.kpi>=40?'#ccaa00':'#aa2222';
+    return `<div class="rpt-dept">
+      <span>${d.icon} ${d.name}</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="rpt-bar-mini"><div class="rpt-bar-fill" style="width:${d.kpi}%;background:${color};height:100%"></div></div>
+        <span style="color:${color};font-weight:bold;min-width:28px;text-align:right">${d.kpi}%</span>
+      </div>
+    </div>`;
   }).join('');
-  c.innerHTML=`<div class="card"><div style="text-align:center;margin-bottom:12px"><div style="font-size:1.8em">${g.icon}</div><div style="font-size:1em;color:#ffcc00;margin-top:4px">${g.name}</div><div style="font-size:0.65em;color:#6666aa">LV.${S.level} · DAY ${String(S.day).padStart(3,'0')}</div></div><div class="rpt-row"><div class="rpt-box" style="flex:1"><div class="big" style="color:${avg>=70?'#33ff33':avg>=40?'#ffaa00':'#ff4444'}">${avg}%</div><div class="sm">평균 KPI</div></div><div class="rpt-box" style="flex:1"><div class="big">${tot}</div><div class="sm">직원</div></div><div class="rpt-box" style="flex:1"><div class="big" style="color:#33ff33">${(S.money/1000).toFixed(0)}K</div><div class="sm">자금</div></div></div><div style="font-size:0.75em;margin:10px 0 6px;color:#8888aa">▸ 부서별 KPI</div>${dr}<div style="margin-top:12px;font-size:0.6em;color:#555;text-align:center">다음: ${S.gi<5?GRADES[S.gi+1].icon+' '+GRADES[S.gi+1].name:'MAX'} | EXP ${S.exp}/${g.exp}</div></div>`;
+
+  c.innerHTML=`<div class="rc">
+    <div class="rc-body">
+      <div class="rpt-header">
+        <div class="icon">${g.icon}</div>
+        <div class="grade">${g.name}</div>
+        <div class="sub">LV.${S.lv} · DAY ${String(S.day).padStart(3,'0')}</div>
+      </div>
+      <div class="rpt-stats">
+        <div class="rpt-stat"><div class="v" style="color:${avg>=70?'#66ff66':avg>=40?'#ffcc00':'#ff6666'}">${avg}%</div><div class="l">평균 KPI</div></div>
+        <div class="rpt-stat"><div class="v" style="color:#88ccff">${tot}명</div><div class="l">총 직원</div></div>
+        <div class="rpt-stat"><div class="v" style="color:#66cc44">${(S.money/1000).toFixed(0)}K</div><div class="l">보유 자금</div></div>
+      </div>
+      <div style="font-size:9px;color:#a09870;padding:4px 0;border-bottom:2px solid #5a5530;margin-bottom:4px">▸ 부서별 성과</div>
+      ${dr}
+      <div class="rpt-next">
+        <div>다음 목표</div>
+        <div class="target">${S.gi<5?G[S.gi+1].icon+' '+G[S.gi+1].name:'🏆 최고 등급!'}</div>
+        <div style="margin-top:4px">EXP ${S.exp} / ${g.exp}</div>
+        <div class="kbar" style="margin-top:4px;margin-bottom:0"><div class="kbar-fill" style="width:${Math.min(100,S.exp/g.exp*100)}%;background:#66cc44"></div></div>
+      </div>
+    </div>
+  </div>`;
 }
 
 // ===== ACTIONS =====
-function doMission(di,mi){
-  const d=S.depts[di];if(d.missions[mi].status!=='todo')return;
-  d.missions[mi].status='done';
-  const bonus=d.emps.reduce((s,e)=>s+EG[e.gi].bonus,0);
+function doM(di,mi){
+  const d=S.depts[di];if(d.missions[mi].st!=='todo')return;
+  d.missions[mi].st='done';
+  const bonus=d.emps.reduce((s,e)=>s+E[e.gi].bonus,0);
   const gain=Math.min(18,8+Math.floor(bonus/4));
   d.kpi=Math.min(100,d.kpi+gain);
   S.exp+=10+Math.floor(bonus/3);S.money+=500;
@@ -542,62 +568,67 @@ function doMission(di,mi){
   toast(`✓ ${d.missions[mi].text} +${gain}%`);
   checkUp();updateLuna();renderContent();
 }
-function retry(di,mi){S.depts[di].missions[mi].status='todo';renderContent();}
+function retry(di,mi){S.depts[di].missions[mi].st='todo';renderContent();}
 
 function newDay(){
   S.day++;
   S.depts.forEach(d=>{
-    d.missions.forEach(m=>{if(m.status==='todo')m.status='fail';});
-    const f=d.missions.filter(m=>m.status==='fail').length;
+    d.missions.forEach(m=>{if(m.st==='todo')m.st='fail';});
+    const f=d.missions.filter(m=>m.st==='fail').length;
     if(f)d.kpi=Math.max(0,d.kpi-f*6);
     d.kpi=Math.max(0,d.kpi-2);
     d.emps.forEach(e=>{e.mood=d.kpi<30?'bad':d.kpi<50?'normal':e.mood;});
-    const t=DEPTS.find(x=>x.id===d.id);
-    d.missions=t.missions.map(m=>({text:m,status:'todo'}));
+    const t=D.find(x=>x.id===d.id);
+    d.missions=t.ms.map(m=>({text:m,st:'todo'}));
   });
   checkDown();updateLuna();toast(`DAY ${String(S.day).padStart(3,'0')}`);render();
 }
 
 function addDept(){
-  if(S.depts.length>=GRADES[S.gi].maxDept)return toast('등급 부족',true);
-  const t=DEPTS[S.depts.length];if(!t)return;
-  S.depts.push({...t,kpi:50,emps:[{name:rndName(),gi:0,mood:'normal',skin:rnd(SKIN_COLORS),hair:rnd(HAIR_COLORS),suit:rnd(SUIT_COLORS),bobOff:Math.random()*Math.PI*2}],
-    missions:t.missions.map(m=>({text:m,status:'todo'}))});
-  toast(`${t.name} 설립!`);render();
+  if(S.depts.length>=G[S.gi].maxDept)return toast('등급 부족',true);
+  const t=D[S.depts.length];if(!t)return;
+  S.depts.push({...t,kpi:50,emps:[mkEmp(0)],missions:t.ms.map(m=>({text:m,st:'todo'}))});
+  toast(`🏢 ${t.name} 설립!`);render();
 }
 
-function checkUp(){const g=GRADES[S.gi];if(S.exp>=g.exp&&S.gi<5){S.exp-=g.exp;S.gi++;S.level++;toast(`★ ${GRADES[S.gi].name} 승급!`);}}
-function checkDown(){if(S.gi<=0)return;const avg=S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length;if(avg<GRADES[S.gi-1].minKpi){S.gi--;S.level=Math.max(1,S.level-1);toast(`${GRADES[S.gi].name} 강등..`,true);}}
+function checkUp(){const g=G[S.gi];if(S.exp>=g.exp&&S.gi<5){S.exp-=g.exp;S.gi++;S.lv++;toast(`★ ${G[S.gi].name} 승급!`);}}
+function checkDown(){if(S.gi<=0)return;const avg=S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length;if(avg<G[S.gi-1].minKpi){S.gi--;S.lv=Math.max(1,S.lv-1);toast(`${G[S.gi].name} 강등..`,true);}}
 
+// ===== HIRE =====
 let hDi=0;
 function openSheet(di){
   hDi=di;
-  document.getElementById('sheetTitle').textContent=S.depts[di].name+' 채용';
-  const b=document.getElementById('sheetBody');
-  b.innerHTML=EG.map((g,gi)=>{
+  document.getElementById('shTitle').textContent=S.depts[di].name+' 채용';
+  const b=document.getElementById('shBody');
+  b.innerHTML=E.map((g,gi)=>{
     const lk=gi>S.gi+2,br=g.cost>S.money,dis=lk||br;
-    return `<div class="hire-row ${dis?'locked':''}" onclick="${dis?'':'hire('+gi+')'}"><div class="hire-icon" style="background:${g.bg};border-color:${g.c}">★</div><div class="hire-info"><div class="t" style="color:${g.c}">${g.rank}</div><div class="d">${lk?'🔒등급부족':br?'💸자금부족':'KPI +'+g.bonus+'%'}</div></div><div class="hire-cost">${g.cost?g.cost.toLocaleString()+'원':'무료'}</div></div>`;
+    return `<div class="hr ${dis?'locked':''}" onclick="${dis?'':'hire('+gi+')'}">
+      <div class="hr-ic" style="background:${g.bg};border-color:${g.c}">★</div>
+      <div class="hr-info"><div class="t" style="color:${g.c}">${g.rank}</div>
+      <div class="d">${lk?'🔒 등급 부족':br?'💸 자금 부족':'KPI +'+g.bonus+'%'}</div></div>
+      <div class="hr-cost">${g.cost?g.cost.toLocaleString()+'원':'무료'}</div>
+    </div>`;
   }).join('');
-  document.getElementById('sheetBg').classList.add('open');
+  document.getElementById('shBg').classList.add('open');
 }
 function openSheetAll(){if(S.depts.length)openSheet(0);}
-function closeSheet(){document.getElementById('sheetBg').classList.remove('open');}
+function closeSheet(){document.getElementById('shBg').classList.remove('open');}
 function hire(gi){
-  const g=EG[gi];if(g.cost>S.money)return;
+  const g=E[gi];if(g.cost>S.money)return;
   S.money-=g.cost;
-  const e={name:rndName(),gi,mood:'good',skin:rnd(SKIN_COLORS),hair:rnd(HAIR_COLORS),suit:rnd(SUIT_COLORS),bobOff:Math.random()*Math.PI*2};
-  S.depts[hDi].emps.push(e);
-  toast(`${e.name} ${g.rank} 채용!`);closeSheet();render();
+  S.depts[hDi].emps.push(mkEmp(gi));
+  toast(`${S.depts[hDi].emps.at(-1).name} ${g.rank} 채용!`);closeSheet();render();
 }
 
+// ===== LUNA =====
 function updateLuna(){
   const avg=S.depts.length?Math.round(S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length):0;
-  const todo=S.depts.reduce((s,d)=>s+d.missions.filter(m=>m.status==='todo').length,0);
+  const todo=S.depts.reduce((s,d)=>s+d.missions.filter(m=>m.st==='todo').length,0);
   let m='';
   if(avg>=80)m='전부서 순항! 승급 가까워요 ★';
   else if(avg>=60)m='양호합니다. 조금만 더!';
   else if(avg>=40)m='KPI 불안.. 미션 확인!';
-  else m='긴급! 직원들 동요중.. ✕';
+  else m='긴급! 직원들 동요중..';
   if(todo)m+=` (남은:${todo}건)`;
   document.getElementById('lunaMsg').textContent=m;
 }
@@ -605,19 +636,19 @@ function updateLuna(){
 function toast(m,bad){const t=document.getElementById('toast');t.textContent=m;t.className='toast'+(bad?' bad':'');t.style.display='block';setTimeout(()=>t.style.display='none',2000);}
 
 function render(){
-  const g=GRADES[S.gi];
+  const g=G[S.gi];
   document.getElementById('hudDay').textContent=`DAY ${String(S.day).padStart(3,'0')}`;
   document.getElementById('hudGrade').textContent=`${g.icon} ${g.name}`;
   document.getElementById('expBar').style.width=Math.min(100,S.exp/g.exp*100)+'%';
   const avg=S.depts.length?Math.round(S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length):0;
   document.getElementById('hudKpi').textContent=avg+'%';
-  document.getElementById('hudKpi').style.color=avg>=70?'#33ff33':avg>=40?'#ffaa00':'#ff4444';
+  document.getElementById('hudKpi').style.color=avg>=70?'#66ff66':avg>=40?'#ffcc00':'#ff6666';
   document.getElementById('hudEmp').textContent=S.depts.reduce((s,d)=>s+d.emps.length,0);
   document.getElementById('hudMoney').textContent=(S.money/1000).toFixed(0)+'K';
   renderContent();updateLuna();
 }
 
-function resetGame(){if(!confirm('리셋?'))return;S={money:50000,exp:0,level:1,gi:0,day:1,depts:[],used:[],tab:'missions'};init();}
+function resetGame(){if(!confirm('리셋?'))return;S={money:50000,exp:0,lv:1,gi:0,day:1,depts:[],used:[],tab:'missions'};init();}
 
 init();
 </script>
