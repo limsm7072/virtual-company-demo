@@ -861,9 +861,10 @@ function buyItem(id){
   // 효과 적용
   if(item.effect==='speed_10')S.speedBonus+=0.1;
   if(item.effect==='speed_20')S.speedBonus+=0.2;
-  // 배치 모드 진입
+  // 시트 닫고 배치 모드 진입
   placingItem={id:item.id,icon:item.icon,name:item.name};
-  toast(`📍 사무실을 탭해서 ${item.name}을 배치하세요`);
+  closeSheet();
+  toast(`📍 사무실을 탭해서 배치하세요`);
   renderAll();
 }
 
