@@ -18,10 +18,8 @@
   .hud-stat .val{font-size:11px;font-weight:bold}
   .hud-stat .lbl{font-size:7px;color:#8a8060}
 
-  .office-wrap{position:relative;width:100%;height:260px;background:#1a1a10;border-bottom:3px solid #5a5530;overflow:hidden}
+  .office-wrap{position:relative;width:100%;height:calc(100vh - 90px);background:#1a1a10;border-bottom:3px solid #5a5530;overflow:hidden}
   .office-canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
-
-  .content{padding:8px;padding-bottom:60px}
 
   .card{background:#3a3520;border:2px solid #5a5530;margin-bottom:8px;box-shadow:2px 2px 0 rgba(0,0,0,0.4)}
   .card-head{background:#4a4520;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #5a5530}
@@ -49,10 +47,10 @@
   .prog-text{position:absolute;top:0;left:0;width:100%;text-align:center;font-size:8px;line-height:10px;color:#fff}
 
   .bbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:50;background:#3a3520;border-top:3px solid #5a5530;padding:6px 8px;padding-bottom:max(6px,env(safe-area-inset-bottom));display:flex;gap:4px}
-  .bb{flex:1;padding:8px 0;border:2px solid;font-family:inherit;font-size:9px;cursor:pointer;text-align:center;box-shadow:2px 2px 0 rgba(0,0,0,0.3)}
-  .bb:active{transform:translate(1px,1px)}
-  .bb.pri{background:#4a6a2a;border-color:#66aa44;color:#ccff88}
-  .bb.sec{background:#2a2510;border-color:#5a5530;color:#a09870}
+  .bb{flex:1;padding:4px 0;border:none;font-family:inherit;font-size:8px;cursor:pointer;text-align:center;background:none;color:#8a8060;display:flex;flex-direction:column;align-items:center;gap:2px}
+  .bb:active{opacity:0.6}
+  .bb.pri{color:#ccff88}
+  .bb.sec{color:#a09870}
   .bb.hide{display:none}
 
   .toast{position:fixed;top:44px;left:50%;transform:translateX(-50%);z-index:200;background:#3a3520;border:2px solid #66cc44;color:#ccff88;padding:6px 14px;font-size:9px;display:none;box-shadow:2px 2px 0 rgba(0,0,0,0.5);font-family:inherit}
@@ -131,8 +129,6 @@
   <canvas class="office-canvas" id="canvas"></canvas>
 </div>
 
-<div class="content" id="content"></div>
-
 <div class="sh-bg" id="shBg" onclick="closeSheet()">
   <div class="sh" onclick="event.stopPropagation()">
     <h3>▸ <span id="shTitle"></span></h3>
@@ -143,7 +139,11 @@
 <div class="toast" id="toast"></div>
 
 <div class="bbar">
-  <button class="bb pri" onclick="nextDay()">📅 다음 날</button>
+  <button class="bb sec" onclick="openTab('routine')"><div style="font-size:14px">📋</div><div>루틴</div></button>
+  <button class="bb sec" onclick="openTab('staff')"><div style="font-size:14px">👥</div><div>직원</div></button>
+  <button class="bb pri" onclick="nextDay()"><div style="font-size:14px">📅</div><div>다음날</div></button>
+  <button class="bb sec" onclick="openTab('shop')"><div style="font-size:14px">🛒</div><div>상점</div></button>
+  <button class="bb sec" onclick="openTab('unlock')"><div style="font-size:14px">🔓</div><div>해금</div></button>
 </div>
 </div>
 
@@ -654,116 +654,78 @@ function renderAll(){
   document.getElementById('hudDay').textContent=`DAY ${String(S.day).padStart(3,'0')}`;
   document.getElementById('hudGrade').textContent=S.companyName||'';
   document.getElementById('hudMoney').textContent=S.money.toLocaleString()+'원';
+}
 
-  const c=document.getElementById('content');
+// ===== 하단 탭 → 시트로 열기 =====
+function openTab(tab){
   let h='';
-
-  // 제작 진행 상태
-  if(S.crafting){
-    const emp=S.emps[S.crafting.empIdx];
-    const isRepeat=S.crafting.craftId==='_repeat';
-    const craft=isRepeat?null:CRAFTS.find(cr=>cr.id===S.crafting.craftId);
-    const title=isRepeat?'💰 수익 생산 중':'🔨 '+craft.name+' 제작 중';
-    const desc=isRepeat?`${emp.name} 반복 작업 중...`:`${emp.name} 작업 중...`;
-    h+=`<div class="card"><div class="card-head"><div class="card-title">${title}</div></div><div class="card-body">
-      <div style="font-size:8px;color:#8a8060;margin-bottom:6px">${desc}</div>
-      <div class="prog-wrap"><div class="prog-fill" id="craftProg" style="width:0%"></div></div>
-    </div></div>`;
-  }
-
-  // 루틴 (해금됐으면)
-  if(has('routine_check')){
-    h+=`<div class="card"><div class="card-head"><div class="card-title">📋 루틴</div></div><div class="card-body">`;
-    if(S.missions.length===0&&has('routine_add')){
-      h+=`<div class="mi" onclick="addRoutine()" style="justify-content:center;color:#8a8060;border-style:dashed">+ 루틴 추가</div>`;
-    }
-    S.missions.forEach((m,mi)=>{
-      const cls=m.done?'done':'';
-      h+=`<div class="mi ${cls}" onclick="toggleRoutine(${mi})"><div class="mi-ck">${m.done?'✓':''}</div><div class="mi-txt">${m.text}</div></div>`;
-    });
-    if(S.missions.length>0&&has('routine_add')){
-      h+=`<div class="mi" onclick="addRoutine()" style="justify-content:center;color:#8a8060;border-style:dashed;font-size:9px">+ 루틴 추가</div>`;
-    }
-    h+=`</div></div>`;
-  } else if(has('routine_add')&&!has('routine_check')){
-    h+=`<div class="card"><div class="card-head"><div class="card-title">📋 루틴</div></div><div class="card-body">
-      <div style="font-size:9px;color:#8a8060;text-align:center;padding:8px">루틴 체크 기능을 제작해야 합니다</div>
-    </div></div>`;
-  }
-
-  // 직원 상태
-  h+=`<div class="card"><div class="card-head"><div class="card-title">👥 직원</div></div><div class="card-body">`;
-  S.emps.forEach((emp,i)=>{
-    const eg=E[emp.gi];
-    const stateText=emp.state==='working'?'⚙️ 작업 중':'💤 대기 중';
-    h+=`<div class="btn" onclick="onEmpClick(${i})"><div class="ic" style="background:${eg.bg};border-color:${eg.c};font-size:10px">${emp.state==='working'?'⚙️':'💤'}</div>
-      <div class="info"><div class="t">${emp.name} <span style="color:${eg.c}">${eg.rank}</span></div><div class="d">${stateText}</div></div></div>`;
-  });
-  if(has('hire_system')){
-    h+=`<div class="btn" onclick="openHire()" style="justify-content:center;border-style:dashed"><div class="info" style="text-align:center"><div class="t" style="color:#8a8060">+ 직원 채용</div></div></div>`;
-  }
-  h+=`</div></div>`;
-
-  // 자동 수익 표시
-  if(has('auto_prod')){
-    const doneCount=S.missions.filter(m=>m.done).length;
-    const idleEmps=S.emps.filter(e=>e.state==='idle');
-    const baseIncome=idleEmps.reduce((s,e)=>s+10*E[e.gi].speed,0);
-    const routineBonus=doneCount*50;
-    const total=Math.round((baseIncome+routineBonus)*S.speedBonus);
-    h+=`<div class="card"><div class="card-head"><div class="card-title">⚡ 자동 수익</div></div><div class="card-body">
-      <div style="font-size:9px;display:flex;justify-content:space-between;padding:2px 0"><span>직원 생산</span><span style="color:#66cc44">+${Math.round(baseIncome)}/3초</span></div>
-      <div style="font-size:9px;display:flex;justify-content:space-between;padding:2px 0"><span>루틴 보너스 (${doneCount}개)</span><span style="color:#ffe066">+${routineBonus}/3초</span></div>
-      ${S.speedBonus>1?`<div style="font-size:9px;display:flex;justify-content:space-between;padding:2px 0"><span>속도 보너스</span><span style="color:#cc88ff">x${S.speedBonus}</span></div>`:''}
-      <div style="font-size:10px;display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid #5a5530;margin-top:4px"><span style="font-weight:bold">합계</span><span style="color:#66cc44;font-weight:bold">+${total}/3초</span></div>
-    </div></div>`;
-  }
-
-  // 상점
-  h+=`<div class="card"><div class="card-head"><div class="card-title">🛒 상점</div></div><div class="card-body">`;
-  SHOP.forEach(item=>{
-    const owned=hasItem(item.id);
-    const isIAP=item.type==='iap';
-    const afford=isIAP||item.cost<=S.money;
-    if(owned&&!isIAP){
-      h+=`<div class="btn locked"><div class="ic" style="background:#2a3a2a;border-color:#44aa44;font-size:12px">${item.icon}</div><div class="info"><div class="t" style="color:#44aa44">${item.name}</div><div class="d">보유 중</div></div></div>`;
+  if(tab==='routine'){
+    if(!has('routine_add')&&!has('routine_check')){
+      h=`<div style="text-align:center;padding:20px;font-size:10px;color:#8a8060">🔒 루틴 기능을 먼저 제작하세요<br><br>직원을 클릭해서 일을 시키세요</div>`;
+    } else if(!has('routine_check')){
+      h=`<div style="text-align:center;padding:20px;font-size:10px;color:#8a8060">루틴 체크 기능을 제작 중...</div>`;
     } else {
-      h+=`<div class="btn ${afford?'':'locked'}" onclick="${isIAP?`buyIAP('${item.id}')`:(afford?`buyItem('${item.id}')`:'')}">
-        <div class="ic" style="background:#4a4520;border-color:${isIAP?'#cc88ff':'#8a8060'};font-size:12px">${item.icon}</div>
-        <div class="info"><div class="t" style="color:${isIAP?'#cc88ff':'#ffe066'}">${item.name}</div><div class="d">${item.desc}</div></div>
-        <div class="cost" style="color:${isIAP?'#cc88ff':'#66cc44'}">${typeof item.cost==='number'?item.cost.toLocaleString()+'원':item.cost}</div>
-      </div>`;
+      S.missions.forEach((m,mi)=>{
+        const cls=m.done?'done':'';
+        h+=`<div class="mi ${cls}" onclick="toggleRoutine(${mi});openTab('routine')"><div class="mi-ck">${m.done?'✓':''}</div><div class="mi-txt">${m.text}</div></div>`;
+      });
+      if(has('routine_add')){
+        h+=`<div class="mi" onclick="addRoutine()" style="justify-content:center;color:#8a8060;border-style:dashed">+ 루틴 추가</div>`;
+      }
+      if(S.missions.length===0) h+=`<div style="text-align:center;padding:12px;font-size:9px;color:#8a8060">루틴이 없습니다</div>`;
     }
-  });
-  h+=`</div></div>`;
+    showSheet('📋 루틴',h);
 
-  // 해금 진행도
-  const unlockCount=S.unlocked.length;
-  const totalCount=CRAFTS.length;
-  h+=`<div class="card"><div class="card-head"><div class="card-title">🔓 해금 ${unlockCount}/${totalCount}</div></div><div class="card-body">`;
-  CRAFTS.forEach(cr=>{
-    const done=S.unlocked.includes(cr.id);
-    const avail=!done&&cr.req.every(r=>S.unlocked.includes(r));
-    const rankOk=S.emps.some(e=>e.gi>=cr.minRank);
-    h+=`<div style="font-size:9px;padding:3px 0;color:${done?'#66cc44':avail&&rankOk?'#ffe066':avail?'#aa6622':'#4a4520'}">${done?'✅':avail?'🔨':'🔒'} ${cr.name}${done?' · 완료':avail&&!rankOk?' · '+E[cr.minRank].rank+' 필요':''}</div>`;
-  });
-  h+=`</div></div>`;
+  } else if(tab==='staff'){
+    S.emps.forEach((emp,i)=>{
+      const eg=E[emp.gi];
+      const st=emp.state==='working'?'⚙️ 작업 중':'💤 대기 중';
+      h+=`<div class="btn" onclick="closeSheet();onEmpClick(${i})"><div class="ic" style="background:${eg.bg};border-color:${eg.c};font-size:10px">${emp.state==='working'?'⚙️':'💤'}</div>
+        <div class="info"><div class="t">${emp.name} <span style="color:${eg.c}">${eg.rank}</span></div><div class="d">${st} · ${eg.skill}</div></div></div>`;
+    });
+    if(has('hire_system')){
+      h+=`<div class="btn" onclick="closeSheet();openHire()" style="justify-content:center;border-style:dashed"><div class="info" style="text-align:center"><div class="t" style="color:#8a8060">+ 직원 채용</div></div></div>`;
+    }
+    showSheet('👥 직원',h);
 
-  c.innerHTML=h;
+  } else if(tab==='shop'){
+    SHOP.forEach(item=>{
+      const owned=hasItem(item.id);
+      const isIAP=item.type==='iap';
+      const afford=isIAP||item.cost<=S.money;
+      if(owned&&!isIAP){
+        h+=`<div class="btn locked"><div class="ic" style="background:#2a3a2a;border-color:#44aa44;font-size:12px">${item.icon}</div><div class="info"><div class="t" style="color:#44aa44">${item.name}</div><div class="d">보유 중</div></div></div>`;
+      } else {
+        h+=`<div class="btn ${afford?'':'locked'}" onclick="${isIAP?`buyIAP('${item.id}')`:(afford?`buyItem('${item.id}')`:'')}">
+          <div class="ic" style="background:#4a4520;border-color:${isIAP?'#cc88ff':'#8a8060'};font-size:12px">${item.icon}</div>
+          <div class="info"><div class="t" style="color:${isIAP?'#cc88ff':'#ffe066'}">${item.name}</div><div class="d">${item.desc}</div></div>
+          <div class="cost" style="color:${isIAP?'#cc88ff':'#66cc44'}">${typeof item.cost==='number'?item.cost.toLocaleString()+'원':item.cost}</div>
+        </div>`;
+      }
+    });
+    showSheet('🛒 상점',h);
 
-  // 프로그래스 바 업데이트
-  if(S.crafting){
-    updateProgBar();
+  } else if(tab==='unlock'){
+    const unlockCount=S.unlocked.length;
+    const totalCount=CRAFTS.length;
+    h+=`<div style="font-size:10px;color:#ffe066;margin-bottom:8px">${unlockCount}/${totalCount} 해금</div>`;
+    CRAFTS.forEach(cr=>{
+      const done=S.unlocked.includes(cr.id);
+      const avail=!done&&cr.req.every(r=>S.unlocked.includes(r));
+      const rankOk=S.emps.some(e=>e.gi>=cr.minRank);
+      h+=`<div style="font-size:9px;padding:4px 0;color:${done?'#66cc44':avail&&rankOk?'#ffe066':avail?'#aa6622':'#4a4520'};display:flex;justify-content:space-between">
+        <span>${done?'✅':avail?'🔨':'🔒'} ${cr.name}</span>
+        <span>${done?'완료':avail&&!rankOk?E[cr.minRank].rank+' 필요':''}</span>
+      </div>`;
+    });
+    showSheet('🔓 해금 현황',h);
   }
 }
 
-function updateProgBar(){
-  if(!S.crafting)return;
-  const bar=document.getElementById('craftProg');
-  if(!bar)return;
-  const pct=Math.min(100,(Date.now()-S.crafting.startTime)/1000/S.crafting.duration*100);
-  bar.style.width=pct+'%';
-  if(pct<100)requestAnimationFrame(updateProgBar);
+function showSheet(title,body){
+  document.getElementById('shTitle').textContent=title;
+  document.getElementById('shBody').innerHTML=body;
+  document.getElementById('shBg').classList.add('open');
 }
 
 // ===== 루틴 =====
