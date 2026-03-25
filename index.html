@@ -292,7 +292,7 @@ const SK=['#FFDBB4','#E8B88A','#D4A574','#C68642'];
 const HR=['#222','#4A2800','#8B4513','#333','#1a1a1a'];
 
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
-let S={money:50000,exp:0,lv:1,gi:0,day:1,depts:[],used:[],tab:'missions'};
+let S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false};
 
 function rN(){const a=NM.filter(n=>!S.used.includes(n));const n=a.length?rnd(a):rnd(NM);S.used.push(n);return n;}
 
@@ -551,8 +551,18 @@ function renderContent(){
 
 function renderMissions(c){
   let h='';
+  if(!S.founded){
+    c.innerHTML=`<div class="rc"><div class="rc-body" style="text-align:center;padding:24px">
+      <div style="font-size:20px;margin-bottom:8px">🏢</div>
+      <div style="font-size:13px;color:#ffe066;margin-bottom:6px">회사 설립</div>
+      <div style="font-size:9px;color:#a09870;margin-bottom:16px;line-height:1.5">나만의 회사를 세우고<br>팀을 만들어 성장시키세요!</div>
+      <input id="companyInput" type="text" placeholder="회사 이름을 입력하세요" maxlength="12" style="width:100%;padding:8px;background:#2a2510;border:2px solid #5a5530;color:#ffe066;font-family:inherit;font-size:11px;text-align:center;margin-bottom:12px">
+      <div class="add-c" onclick="foundCompany()" style="border-style:solid;color:#ffe066;border-color:#ffe066">▸ 회사 설립하기</div>
+    </div></div>`;
+    return;
+  }
   if(S.depts.length===0){
-    h+=`<div class="rc"><div class="rc-body" style="text-align:center;padding:20px"><div style="font-size:14px;color:#ffe066;margin-bottom:8px">회사를 세워보세요!</div><div style="font-size:9px;color:#a09870;margin-bottom:12px">팀을 만들어 직원을 배치하고<br>미션을 달성해 회사를 성장시키세요</div></div></div>`;
+    h+=`<div class="rc"><div class="rc-body" style="text-align:center;padding:20px"><div style="font-size:13px;color:#ffe066;margin-bottom:8px">${S.companyName}</div><div style="font-size:9px;color:#a09870;margin-bottom:12px">첫 번째 팀을 만들어보세요!</div></div></div>`;
     h+=`<div class="add-c" onclick="addDept()">+ 첫 번째 팀 만들기</div>`;
     c.innerHTML=h;return;
   }
@@ -626,6 +636,17 @@ function renderReport(c){
   </div>`;
 }
 
+function foundCompany(){
+  const input=document.getElementById('companyInput');
+  const name=input?input.value.trim():'';
+  if(!name){toast('회사 이름을 입력해주세요',true);return;}
+  S.founded=true;
+  S.companyName=name;
+  S.day=1;
+  toast(`🏢 ${name} 설립!`);
+  render();
+}
+
 // ===== ACTIONS =====
 function doM(di,mi){
   const d=S.depts[di];if(d.missions[mi].st!=='todo')return;
@@ -692,14 +713,20 @@ function hire(gi){
 
 // ===== LUNA =====
 function updateLuna(){
-  const avg=S.depts.length?Math.round(S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length):0;
-  const todo=S.depts.reduce((s,d)=>s+d.missions.filter(m=>m.st==='todo').length,0);
   let m='';
-  if(avg>=80)m='전부서 순항! 승급 가까워요 ★';
-  else if(avg>=60)m='양호합니다. 조금만 더!';
-  else if(avg>=40)m='KPI 불안.. 미션 확인!';
-  else m='긴급! 직원들 동요중..';
-  if(todo)m+=` (남은:${todo}건)`;
+  if(!S.founded){
+    m='CEO님, 회사를 설립해주세요!';
+  } else if(S.depts.length===0){
+    m='첫 번째 팀을 만들어볼까요?';
+  } else {
+    const avg=S.depts.length?Math.round(S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length):0;
+    const todo=S.depts.reduce((s,d)=>s+d.missions.filter(m=>m.st==='todo').length,0);
+    if(avg>=80)m='전팀 순항! 승급 가까워요 ★';
+    else if(avg>=60)m='양호합니다. 조금만 더!';
+    else if(avg>=40)m='KPI 불안.. 미션 확인!';
+    else m='긴급! 직원들 동요중..';
+    if(todo)m+=` (남은:${todo}건)`;
+  }
   document.getElementById('lunaMsg').textContent=m;
 }
 
@@ -707,8 +734,8 @@ function toast(m,bad){const t=document.getElementById('toast');t.textContent=m;t
 
 function render(){
   const g=G[S.gi];
-  document.getElementById('hudDay').textContent=`DAY ${String(S.day).padStart(3,'0')}`;
-  document.getElementById('hudGrade').textContent=`${g.icon} ${g.name}`;
+  document.getElementById('hudDay').textContent=S.founded?`DAY ${String(S.day).padStart(3,'0')}`:'';
+  document.getElementById('hudGrade').textContent=S.founded?(S.companyName?S.companyName+' · ':'')+`${g.icon} ${g.name}`:'수호컴퍼니';
   document.getElementById('expBar').style.width=Math.min(100,S.exp/g.exp*100)+'%';
   const avg=S.depts.length?Math.round(S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length):0;
   document.getElementById('hudKpi').textContent=avg+'%';
@@ -718,7 +745,7 @@ function render(){
   renderContent();updateLuna();
 }
 
-function resetGame(){if(!confirm('리셋?'))return;S={money:50000,exp:0,lv:1,gi:0,day:1,depts:[],used:[],tab:'missions'};init();}
+function resetGame(){if(!confirm('리셋?'))return;S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:''};init();}
 
 init();
 </script>
