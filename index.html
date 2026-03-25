@@ -307,7 +307,7 @@ function init(){
 }
 
 // ===== CANVAS =====
-let cv,cx,W,H,PX,aT=0,clickC=-1,clickTO,waveChars={},bubbleData=[];
+let cv,cx,W,H,PX,aT=0,clickC=-1,clickTO,waveChars={},bubbleData=[],clickMsg='';
 
 function setupCanvas(){
   cv=document.getElementById('canvas');
@@ -325,8 +325,11 @@ function onCvClick(e){
   S.depts.forEach((d,di)=>{
     d.emps.forEach((emp,ei)=>{
       const p=charPosInDept(di,ei);
-      if(mx>=p.x-8&&mx<=p.x+8&&my>=p.y-18&&my<=p.y+4){
-        clickC=ci;waveChars[ci]=aT;clearTimeout(clickTO);clickTO=setTimeout(()=>{clickC=-1;},3000);return;
+      if(mx>=p.x-8&&mx<=p.x+8&&my>=p.y-18&&my<=p.y+12){
+        clickC=ci;waveChars[ci]=aT;
+        const dk=d.kpi;
+        clickMsg=dk>=50?rnd(['화이팅!','최고!','열심히!','좋아요!','파이팅!']):rnd(['힘들어요..','ㅠㅠ','사직서..','CEO님..','야근싫어..']);
+        clearTimeout(clickTO);clickTO=setTimeout(()=>{clickC=-1;},3000);return;
       }
       ci++;
     });
@@ -346,6 +349,7 @@ function charPosInDept(di,ei){
 function loop(ts){aT=ts/1000;draw();renderBubbles();requestAnimationFrame(loop);}
 
 function renderBubbles(){
+  // 말풍선 레이어
   let el=document.getElementById('bubbleLayer');
   if(!el){
     el=document.createElement('div');
@@ -353,8 +357,31 @@ function renderBubbles(){
     el.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:15';
     document.getElementById('officeWrap').appendChild(el);
   }
-  if(bubbleData.length===0){el.innerHTML='';return;}
-  el.innerHTML=bubbleData.map(b=>`<div style="position:absolute;left:${b.x}px;top:${b.y}px;transform:translateX(-50%);background:#fffde0;color:#3a2a10;font-size:12px;font-weight:bold;padding:4px 10px;border:2px solid #8a7a50;box-shadow:2px 2px 0 rgba(0,0,0,0.3);white-space:nowrap;font-family:inherit">${b.msg}<div style="position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #8a7a50"></div></div>`).join('');
+  let html='';
+  // 말풍선
+  bubbleData.forEach(b=>{
+    html+=`<div style="position:absolute;left:${b.x}px;top:${b.y}px;transform:translateX(-50%);background:#fffde0;color:#3a2a10;font-size:13px;font-weight:bold;padding:5px 12px;border:2px solid #8a7a50;box-shadow:2px 2px 0 rgba(0,0,0,0.3);white-space:nowrap;font-family:inherit;z-index:20">${b.msg}<div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid #8a7a50"></div></div>`;
+  });
+  el.innerHTML=html;
+
+  // 간판 레이어
+  let sl=document.getElementById('signLayer');
+  if(!sl){
+    sl=document.createElement('div');
+    sl.id='signLayer';
+    sl.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:12';
+    document.getElementById('officeWrap').appendChild(sl);
+  }
+  const nd=S.depts.length;
+  const fy=Math.floor(H*0.55);
+  const dwPx=Math.floor(cv.parentElement.getBoundingClientRect().width/nd);
+  let sh='';
+  S.depts.forEach((dept,di)=>{
+    const lx=di*dwPx+6;
+    const ly=fy*PX-36;
+    sh+=`<div style="position:absolute;left:${lx}px;top:${ly}px;width:${dwPx-12}px;text-align:center;font-size:11px;color:#ffe8c0;font-weight:bold;text-shadow:1px 1px 0 #3a2a10;font-family:inherit;white-space:nowrap;overflow:hidden">${dept.icon} ${dept.name}</div>`;
+  });
+  sl.innerHTML=sh;
 }
 
 function draw(){
@@ -406,11 +433,9 @@ function draw(){
       cx.fillStyle='#887755';cx.fillRect(sx,fy-2,2,H-fy+2);
       cx.fillStyle='#aa9966';cx.fillRect(sx+1,fy-2,1,H-fy+2);
     }
-    // 간판 (벽에)
+    // 간판 배경만 캔버스 (글자는 HTML)
     cx.fillStyle='#5a4a30';cx.fillRect(sx+3,fy-12,dw-8,10);
     cx.fillStyle='#7a6a50';cx.fillRect(sx+4,fy-11,dw-10,8);
-    cx.fillStyle='#fff';cx.font='5px monospace';cx.textAlign='center';
-    cx.fillText(dept.name,sx+dw/2,fy-5);
   });
 
   // 캐릭터 + 책상 + 의자 (부서별)
@@ -420,12 +445,10 @@ function draw(){
     dept.emps.forEach((emp,ei)=>{
       const p=charPosInDept(di,ei);
       const isWaving=waveChars[ci]!==undefined&&(aT-waveChars[ci])<2.0;
-      drawDesk(p.x,p.y); // 책상+의자
+      drawDesk(p.x,p.y);
       drawChar(p.x,p.y,emp,E[emp.gi],dept.kpi,ci===clickC,isWaving);
       if(ci===clickC){
-        // 말풍선 데이터 저장 (HTML로 표시)
-        const msg=dept.kpi>=50?rnd(['화이팅!','최고!','열심히!','좋아요!']):rnd(['힘들어..','ㅠㅠ','사직서..','CEO님..']);
-        bubbleData.push({x:p.x*PX, y:p.y*PX-50, msg});
+        bubbleData.push({x:p.x*PX, y:p.y*PX-50, msg:clickMsg});
       }
       ci++;
     });
