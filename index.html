@@ -36,15 +36,6 @@
   .office-canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
 
   /* 루나 */
-  .luna{
-    position:absolute;top:6px;right:6px;z-index:20;
-    background:#3a2a20;border:2px solid #cc8844;padding:6px 8px;max-width:160px;
-    box-shadow:2px 2px 0 rgba(0,0,0,0.5);
-  }
-  .luna .lh{display:flex;align-items:center;gap:4px;margin-bottom:3px}
-  .luna .la{width:14px;height:14px;background:#cc8844;border:1px solid #aa6622;display:flex;align-items:center;justify-content:center;font-size:8px}
-  .luna .ln{font-size:8px;color:#ffaa44}
-  .luna .lm{font-size:8px;color:#ddb888;line-height:1.3}
 
   /* ===== 탭 (레트로 버튼) ===== */
   .tabs{
@@ -241,11 +232,11 @@
     padding:20px;
   }
   .npc-luna{
-    width:80px;height:80px;background:linear-gradient(135deg,#9933cc,#cc66ff);
-    border:3px solid #6600aa;display:flex;align-items:center;justify-content:center;
+    width:80px;height:80px;background:linear-gradient(135deg,#4a6a2a,#66aa44);
+    border:3px solid #3a5520;display:flex;align-items:center;justify-content:center;
     font-size:36px;margin-bottom:16px;box-shadow:3px 3px 0 rgba(0,0,0,0.4);
   }
-  .npc-name{font-size:11px;color:#cc88ff;margin-bottom:20px}
+  .npc-name{font-size:11px;color:#ffe066;margin-bottom:20px}
   .npc-dialog{
     width:100%;background:#3a3520;border:2px solid #5a5530;padding:16px;
     margin:0 12px;box-shadow:2px 2px 0 rgba(0,0,0,0.4);
@@ -278,11 +269,11 @@
   <button class="intro-start" onclick="startIntro()">▸ 시작하기</button>
 </div>
 
-<!-- NPC 대화 -->
+<!-- 도입부 대화 -->
 <div class="npc-screen" id="npcScreen">
   <div class="npc-scene">
-    <div class="npc-luna" id="npcAvatar">☽</div>
-    <div class="npc-name">루나</div>
+    <div class="npc-luna" id="npcAvatar">🏢</div>
+    <div class="npc-name" style="color:#ffe066">회사 설립</div>
     <div class="npc-dialog" id="npcDialog" onclick="nextDialog()">
       <div class="npc-text" id="npcText"></div>
       <div class="npc-tap" id="npcTap">탭하여 계속 ▸</div>
@@ -312,10 +303,6 @@
 
 <div class="office-wrap" id="officeWrap">
   <canvas class="office-canvas" id="canvas"></canvas>
-  <div class="luna">
-    <div class="lh"><div class="la">☽</div><div class="ln">루나 비서실장</div></div>
-    <div class="lm" id="lunaMsg">CEO님, 좋은 아침! 미션을 완료해주세요.</div>
-  </div>
 </div>
 
 <div class="tabs">
@@ -388,12 +375,11 @@ function mkEmp(gi){return{name:rN(),gi,mood:'normal',skin:rnd(SK),hair:rnd(HR),w
 
 // ===== 인트로 시스템 =====
 const DIALOGS=[
-  '안녕하세요, CEO님!\n저는 루나, 앞으로 CEO님의\n비서실장을 맡게 되었습니다.',
-  '지금 이 곳은 아무것도 없는\n빈 사무실이에요.',
-  '하지만 걱정 마세요!\nCEO님이 팀을 만들고\n직원을 채용하면...',
-  '운동, 수면, 학습, 건강 등\n각 팀의 직원들이 CEO님의\n목표 달성을 도와줄 거예요.',
-  '직원들의 성과는 CEO님이\n미션을 얼마나 잘 수행하느냐에\n달려있습니다!',
-  '자, 그럼 먼저\n회사 이름부터 정해볼까요?',
+  '당신만의 회사를 세워보세요.',
+  '팀을 만들고, 직원을 채용하고\n루틴을 등록하세요.',
+  '운동, 수면, 학습, 건강 등\n각 팀의 직원들이\n당신의 목표 달성을 돕습니다.',
+  '직원들의 성과는\n당신이 루틴을 얼마나\n잘 수행하느냐에 달려있습니다.',
+  '자, 먼저\n회사 이름부터 정해볼까요?',
 ];
 let dialogIdx=0;
 
@@ -434,7 +420,7 @@ function confirmName(){
   // NPC 마지막 인사
   document.getElementById('npcExtra').innerHTML='';
   document.getElementById('npcTap').style.display='block';
-  document.getElementById('npcText').textContent=`${name}!\n멋진 이름이네요.\n\n그럼 사무실로 가볼까요?\n첫 번째 팀을 만들어봅시다!`;
+  document.getElementById('npcText').textContent=`${name}\n\n설립 완료.\n사무실로 이동합니다.`;
   document.getElementById('npcDialog').onclick=()=>{
     document.getElementById('npcScreen').classList.remove('active');
     document.getElementById('gameScreen').style.display='block';
@@ -1036,24 +1022,7 @@ function hire(gi){
   closeSheet();render();
 }
 
-// ===== LUNA =====
-function updateLuna(){
-  let m='';
-  if(!S.founded){
-    m='CEO님, 회사를 설립해주세요!';
-  } else if(S.depts.length===0){
-    m='첫 번째 팀을 만들어볼까요?';
-  } else {
-    const avg=S.depts.length?Math.round(S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length):0;
-    const todo=S.depts.reduce((s,d)=>s+d.missions.filter(m=>m.st==='todo').length,0);
-    if(avg>=80)m='전팀 순항! 승급 가까워요 ★';
-    else if(avg>=60)m='양호합니다. 조금만 더!';
-    else if(avg>=40)m='KPI 불안.. 미션 확인!';
-    else m='긴급! 직원들 동요중..';
-    if(todo)m+=` (남은:${todo}건)`;
-  }
-  document.getElementById('lunaMsg').textContent=m;
-}
+function updateLuna(){}
 
 function toast(m,bad){const t=document.getElementById('toast');t.textContent=m;t.className='toast'+(bad?' bad':'');t.style.display='block';setTimeout(()=>t.style.display='none',2000);}
 
