@@ -280,12 +280,12 @@ const E=[
   {rank:'임원',c:'#ee6666',bg:'#993333',cost:14900,bonus:30},
 ];
 const D=[
-  {id:'exercise',name:'운동부',icon:'💪',ms:['러닝 30분','스트레칭','근력운동']},
-  {id:'sleep',name:'수면부',icon:'😴',ms:['23시 취침','7시간 수면','아침 햇빛']},
-  {id:'study',name:'학습부',icon:'📚',ms:['독서 30분','강의 수강','노트 정리']},
-  {id:'health',name:'건강부',icon:'🥗',ms:['물 8잔','영양제','건강 식사']},
-  {id:'finance',name:'재정부',icon:'💰',ms:['가계부','절약 실천','저축']},
-  {id:'mental',name:'멘탈부',icon:'🧘',ms:['명상 10분','감사일기','디톡스']},
+  {id:'exercise',name:'운동팀',icon:'💪',ms:['러닝 30분','스트레칭','근력운동']},
+  {id:'sleep',name:'수면팀',icon:'😴',ms:['23시 취침','7시간 수면','아침 햇빛']},
+  {id:'study',name:'학습팀',icon:'📚',ms:['독서 30분','강의 수강','노트 정리']},
+  {id:'health',name:'건강팀',icon:'🥗',ms:['물 8잔','영양제','건강 식사']},
+  {id:'finance',name:'재정팀',icon:'💰',ms:['가계부','절약 실천','저축']},
+  {id:'mental',name:'멘탈팀',icon:'🧘',ms:['명상 10분','감사일기','디톡스']},
 ];
 const NM=['김수호','이하늘','박지민','최윤서','정다은','강민준','조서연','윤태호','한소율','임재현','송예린','오동현','나영호','문서진','백승우','허지연'];
 const SK=['#FFDBB4','#E8B88A','#D4A574','#C68642'];
@@ -299,10 +299,7 @@ function rN(){const a=NM.filter(n=>!S.used.includes(n));const n=a.length?rnd(a):
 function mkEmp(gi){return{name:rN(),gi,mood:'normal',skin:rnd(SK),hair:rnd(HR),waveT:0};}
 
 function init(){
-  S.depts=D.slice(0,4).map(t=>({
-    ...t,kpi:50,emps:[mkEmp(0),mkEmp(1)],
-    missions:t.ms.map(m=>({text:m,st:'todo'})),
-  }));
+  S.depts=[];
   setupCanvas();render();requestAnimationFrame(loop);
 }
 
@@ -554,6 +551,11 @@ function renderContent(){
 
 function renderMissions(c){
   let h='';
+  if(S.depts.length===0){
+    h+=`<div class="rc"><div class="rc-body" style="text-align:center;padding:20px"><div style="font-size:14px;color:#ffe066;margin-bottom:8px">회사를 세워보세요!</div><div style="font-size:9px;color:#a09870;margin-bottom:12px">팀을 만들어 직원을 배치하고<br>미션을 달성해 회사를 성장시키세요</div></div></div>`;
+    h+=`<div class="add-c" onclick="addDept()">+ 첫 번째 팀 만들기</div>`;
+    c.innerHTML=h;return;
+  }
   S.depts.forEach((d,di)=>{
     const kc=d.kpi>=70?'high':d.kpi>=40?'mid':'low';
     h+=`<div class="rc"><div class="rc-head"><div class="rc-title">${d.icon} ${d.name}</div><div class="rc-badge ${kc}">${d.kpi}%</div></div><div class="rc-body"><div class="kbar"><div class="kbar-fill ${kc}" style="width:${d.kpi}%"></div></div>`;
