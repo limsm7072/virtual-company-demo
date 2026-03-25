@@ -361,10 +361,10 @@ const D=[
     q2:'처음이니까 욕심 내지 말고.\n하루에 얼마나 할 수 있나요?',
     opts2:['10분','15분','20분']},
   {id:'sleep',name:'수면팀',icon:'😴',hint:'수면 관련 루틴',
-    q:'수면에서 가장 고치고 싶은 건?\n\n하나만 골라봅시다.',
-    opts:['늦게 자는 습관','불규칙한 기상','잠들기 어려움'],
-    q2:'현실적인 목표 취침 시간은?\n\n무리하면 오래 못 갑니다.',
-    opts2:['23시 30분','24시','24시 30분']},
+    q:'요즘 보통 몇 시에 자나요?',
+    opts:['23시쯤','24시쯤','새벽 1시쯤','새벽 2시쯤','새벽 3시쯤','새벽 4시 이후'],
+    q2:'_dynamic_sleep',
+    opts2:[]},
   {id:'study',name:'학습팀',icon:'📚',hint:'학습 관련 루틴',
     q:'무엇을 공부하나요?',
     opts:['영어','코딩/개발','자격증 준비','독서','기타'],
@@ -700,7 +700,6 @@ function bpDetailPick1(choice){
   if(!S._teamDetails[tid])S._teamDetails[tid]={};
   S._teamDetails[tid].what=choice;
 
-  // 세부 질문 2
   const avatar=document.getElementById('npcAvatar');
   const text=document.getElementById('npcText');
   const tap=document.getElementById('npcTap');
@@ -708,10 +707,36 @@ function bpDetailPick1(choice){
   const dialog=document.getElementById('npcDialog');
 
   avatar.textContent=t.icon;
-  text.textContent=t.q2;
   tap.style.display='none';
   dialog.onclick=null;
 
+  // 수면팀: 현재 취침 시간 기반으로 목표 생성
+  if(tid==='sleep'){
+    const timeMap={'23시쯤':23,'24시쯤':24,'새벽 1시쯤':25,'새벽 2시쯤':26,'새벽 3시쯤':27,'새벽 4시 이후':28};
+    const current=timeMap[choice]||25;
+    const goals=[];
+    // 15분, 30분, 1시간 일찍
+    for(const [label,mins] of [['15분 일찍',15],['30분 일찍',30],['1시간 일찍',60]]){
+      const target=current*60 - mins; // 분 단위
+      const h=Math.floor(target/60);
+      const m=target%60;
+      const hh=h>=24?h-24:h;
+      const prefix=h>=24?'새벽 ':'';
+      const timeStr=`${prefix}${hh}시${m?` ${m}분`:''}`;
+      goals.push({label:`${label} → ${timeStr}`,value:timeStr});
+    }
+
+    text.textContent=`${choice}에 자는군요.\n\n처음이니까 욕심 내지 말고\n조금만 당겨봅시다.`;
+
+    const opts=goals.map(g=>`<div class="hr" onclick="bpDetailPick2('${g.value}')">
+      <div class="hr-info"><div class="t" style="color:#ffe066">${g.label}</div></div>
+    </div>`).join('');
+    extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
+    return;
+  }
+
+  // 기본: 고정 옵션
+  text.textContent=t.q2;
   const opts=t.opts2.map(o=>`<div class="hr" onclick="bpDetailPick2('${o}')">
     <div class="hr-info"><div class="t" style="color:#ffe066">${o}</div></div>
   </div>`).join('');
@@ -732,7 +757,11 @@ function bpDetailPick2(choice){
 
   const detail=S._teamDetails[tid];
   avatar.textContent='✓';
-  text.textContent=`${t.name} 계획 완료!\n\n▸ ${detail.what}\n▸ 하루 ${detail.howMuch}`;
+  if(tid==='sleep'){
+    text.textContent=`수면 계획 완료!\n\n▸ 현재: ${detail.what}\n▸ 목표: ${detail.howMuch}까지 취침`;
+  } else {
+    text.textContent=`계획 완료!\n\n▸ ${detail.what}\n▸ 하루 ${detail.howMuch}`;
+  }
   tap.style.display='block';
   tap.textContent='탭하여 계속 ▸';
   extra.innerHTML='';
@@ -786,7 +815,11 @@ function rentOffice(idx){
     const missions=[];
     if(detail){
       // 세부 선택을 루틴으로 변환
-      missions.push({text:`${detail.what} ${detail.howMuch}`,st:'todo'});
+      if(tid==='sleep'){
+        missions.push({text:`${detail.howMuch}까지 취침`,st:'todo'});
+      } else {
+        missions.push({text:`${detail.what} ${detail.howMuch}`,st:'todo'});
+      }
     }
     S.depts.push({...t,kpi:0,emps:[],missions});
   });
