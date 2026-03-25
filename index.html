@@ -359,20 +359,20 @@ const G=[
    wall:'#f0ece4',wl:'#e4e0d4',trim:'#ccbb99',f1:'#3a3a3a',f2:'#2a2a2a',fh:'#4a4a4a'},
 ];
 const E=[
-  {rank:'인턴',c:'#88aaaa',bg:'#556666',cost:0,bonus:0},
-  {rank:'사원',c:'#66aaee',bg:'#336699',cost:0,bonus:5},
-  {rank:'대리',c:'#66cc66',bg:'#338833',cost:3900,bonus:10},
-  {rank:'과장',c:'#eeaa44',bg:'#aa6600',cost:6900,bonus:15},
-  {rank:'부장',c:'#cc88ee',bg:'#774499',cost:9900,bonus:20},
-  {rank:'임원',c:'#ee6666',bg:'#993333',cost:14900,bonus:30},
+  {rank:'인턴',c:'#88aaaa',bg:'#556666',cost:0,bonus:0,skill:'기본 알림',desc:'정해진 시간에 알림만'},
+  {rank:'사원',c:'#66aaee',bg:'#336699',cost:0,bonus:5,skill:'API 연동',desc:'캘린더/건강앱 데이터 연동'},
+  {rank:'대리',c:'#66cc66',bg:'#338833',cost:3900,bonus:10,skill:'OS 제어',desc:'방해금지/알람 자동 설정'},
+  {rank:'과장',c:'#eeaa44',bg:'#aa6600',cost:6900,bonus:15,skill:'오버레이 잔소리',desc:'화면 위에 캐릭터가 나타나 독촉'},
+  {rank:'부장',c:'#cc88ee',bg:'#774499',cost:9900,bonus:20,skill:'AI 분석',desc:'패턴 분석 + 맞춤 루틴 제안'},
+  {rank:'임원',c:'#ee6666',bg:'#993333',cost:14900,bonus:30,skill:'풀 자동화',desc:'자율 에이전트, 선제적 실행'},
 ];
 const D=[
-  {id:'exercise',name:'운동팀',icon:'💪',ms:['러닝 30분','스트레칭','근력운동']},
-  {id:'sleep',name:'수면팀',icon:'😴',ms:['23시 취침','7시간 수면','아침 햇빛']},
-  {id:'study',name:'학습팀',icon:'📚',ms:['독서 30분','강의 수강','노트 정리']},
-  {id:'health',name:'건강팀',icon:'🥗',ms:['물 8잔','영양제','건강 식사']},
-  {id:'finance',name:'재정팀',icon:'💰',ms:['가계부','절약 실천','저축']},
-  {id:'mental',name:'멘탈팀',icon:'🧘',ms:['명상 10분','감사일기','디톡스']},
+  {id:'exercise',name:'운동팀',icon:'💪',hint:'운동 관련 루틴'},
+  {id:'sleep',name:'수면팀',icon:'😴',hint:'수면 관련 루틴'},
+  {id:'study',name:'학습팀',icon:'📚',hint:'학습 관련 루틴'},
+  {id:'health',name:'건강팀',icon:'🥗',hint:'건강 관련 루틴'},
+  {id:'finance',name:'재정팀',icon:'💰',hint:'재정 관련 루틴'},
+  {id:'mental',name:'멘탈팀',icon:'🧘',hint:'멘탈 관련 루틴'},
 ];
 const NM=['김수호','이하늘','박지민','최윤서','정다은','강민준','조서연','윤태호','한소율','임재현','송예린','오동현','나영호','문서진','백승우','허지연'];
 const SK=['#FFDBB4','#E8B88A','#D4A574','#C68642'];
@@ -711,18 +711,20 @@ function renderMissions(c){
       // 직원 없음 → 채용 유도
       h+=`<div style="text-align:center;padding:12px 0">
         <div style="font-size:9px;color:#8a8060;margin-bottom:8px">아직 직원이 없습니다</div>
-        <div class="add-c" onclick="openSheet(${di})" style="margin:0;padding:10px;font-size:10px">👔 첫 직원 채용하기</div>
+        <div class="add-c" onclick="openSheet(${di})" style="margin:0;padding:10px;font-size:10px">👔 직원 채용하기</div>
       </div>`;
     } else {
-      // 미션 표시
-      h+=`<div class="kbar"><div class="kbar-fill ${kc}" style="width:${d.kpi}%"></div></div>`;
+      // KPI바
+      if(d.missions.length>0) h+=`<div class="kbar"><div class="kbar-fill ${kc}" style="width:${d.kpi}%"></div></div>`;
+      // 미션(루틴) 표시
       d.missions.forEach((m,mi)=>{
-        if(m.st==='locked') return; // 잠긴 미션은 안 보임
         const cls=m.st==='done'?'done':m.st==='fail'?'fail':'';
         const ck=m.st==='done'?'✓':m.st==='fail'?'✕':'';
         const act=m.st==='todo'?`onclick="doM(${di},${mi})"`:m.st==='fail'?`onclick="retry(${di},${mi})"`:''
         h+=`<div class="mi ${cls}" ${act}><div class="mi-ck">${ck}</div><div class="mi-txt">${m.text}</div></div>`;
       });
+      // 루틴 추가 버튼
+      h+=`<div class="mi" onclick="addRoutine(${di})" style="justify-content:center;color:#8a8060;border-style:dashed">+ 루틴 추가</div>`;
     }
     h+=`</div></div>`;
   });
@@ -737,8 +739,9 @@ function renderEmployees(c){
     d.emps.forEach(emp=>{
       const g=E[emp.gi];
       const m=emp.mood==='great'?'★':emp.mood==='good'?'♪':emp.mood==='bad'?'✕':'·';
-      h+=`<div class="er"><div class="er-face" style="background:${g.bg};border-color:${g.c}">${m}</div><div class="er-info"><div class="n">${emp.name}</div><div class="r" style="color:${g.c}">${g.rank} · KPI +${g.bonus}%</div></div></div>`;
+      h+=`<div class="er"><div class="er-face" style="background:${g.bg};border-color:${g.c}">${m}</div><div class="er-info"><div class="n">${emp.name} <span style="color:${g.c}">${g.rank}</span></div><div class="r" style="color:${g.c}">${g.skill}</div><div class="r" style="color:#8a8060">${g.desc}</div></div></div>`;
     });
+    if(d.emps.length===0) h+=`<div style="text-align:center;padding:10px;font-size:9px;color:#8a8060">직원이 없습니다</div>`;
     h+=`</div></div>`;
   });
   c.innerHTML=h;
@@ -785,6 +788,31 @@ function renderReport(c){
   </div>`;
 }
 
+function addRoutine(di){
+  document.getElementById('shTitle').textContent=S.depts[di].name+' 루틴 추가';
+  const b=document.getElementById('shBody');
+  b.innerHTML=`
+    <div style="padding:8px">
+      <input id="routineInput" type="text" placeholder="루틴 이름 (예: 러닝 30분)" maxlength="20"
+        style="width:100%;padding:10px;background:#2a2510;border:2px solid #5a5530;color:#ffe066;font-family:inherit;font-size:11px;margin-bottom:8px">
+      <div class="hr" onclick="confirmRoutine(${di})" style="justify-content:center;background:#4a6a2a;border-color:#66aa44">
+        <div class="hr-info" style="text-align:center"><div class="t" style="color:#ccff88">▸ 추가</div></div>
+      </div>
+    </div>`;
+  document.getElementById('shBg').classList.add('open');
+  setTimeout(()=>{const inp=document.getElementById('routineInput');if(inp)inp.focus();},300);
+}
+
+function confirmRoutine(di){
+  const inp=document.getElementById('routineInput');
+  const name=inp?inp.value.trim():'';
+  if(!name){inp.style.borderColor='#cc4444';return;}
+  S.depts[di].missions.push({text:name,st:'todo'});
+  if(S.depts[di].kpi===0)S.depts[di].kpi=10;
+  toast(`루틴 추가: ${name}`);
+  closeSheet();render();
+}
+
 // ===== ACTIONS =====
 function doM(di,mi){
   const d=S.depts[di];if(d.missions[mi].st!=='todo')return;
@@ -807,8 +835,8 @@ function newDay(){
     if(f)d.kpi=Math.max(0,d.kpi-f*6);
     d.kpi=Math.max(0,d.kpi-2);
     d.emps.forEach(e=>{e.mood=d.kpi<30?'bad':d.kpi<50?'normal':e.mood;});
-    const t=D.find(x=>x.id===d.id);
-    d.missions=t.ms.map(m=>({text:m,st:'todo'}));
+    // 유저가 만든 루틴 유지, 상태만 리셋
+    d.missions.forEach(m=>m.st='todo');
   });
   checkDown();updateLuna();toast(`DAY ${String(S.day).padStart(3,'0')}`);render();
 }
@@ -826,7 +854,7 @@ function addDept(){
     return `<div class="hr" onclick="createDept('${t.id}')">
       <div class="hr-ic" style="background:#4a4520;border-color:#8a8060;font-size:16px">${t.icon}</div>
       <div class="hr-info"><div class="t" style="color:#ffe066">${t.name}</div>
-      <div class="d">${t.ms.join(' · ')}</div></div>
+      <div class="d">${t.hint}</div></div>
     </div>`;
   }).join('');
   document.getElementById('shBg').classList.add('open');
@@ -834,7 +862,7 @@ function addDept(){
 
 function createDept(id){
   const t=D.find(x=>x.id===id);if(!t)return;
-  S.depts.push({...t,kpi:0,emps:[],missions:t.ms.map(m=>({text:m,st:'locked'}))});
+  S.depts.push({...t,kpi:0,emps:[],missions:[]});
   toast(`${t.name} 창설!`);
   closeSheet();render();
 }
@@ -853,7 +881,8 @@ function openSheet(di){
     return `<div class="hr ${dis?'locked':''}" onclick="${dis?'':'hire('+gi+')'}">
       <div class="hr-ic" style="background:${g.bg};border-color:${g.c}">★</div>
       <div class="hr-info"><div class="t" style="color:${g.c}">${g.rank}</div>
-      <div class="d">${lk?'🔒 등급 부족':br?'💸 자금 부족':'KPI +'+g.bonus+'%'}</div></div>
+      <div class="d" style="color:${g.c}">${g.skill}</div>
+      <div class="d">${lk?'🔒 등급 부족':br?'💸 자금 부족':g.desc}</div></div>
       <div class="hr-cost">${g.cost?g.cost.toLocaleString()+'원':'무료'}</div>
     </div>`;
   }).join('');
@@ -865,16 +894,8 @@ function hire(gi){
   const g=E[gi];if(g.cost>S.money)return;
   S.money-=g.cost;
   const dept=S.depts[hDi];
-  const wasEmpty=dept.emps.length===0;
   dept.emps.push(mkEmp(gi));
-  // 첫 직원 채용 시 미션 해금
-  if(wasEmpty){
-    dept.missions=D.find(x=>x.id===dept.id).ms.map(m=>({text:m,st:'todo'}));
-    dept.kpi=30;
-    toast(`${dept.emps.at(-1).name} ${g.rank} 채용! 미션이 해금되었습니다`);
-  } else {
-    toast(`${dept.emps.at(-1).name} ${g.rank} 채용!`);
-  }
+  toast(`${dept.emps.at(-1).name} ${g.rank} 채용!`);
   closeSheet();render();
 }
 
