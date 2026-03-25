@@ -208,8 +208,9 @@ let S={
 let placingItem=null; // 배치 모드 중인 아이템
 
 function rN(){const a=NAMES.filter(n=>!S.used.includes(n));const n=a.length?rnd(a):rnd(NAMES);S.used.push(n);return n;}
-function mkEmp(gi){return{name:rN(),gi,skin:rnd(SK),hair:rnd(HR),state:'idle',mood:'normal'};}
-function has(id){return S.unlocked.includes(id);}
+function mkEmp(gi){return{name:rN(),gi,skin:rnd(SK),hair:rnd(HR),state:'idle',mood:'normal',skills:[]};}
+function has(id){return S.emps.some(e=>e.skills.includes(id));}  // 아무 직원이라도 그 스킬 있으면
+function empHas(emp,id){return emp.skills.includes(id);}  // 특정 직원이 그 스킬 있는지
 function hasItem(id){return S.owned.some(o=>o.id===id);}
 
 // ===== 인트로 =====
@@ -465,9 +466,11 @@ function updateWorkers(){
     const elapsed=(now-S.research.startTime)/1000;
     if(elapsed>=S.research.duration){
       const c=COURSES.find(x=>x.id===S.research.patentId);
-      S.unlocked.push(S.research.patentId);
-      S.emps[S.research.empIdx].state='idle';
-      toast(`🎓 ${c.name} 수료!`);
+      const emp=S.emps[S.research.empIdx];
+      emp.skills.push(S.research.patentId);
+      if(!S.unlocked.includes(S.research.patentId))S.unlocked.push(S.research.patentId);
+      emp.state='idle';
+      toast(`🎓 ${emp.name} — ${c.name} 수료!`);
       playUnlockSound();
       S.research=null;
       renderAll();
@@ -650,32 +653,38 @@ function onEmpClick(idx){
   const emp=S.emps[idx];
   const eg=E[emp.gi];
 
-  document.getElementById('shTitle').textContent=`${emp.name} ${eg.rank}`;
-  let h=`<div style="font-size:9px;color:#8a8060;margin-bottom:8px">${eg.skill} · ${eg.desc}</div>`;
+  let h=`<div style="font-size:9px;color:#8a8060;margin-bottom:4px">${eg.skill} · ${eg.desc}</div>`;
 
+  // 보유 스킬 표시
+  if(emp.skills.length>0){
+    h+=`<div style="font-size:8px;color:#66cc44;margin-bottom:8px">보유 스킬: ${emp.skills.map(s=>{const c=COURSES.find(x=>x.id===s);return c?c.icon+c.name:'';}).join(', ')}</div>`;
+  } else {
+    h+=`<div style="font-size:8px;color:#5a5530;margin-bottom:8px">보유 스킬 없음</div>`;
+  }
+
+  // 상태별 액션
   if(emp.state==='idle'){
-    h+=`<div class="btn" onclick="startWork(${idx})"><div class="ic" style="background:#4a6a2a;border-color:#66aa44;font-size:12px">⚙️</div><div class="info"><div class="t" style="color:#ccff88">서류 작업 시작</div><div class="d">게이지가 차면 돈이 들어옵니다</div></div></div>`;
+    h+=`<div class="btn" onclick="startWork(${idx})"><div class="ic" style="background:#4a6a2a;border-color:#66aa44;font-size:12px">⚙️</div><div class="info"><div class="t" style="color:#ccff88">서류 작업</div><div class="d">게이지가 차면 돈이 들어옵니다</div></div></div>`;
   } else if(emp.state==='working'){
-    h+=`<div class="btn" onclick="stopWork(${idx})"><div class="ic" style="background:#6a4a2a;border-color:#aa6644;font-size:12px">⏸️</div><div class="info"><div class="t" style="color:#ffaa66">작업 중지</div><div class="d">직원을 쉬게 합니다</div></div></div>`;
+    h+=`<div class="btn" onclick="stopWork(${idx})"><div class="ic" style="background:#6a4a2a;border-color:#aa6644;font-size:12px">⏸️</div><div class="info"><div class="t" style="color:#ffaa66">작업 중지</div></div></div>`;
   } else if(emp.state==='studying'){
     h+=`<div style="font-size:9px;color:#88aaff;padding:8px">🎓 교육 수강 중...</div>`;
   }
 
-  // 연구개발 가능한 항목이 있고, 일하는 중이거나 대기 중이면 연구 전환
-  if(emp.state!=='studying'&&!S.research){
-    const avail=COURSES.filter(c=>!S.unlocked.includes(c.id)&&c.req.every(r=>S.unlocked.includes(r))&&c.cost<=S.money);
-    if(avail.length>0){
-      h+=`<div style="font-size:9px;color:#8a8060;margin-top:8px;margin-bottom:4px">🎓 교육 수강</div>`;
-      avail.forEach(c=>{
-        const dur=Math.round(c.time/E[emp.gi].speed);
-        h+=`<div class="btn" onclick="assignEdu('${c.id}',${idx})"><div class="ic" style="background:#2a2a40;border-color:#4466aa;font-size:12px">${c.icon}</div>
-          <div class="info"><div class="t" style="color:#88aaff">${c.name}</div><div class="d">${c.desc} · ${dur}초</div></div>
-          <div class="cost" style="color:#ff6666">-${c.cost.toLocaleString()}원</div></div>`;
-      });
+  // 스킬로 할 수 있는 일
+  if(emp.state!=='studying'){
+    if(empHas(emp,'routine_add')){
+      h+=`<div class="btn" onclick="closeSheet();addRoutine()"><div class="ic" style="background:#4a4520;border-color:#ffe066;font-size:12px">📋</div><div class="info"><div class="t" style="color:#ffe066">루틴 만들기</div><div class="d">새 루틴을 등록합니다</div></div></div>`;
+    }
+    if(empHas(emp,'hire_system')){
+      h+=`<div class="btn" onclick="closeSheet();openHire()"><div class="ic" style="background:#4a4520;border-color:#ffe066;font-size:12px">👔</div><div class="info"><div class="t" style="color:#ffe066">직원 채용</div><div class="d">새 직원을 뽑습니다</div></div></div>`;
+    }
+    if(empHas(emp,'routine_check')&&S.missions.length>0){
+      h+=`<div class="btn" onclick="closeSheet();openTab('routine')"><div class="ic" style="background:#4a4520;border-color:#ffe066;font-size:12px">✅</div><div class="info"><div class="t" style="color:#ffe066">루틴 체크</div><div class="d">오늘의 루틴을 확인합니다</div></div></div>`;
     }
   }
 
-  showSheet(`${emp.name}`,h);
+  showSheet(`${emp.name} ${eg.rank}`,h);
 }
 
 function startWork(idx){
@@ -720,6 +729,7 @@ function assignEdu(courseId,idx){
   const c=COURSES.find(x=>x.id===courseId);
   if(!c||c.cost>S.money)return;
   if(S.research){toast('이미 교육 진행 중입니다',true);return;}
+  if(S.emps[idx].skills.includes(courseId)){toast('이미 수료한 과정입니다',true);return;}
   S.money-=c.cost;
   S.emps[idx].state='studying';
   S.workers=(S.workers||[]).filter(w=>w.empIdx!==idx);
@@ -802,8 +812,9 @@ function openTab(tab){
       const eg=E[emp.gi];
       const st=emp.state==='working'?'⚙️ 서류 작업 중':emp.state==='studying'?'🎓 교육 중':'💤 대기 중';
       const icon=emp.state==='working'?'⚙️':emp.state==='studying'?'🎓':'💤';
+      const skillTxt=emp.skills.length>0?emp.skills.map(s=>{const c=COURSES.find(x=>x.id===s);return c?c.icon:'';}).join(''):'스킬 없음';
       h+=`<div class="btn" onclick="closeSheet();onEmpClick(${i})"><div class="ic" style="background:${eg.bg};border-color:${eg.c};font-size:10px">${icon}</div>
-        <div class="info"><div class="t">${emp.name} <span style="color:${eg.c}">${eg.rank}</span></div><div class="d">${st}</div></div></div>`;
+        <div class="info"><div class="t">${emp.name} <span style="color:${eg.c}">${eg.rank}</span></div><div class="d">${st}</div><div class="d" style="color:#66cc44">${skillTxt}</div></div></div>`;
     });
     if(has('hire_system')){
       h+=`<div class="btn" onclick="closeSheet();openHire()" style="justify-content:center;border-style:dashed"><div class="info" style="text-align:center"><div class="t" style="color:#8a8060">+ 직원 채용</div></div></div>`;
