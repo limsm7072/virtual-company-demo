@@ -707,7 +707,8 @@ function stopWork(idx){
 
 function eduPickEmployee(courseId){
   const c=COURSES.find(x=>x.id===courseId);
-  const avail=S.emps.filter(e=>e.state==='idle'||e.state==='working');
+  const avail=S.emps.filter(e=>(e.state==='idle'||e.state==='working')&&!e.skills.includes(courseId));
+  if(avail.length===0){toast('수강 가능한 직원이 없습니다',true);return;}
   if(avail.length===1){
     // 직원 1명이면 바로
     const idx=S.emps.indexOf(avail[0]);
@@ -768,19 +769,19 @@ function openTab(tab){
     // 수강 가능한 교육 목록
     h+=`<div style="font-size:9px;color:#8a8060;margin-bottom:6px">📚 교육 과정</div>`;
     COURSES.forEach(c=>{
-      const done=S.unlocked.includes(c.id);
-      const avail=!done&&c.req.every(r=>S.unlocked.includes(r));
+      const avail=c.req.every(r=>S.unlocked.includes(r));
       const afford=c.cost<=S.money;
-      const hasIdle=S.emps.some(e=>e.state==='idle'||e.state==='working');
-      if(done){
-        h+=`<div class="btn locked"><div class="ic" style="background:#2a3a2a;border-color:#44aa44;font-size:12px">${c.icon}</div><div class="info"><div class="t" style="color:#44aa44">${c.name}</div><div class="d">수료 완료 ✓</div></div></div>`;
-      } else if(avail){
+      const hasIdle=S.emps.some(e=>(e.state==='idle'||e.state==='working')&&!e.skills.includes(c.id));
+      const learnedBy=S.emps.filter(e=>e.skills.includes(c.id)).map(e=>e.name);
+      if(avail){
         const canStart=afford&&hasIdle&&!S.research;
         h+=`<div class="btn ${canStart?'':'locked'}" onclick="${canStart?'eduPickEmployee(\''+c.id+'\')':''}">
           <div class="ic" style="background:#4a4520;border-color:#ffe066;font-size:12px">${c.icon}</div>
           <div class="info"><div class="t" style="color:#ffe066">${c.name}</div><div class="d">${c.desc}</div>
+          ${learnedBy.length>0?`<div class="d" style="color:#66cc44">수료: ${learnedBy.join(', ')}</div>`:''}
           ${!afford?'<div class="d" style="color:#ff6666">자금 부족</div>':''}
           ${S.research?'<div class="d" style="color:#ff6666">다른 교육 진행 중</div>':''}
+          ${!hasIdle&&!S.research?'<div class="d" style="color:#ff6666">모든 직원이 이미 수료</div>':''}
           </div>
           <div class="cost" style="color:${afford?'#66cc44':'#ff6666'}">${c.cost.toLocaleString()}원</div>
         </div>`;
