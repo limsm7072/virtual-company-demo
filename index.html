@@ -399,8 +399,26 @@ function showStep(){
   const tap=document.getElementById('npcTap');
   const extra=document.getElementById('npcExtra');
 
-  if(introStep===0){
-    // 1단계: 회사 이름
+  if(introStep<=4){
+    // 서사 (스토리)
+    const stories=[
+      {icon:'💼',title:'',msg:'당신은 오늘,\n모든 것을 바꾸기로 결심했습니다.'},
+      {icon:'📊',title:'',msg:'운동, 수면, 공부, 건강...\n혼자서는 관리가 안 되는 것들.'},
+      {icon:'🏢',title:'',msg:'그래서 생각했습니다.\n\n"회사를 만들자.\n나를 관리해줄 회사를."'},
+      {icon:'👔',title:'',msg:'직원을 뽑고, 팀을 꾸리고\n그들에게 당신의 목표를\n맡기는 겁니다.'},
+      {icon:'🚀',title:'',msg:'직원들의 성과는\n당신이 루틴을 얼마나\n잘 수행하느냐에 달려있습니다.\n\n준비 되셨나요?'},
+    ];
+    const s=stories[introStep];
+    avatar.textContent=s.icon;
+    npcName.textContent=s.title;
+    text.textContent=s.msg;
+    tap.style.display='block';
+    tap.textContent='탭하여 계속 ▸';
+    dialog.onclick=()=>{introStep++;showStep();};
+    extra.innerHTML='';
+
+  } else if(introStep===5){
+    // 회사 이름
     avatar.textContent='📝';
     npcName.textContent='STEP 1. 회사 설립';
     text.textContent='먼저 회사 이름을 정하세요.';
@@ -413,7 +431,7 @@ function showStep(){
     `;
     setTimeout(()=>{const inp=document.getElementById('nameInput');if(inp)inp.focus();},300);
 
-  } else if(introStep===1){
+  } else if(introStep===6){
     // 2단계: 사업계획서
     avatar.textContent='📋';
     npcName.textContent='STEP 2. 사업계획서';
@@ -431,8 +449,8 @@ function showStep(){
       <button class="npc-confirm" onclick="stepPlan()" id="bpNext" disabled style="opacity:0.4">▸ 사업계획서 제출</button>
     `;
 
-  } else if(introStep===2){
-    // 3단계: 투자 결과
+  } else if(introStep===7){
+    // 투자 결과
     avatar.textContent='💰';
     npcName.textContent='STEP 3. 투자 유치';
     const teamCount=S.planTeams.length;
@@ -441,11 +459,11 @@ function showStep(){
     text.textContent=`사업계획서 검토 완료!\n\n선택 분야: ${teamCount}개\n투자금: ${funding.toLocaleString()}원\n\n이 자금으로 사무실을 임대하세요.`;
     tap.style.display='block';
     tap.textContent='탭하여 계속 ▸';
-    dialog.onclick=()=>{introStep=3;showStep();};
+    dialog.onclick=()=>{introStep=8;showStep();};
     extra.innerHTML='';
 
-  } else if(introStep===3){
-    // 4단계: 사무실 임대
+  } else if(introStep===8){
+    // 사무실 임대
     avatar.textContent='🏠';
     npcName.textContent='STEP 4. 사무실 임대';
     text.textContent='사무실을 선택하세요.\n큰 사무실일수록 더 많은 팀을\n운영할 수 있습니다.';
@@ -486,14 +504,14 @@ function stepName(){
   const name=inp?inp.value.trim():'';
   if(!name){inp.style.borderColor='#cc4444';return;}
   S.companyName=name;
-  introStep=1;showStep();
+  introStep=6;showStep();
 }
 
 function stepPlan(){
   const checked=[...document.querySelectorAll('.bp-team:checked')].map(cb=>cb.value);
   if(!checked.length)return;
   S.planTeams=checked;
-  introStep=2;showStep();
+  introStep=7;showStep();
 }
 
 function rentOffice(idx){
