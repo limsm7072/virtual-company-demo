@@ -150,14 +150,24 @@
 <script>
 // ===== 제작 가능 기능 목록 =====
 const CRAFTS=[
-  {id:'routine_add',name:'루틴 등록 기능',desc:'루틴을 추가할 수 있게 됩니다',time:10,reward:500,icon:'📋',req:[]},
-  {id:'routine_check',name:'루틴 체크 기능',desc:'루틴 달성을 체크할 수 있습니다',time:15,reward:500,icon:'✅',req:['routine_add']},
-  {id:'kpi_bar',name:'KPI 표시',desc:'팀의 KPI를 확인할 수 있습니다',time:20,reward:800,icon:'📊',req:['routine_check']},
-  {id:'hire_system',name:'채용 시스템',desc:'새 직원을 채용할 수 있습니다',time:30,reward:1000,icon:'👔',req:['kpi_bar']},
-  {id:'new_team',name:'팀 확장',desc:'새 팀을 추가할 수 있습니다',time:40,reward:1500,icon:'🏢',req:['hire_system']},
-  {id:'biz_tab',name:'사업 수주',desc:'사업을 수주받을 수 있습니다',time:50,reward:2000,icon:'💼',req:['new_team']},
-  {id:'notify',name:'알림 기능',desc:'루틴 알림을 설정할 수 있습니다',time:30,reward:1000,icon:'🔔',req:['routine_check']},
-  {id:'stats',name:'통계 리포트',desc:'상세 통계를 볼 수 있습니다',time:40,reward:1500,icon:'📈',req:['kpi_bar']},
+  // 인턴(0)이 만들 수 있는 것
+  {id:'routine_add',name:'루틴 등록 기능',desc:'루틴을 추가할 수 있게 됩니다',time:10,reward:500,icon:'📋',req:[],minRank:0},
+  {id:'routine_check',name:'루틴 체크 기능',desc:'루틴 달성을 체크할 수 있습니다',time:15,reward:500,icon:'✅',req:['routine_add'],minRank:0},
+  {id:'hire_system',name:'채용 시스템',desc:'새 직원을 채용할 수 있습니다',time:25,reward:1000,icon:'👔',req:['routine_check'],minRank:0},
+  // 사원(1) 이상
+  {id:'kpi_bar',name:'KPI 표시',desc:'성과를 수치로 확인합니다',time:20,reward:800,icon:'📊',req:['routine_check'],minRank:1},
+  {id:'notify',name:'알림 기능',desc:'루틴 알림을 보내줍니다',time:30,reward:1000,icon:'🔔',req:['routine_check'],minRank:1},
+  {id:'new_team',name:'팀 확장',desc:'새 팀을 추가할 수 있습니다',time:40,reward:1500,icon:'🏢',req:['hire_system'],minRank:1},
+  // 대리(2) 이상
+  {id:'auto_prod',name:'자동 생산',desc:'직원이 자동으로 수익을 생산합니다',time:50,reward:2000,icon:'⚡',req:['kpi_bar'],minRank:2},
+  {id:'stats',name:'통계 리포트',desc:'상세 통계를 볼 수 있습니다',time:40,reward:1500,icon:'📈',req:['kpi_bar'],minRank:2},
+  // 과장(3) 이상
+  {id:'biz_tab',name:'사업 수주',desc:'사업을 수주받아 큰 돈을 법니다',time:60,reward:3000,icon:'💼',req:['new_team'],minRank:3},
+  {id:'overlay',name:'오버레이 알림',desc:'화면 위에 캐릭터가 나타나 독촉',time:50,reward:2500,icon:'💬',req:['notify'],minRank:3},
+  // 부장(4) 이상
+  {id:'ai_coach',name:'AI 코칭',desc:'패턴 분석 + 맞춤 루틴 제안',time:80,reward:5000,icon:'🤖',req:['stats','auto_prod'],minRank:4},
+  // 임원(5)
+  {id:'full_auto',name:'풀 자동화',desc:'자율 에이전트, 선제적 실행',time:120,reward:10000,icon:'🚀',req:['ai_coach','overlay'],minRank:5},
 ];
 
 const E=[
@@ -181,14 +191,27 @@ const DEPT_TEMPLATES=[
 const NAMES=['김수호','이하늘','박지민','최윤서','정다은','강민준','조서연','윤태호','한소율','임재현','송예린','오동현'];
 const SK=['#FFDBB4','#E8B88A','#D4A574','#C68642'];
 const HR=['#222','#4A2800','#8B4513','#333'];
+const SHOP=[
+  {id:'plant1',name:'작은 화분',desc:'사무실이 조금 밝아집니다',cost:500,icon:'🪴',type:'deco'},
+  {id:'poster',name:'동기부여 포스터',desc:'"Just Do It" 직원 사기 +',cost:800,icon:'🖼️',type:'deco'},
+  {id:'coffee',name:'커피 머신',desc:'직원 제작 속도 10% 증가',cost:2000,icon:'☕',type:'buff',effect:'speed_10'},
+  {id:'snack',name:'간식 바구니',desc:'직원 사기 향상',cost:1000,icon:'🍪',type:'buff',effect:'morale'},
+  {id:'monitor',name:'모니터 업그레이드',desc:'제작 속도 20% 증가',cost:5000,icon:'🖥️',type:'buff',effect:'speed_20'},
+  {id:'chair',name:'고급 의자',desc:'직원 만족도 향상',cost:3000,icon:'🪑',type:'deco'},
+  {id:'gem_small',name:'💎 소형 보석 (현질)',desc:'즉시 5,000원 획득',cost:'₩1,200',icon:'💎',type:'iap',give:5000},
+  {id:'gem_big',name:'💎 대형 보석 (현질)',desc:'즉시 20,000원 획득',cost:'₩4,900',icon:'💎',type:'iap',give:20000},
+];
+
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
 
 let S={
   money:0,day:1,founded:false,companyName:'',
   depts:[],emps:[],used:[],
-  unlocked:[], // 해금된 기능 ID
-  crafting:null, // {craftId, empIdx, startTime, duration}
-  missions:[], // 루틴
+  unlocked:[],
+  crafting:null,
+  missions:[],
+  owned:[], // 구매한 상점 아이템
+  speedBonus:1, // 제작 속도 보너스
 };
 
 function rN(){const a=NAMES.filter(n=>!S.used.includes(n));const n=a.length?rnd(a):rnd(NAMES);S.used.push(n);return n;}
@@ -338,17 +361,46 @@ function gameLoop(ts){
 }
 
 function updateCrafting(){
-  if(!S.crafting)return;
-  const elapsed=(Date.now()-S.crafting.startTime)/1000;
-  if(elapsed>=S.crafting.duration){
-    // 제작 완료!
-    S.unlocked.push(S.crafting.craftId);
-    const craft=CRAFTS.find(c=>c.id===S.crafting.craftId);
-    S.money+=craft.reward;
-    S.emps[S.crafting.empIdx].state='idle';
-    toast(`✅ ${craft.name} 완성! +${craft.reward}원`);
-    S.crafting=null;
-    renderAll();
+  // 제작 완료 체크
+  if(S.crafting){
+    const elapsed=(Date.now()-S.crafting.startTime)/1000;
+    if(elapsed>=S.crafting.duration){
+      S.unlocked.push(S.crafting.craftId);
+      const craft=CRAFTS.find(c=>c.id===S.crafting.craftId);
+      S.money+=craft.reward;
+      S.emps[S.crafting.empIdx].state='idle';
+      toast(`✅ ${craft.name} 완성! +${craft.reward}원`);
+      S.crafting=null;
+      renderAll();
+    }
+  }
+
+  // 자동 생산 (해금된 경우)
+  if(has('auto_prod')){
+    if(!S._lastAutoProd)S._lastAutoProd=Date.now();
+    const now=Date.now();
+    if(now-S._lastAutoProd>=3000){ // 3초마다
+      let income=0;
+      S.emps.forEach(emp=>{
+        if(emp.state==='idle'){
+          // 대기 중인 직원도 자동으로 소액 생산
+          const eg=E[emp.gi];
+          income+=10*eg.speed;
+        }
+      });
+      // 루틴 완료 보너스: 완료된 루틴 수 × 배율
+      const doneCount=S.missions.filter(m=>m.done).length;
+      const routineBonus=doneCount*50;
+      income+=routineBonus;
+
+      income=Math.round(income*S.speedBonus);
+      if(income>0){
+        S.money+=income;
+        S._lastAutoProd=now;
+        // 자동 수익은 조용히 (토스트 안 띄움), 화면만 갱신
+        document.getElementById('hudMoney').textContent=S.money.toLocaleString()+'원';
+      }
+    }
   }
 }
 
@@ -470,20 +522,22 @@ function onEmpClick(idx){
     return;
   }
   // 할 수 있는 작업 목록
+  const eg=E[emp.gi];
   const available=CRAFTS.filter(c=>!S.unlocked.includes(c.id)&&c.req.every(r=>S.unlocked.includes(r)));
   if(available.length===0){
     toast('지금 만들 수 있는 기능이 없습니다');return;
   }
 
   document.getElementById('shTitle').textContent=`${emp.name}에게 시킬 작업`;
-  const eg=E[emp.gi];
   const speed=eg.speed;
   document.getElementById('shBody').innerHTML=available.map(c=>{
+    const canDo=emp.gi>=c.minRank;
+    const rankName=E[c.minRank].rank;
     const time=Math.round(c.time/speed);
-    return `<div class="btn" onclick="startCraft('${c.id}',${idx})">
-      <div class="ic" style="background:#4a4520;border-color:#8a8060;font-size:14px">${c.icon}</div>
-      <div class="info"><div class="t" style="color:#ffe066">${c.name}</div><div class="d">${c.desc}</div><div class="d" style="color:#88aaaa">제작 시간: ${time}초</div></div>
-      <div class="cost" style="color:#66cc44">+${c.reward}원</div>
+    return `<div class="btn ${canDo?'':'locked'}" onclick="${canDo?`startCraft('${c.id}',${idx})`:''}">
+      <div class="ic" style="background:#4a4520;border-color:${canDo?'#8a8060':'#4a4520'};font-size:14px">${c.icon}</div>
+      <div class="info"><div class="t" style="color:${canDo?'#ffe066':'#5a5530'}">${c.name}</div><div class="d">${canDo?c.desc:'🔒 '+rankName+' 이상 필요'}</div>${canDo?`<div class="d" style="color:#88aaaa">제작: ${time}초</div>`:''}</div>
+      ${canDo?`<div class="cost" style="color:#66cc44">+${c.reward}원</div>`:''}
     </div>`;
   }).join('');
   document.getElementById('shBg').classList.add('open');
@@ -493,7 +547,7 @@ function startCraft(craftId,empIdx){
   if(S.crafting){toast('이미 제작 중입니다',true);return;}
   const craft=CRAFTS.find(c=>c.id===craftId);
   const eg=E[S.emps[empIdx].gi];
-  const duration=craft.time/eg.speed;
+  const duration=craft.time/eg.speed/S.speedBonus;
 
   S.crafting={craftId,empIdx,startTime:Date.now(),duration};
   S.emps[empIdx].state='working';
@@ -557,14 +611,48 @@ function renderAll(){
   }
   h+=`</div></div>`;
 
-  // 해금된 기능 목록
+  // 자동 수익 표시
+  if(has('auto_prod')){
+    const doneCount=S.missions.filter(m=>m.done).length;
+    const idleEmps=S.emps.filter(e=>e.state==='idle');
+    const baseIncome=idleEmps.reduce((s,e)=>s+10*E[e.gi].speed,0);
+    const routineBonus=doneCount*50;
+    const total=Math.round((baseIncome+routineBonus)*S.speedBonus);
+    h+=`<div class="card"><div class="card-head"><div class="card-title">⚡ 자동 수익</div></div><div class="card-body">
+      <div style="font-size:9px;display:flex;justify-content:space-between;padding:2px 0"><span>직원 생산</span><span style="color:#66cc44">+${Math.round(baseIncome)}/3초</span></div>
+      <div style="font-size:9px;display:flex;justify-content:space-between;padding:2px 0"><span>루틴 보너스 (${doneCount}개)</span><span style="color:#ffe066">+${routineBonus}/3초</span></div>
+      ${S.speedBonus>1?`<div style="font-size:9px;display:flex;justify-content:space-between;padding:2px 0"><span>속도 보너스</span><span style="color:#cc88ff">x${S.speedBonus}</span></div>`:''}
+      <div style="font-size:10px;display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid #5a5530;margin-top:4px"><span style="font-weight:bold">합계</span><span style="color:#66cc44;font-weight:bold">+${total}/3초</span></div>
+    </div></div>`;
+  }
+
+  // 상점
+  h+=`<div class="card"><div class="card-head"><div class="card-title">🛒 상점</div></div><div class="card-body">`;
+  SHOP.forEach(item=>{
+    const owned=S.owned.includes(item.id);
+    const isIAP=item.type==='iap';
+    const afford=isIAP||item.cost<=S.money;
+    if(owned&&!isIAP){
+      h+=`<div class="btn locked"><div class="ic" style="background:#2a3a2a;border-color:#44aa44;font-size:12px">${item.icon}</div><div class="info"><div class="t" style="color:#44aa44">${item.name}</div><div class="d">보유 중</div></div></div>`;
+    } else {
+      h+=`<div class="btn ${afford?'':'locked'}" onclick="${isIAP?`buyIAP('${item.id}')`:(afford?`buyItem('${item.id}')`:'')}">
+        <div class="ic" style="background:#4a4520;border-color:${isIAP?'#cc88ff':'#8a8060'};font-size:12px">${item.icon}</div>
+        <div class="info"><div class="t" style="color:${isIAP?'#cc88ff':'#ffe066'}">${item.name}</div><div class="d">${item.desc}</div></div>
+        <div class="cost" style="color:${isIAP?'#cc88ff':'#66cc44'}">${typeof item.cost==='number'?item.cost.toLocaleString()+'원':item.cost}</div>
+      </div>`;
+    }
+  });
+  h+=`</div></div>`;
+
+  // 해금 진행도
   const unlockCount=S.unlocked.length;
   const totalCount=CRAFTS.length;
   h+=`<div class="card"><div class="card-head"><div class="card-title">🔓 해금 ${unlockCount}/${totalCount}</div></div><div class="card-body">`;
   CRAFTS.forEach(cr=>{
     const done=S.unlocked.includes(cr.id);
     const avail=!done&&cr.req.every(r=>S.unlocked.includes(r));
-    h+=`<div style="font-size:9px;padding:3px 0;color:${done?'#66cc44':avail?'#ffe066':'#4a4520'}">${done?'✅':avail?'🔨':'🔒'} ${cr.name}${done?' · 완료':''}</div>`;
+    const rankOk=S.emps.some(e=>e.gi>=cr.minRank);
+    h+=`<div style="font-size:9px;padding:3px 0;color:${done?'#66cc44':avail&&rankOk?'#ffe066':avail?'#aa6622':'#4a4520'}">${done?'✅':avail?'🔨':'🔒'} ${cr.name}${done?' · 완료':avail&&!rankOk?' · '+E[cr.minRank].rank+' 필요':''}</div>`;
   });
   h+=`</div></div>`;
 
@@ -608,8 +696,9 @@ function toggleRoutine(mi){
   if(!has('routine_check'))return;
   S.missions[mi].done=!S.missions[mi].done;
   if(S.missions[mi].done){
-    S.money+=100;
-    toast(`✅ ${S.missions[mi].text} +100원`);
+    const bonus=has('auto_prod')?300:100;
+    S.money+=bonus;
+    toast(`✅ ${S.missions[mi].text} +${bonus}원`);
   }
   renderAll();
 }
@@ -634,6 +723,29 @@ function hireEmp(gi){
   S.emps.push(mkEmp(gi));
   closeSheet();renderAll();
   toast(`${S.emps.at(-1).name} ${E[gi].rank} 채용!`);
+}
+
+// ===== 상점 =====
+function buyItem(id){
+  const item=SHOP.find(i=>i.id===id);
+  if(!item||item.cost>S.money||S.owned.includes(id))return;
+  S.money-=item.cost;
+  S.owned.push(id);
+  // 효과 적용
+  if(item.effect==='speed_10')S.speedBonus+=0.1;
+  if(item.effect==='speed_20')S.speedBonus+=0.2;
+  toast(`🛒 ${item.name} 구매!`);
+  renderAll();
+}
+
+function buyIAP(id){
+  const item=SHOP.find(i=>i.id===id);
+  if(!item)return;
+  if(confirm(`${item.cost}을 결제하시겠습니까?\n(데모: 무료로 지급됩니다)`)){
+    S.money+=item.give;
+    toast(`💎 ${item.give.toLocaleString()}원 획득!`);
+    renderAll();
+  }
 }
 
 // ===== 다음 날 =====
