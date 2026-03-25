@@ -353,35 +353,35 @@ const E=[
 ];
 const D=[
   {id:'exercise',name:'운동팀',icon:'💪',hint:'운동 관련 루틴',
-    q:'어떤 운동을 해볼까요?\n\n신생 회사니까 가볍게 시작합시다.',
-    opts:['걷기','스트레칭','가벼운 홈트','러닝'],
-    q2:'처음이니까 욕심 내지 말고.\n하루에 얼마나 할 수 있나요?',
-    opts2:['10분','15분','20분']},
+    q1:'요즘 운동을 하고 있나요?',
+    opts1:['전혀 안 함','가끔 걷는 정도','주 1~2회','주 3회 이상'],
+    q2:'어떤 운동에 관심 있나요?',
+    opts2:['걷기','스트레칭','가벼운 홈트','러닝']},
   {id:'sleep',name:'수면팀',icon:'😴',hint:'수면 관련 루틴',
-    q:'요즘 보통 몇 시에 자나요?',
-    opts:['23시쯤','24시쯤','새벽 1시쯤','새벽 2시쯤','새벽 3시쯤','새벽 4시 이후'],
+    q1:'요즘 보통 몇 시에 자나요?',
+    opts1:['23시쯤','24시쯤','새벽 1시쯤','새벽 2시쯤','새벽 3시쯤','새벽 4시 이후'],
     q2:'_dynamic_sleep',
     opts2:[]},
   {id:'study',name:'학습팀',icon:'📚',hint:'학습 관련 루틴',
-    q:'무엇을 공부하나요?',
-    opts:['영어','코딩/개발','자격증 준비','독서','기타'],
-    q2:'처음이니까 부담 없이.\n하루에 얼마나?',
-    opts2:['15분','20분','30분']},
+    q1:'요즘 따로 공부하고 있나요?',
+    opts1:['전혀 안 함','가끔 생각날 때','하루 30분 미만','하루 30분 이상'],
+    q2:'무엇을 공부하고 싶나요?',
+    opts2:['영어','코딩/개발','자격증 준비','독서','기타']},
   {id:'health',name:'건강팀',icon:'🥗',hint:'건강 관련 루틴',
-    q:'건강 관리, 뭐부터 해볼까요?\n\n작은 것 하나만.',
-    opts:['물 자주 마시기','영양제 챙기기','간식 줄이기','채소 한 끼'],
-    q2:'얼마나 신경 쓸 수 있나요?',
-    opts2:['생각날 때만','하루 한 번은','매 끼니']},
+    q1:'요즘 건강 관리를 하고 있나요?',
+    opts1:['전혀 신경 안 씀','물 정도만','영양제는 챙김','식단까지 관리'],
+    q2:'뭘 시작해보고 싶나요?',
+    opts2:['물 자주 마시기','영양제 챙기기','간식 줄이기','채소 한 끼']},
   {id:'finance',name:'재정팀',icon:'💰',hint:'재정 관련 루틴',
-    q:'돈 관리, 뭐부터 시작할까요?',
-    opts:['지출 기록하기','커피값 아끼기','충동구매 참기','소액 저축'],
-    q2:'어느 정도 강도로?',
-    opts2:['느슨하게','하루 한 번 체크','꼼꼼하게']},
+    q1:'요즘 돈 관리를 하고 있나요?',
+    opts1:['쓰는 대로 삶','대충 감으로','가계부 가끔','꼼꼼히 관리'],
+    q2:'뭘 시작해보고 싶나요?',
+    opts2:['지출 기록하기','커피값 아끼기','충동구매 참기','소액 저축']},
   {id:'mental',name:'멘탈팀',icon:'🧘',hint:'멘탈 관련 루틴',
-    q:'마음 관리, 뭐가 끌리나요?',
-    opts:['심호흡/명상','짧은 일기','감사한 일 적기','5분 산책'],
-    q2:'부담 없이, 하루에 얼마나?',
-    opts2:['5분','10분','15분']},
+    q1:'요즘 마음 관리를 하고 있나요?',
+    opts1:['전혀 안 함','가끔 산책 정도','명상이나 일기 가끔','꾸준히 하는 중'],
+    q2:'뭘 해보고 싶나요?',
+    opts2:['심호흡/명상','짧은 일기','감사한 일 적기','5분 산책']},
 ];
 const NM=['김수호','이하늘','박지민','최윤서','정다은','강민준','조서연','윤태호','한소율','임재현','송예린','오동현','나영호','문서진','백승우','허지연'];
 const SK=['#FFDBB4','#E8B88A','#D4A574','#C68642'];
@@ -642,7 +642,7 @@ function bpPickTeam(tid){
   S._bpPicking=(S._bpPicking||0)+1;
   S._currentTeamId=tid;
 
-  // 세부 질문 1: 뭘 할건지
+  // 먼저 현재 상태 물어보기
   const t=D.find(x=>x.id===tid);
   const avatar=document.getElementById('npcAvatar');
   const text=document.getElementById('npcText');
@@ -651,11 +651,51 @@ function bpPickTeam(tid){
   const dialog=document.getElementById('npcDialog');
 
   avatar.textContent=t.icon;
-  text.textContent=t.q;
+  text.textContent=t.q1;
   tap.style.display='none';
   dialog.onclick=null;
 
-  const opts=t.opts.map(o=>`<div class="hr" onclick="bpDetailPick1('${o}')">
+  const opts=t.opts1.map(o=>`<div class="hr" onclick="bpCurrentState('${o}')">
+    <div class="hr-info"><div class="t" style="color:#ffe066">${o}</div></div>
+  </div>`).join('');
+  extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
+}
+
+function bpCurrentState(choice){
+  const tid=S._currentTeamId;
+  const t=D.find(x=>x.id===tid);
+  if(!S._teamDetails[tid])S._teamDetails[tid]={};
+  S._teamDetails[tid].current=choice;
+
+  const avatar=document.getElementById('npcAvatar');
+  const text=document.getElementById('npcText');
+  const tap=document.getElementById('npcTap');
+  const extra=document.getElementById('npcExtra');
+  const dialog=document.getElementById('npcDialog');
+
+  // 현재 상태에 대한 반응 + 세부 항목으로
+  const reactions={
+    exercise:{'전혀 안 함':'괜찮아요, 처음이 제일 어렵죠.\n작은 것부터 시작합시다.','가끔 걷는 정도':'좋아요! 이미 시작은 한 거네요.','주 1~2회':'나쁘지 않아요!\n조금만 더 꾸준히 해봅시다.','주 3회 이상':'대단해요!\n루틴으로 만들어서 유지해봅시다.'},
+    sleep:null, // 수면은 별도 처리
+    study:{'전혀 안 함':'괜찮아요.\n하루 15분부터 시작해봅시다.','가끔 생각날 때':'좋아요, 습관으로 만들면 됩니다.','하루 30분 미만':'이미 하고 있네요!\n루틴으로 굳혀봅시다.','하루 30분 이상':'훌륭해요!\n꾸준히 이어갑시다.'},
+    health:{'전혀 신경 안 씀':'작은 것 하나부터 시작하면 됩니다.','물 정도만':'좋아요! 거기서 하나만 더.','영양제는 챙김':'잘하고 있네요. 루틴으로 만들어봅시다.','식단까지 관리':'대단해요! 유지하는 게 중요합니다.'},
+    finance:{'쓰는 대로 삶':'솔직하시네요.\n아주 작은 것부터 해봅시다.','대충 감으로':'감이라도 있으면 시작이 쉬워요.','가계부 가끔':'좋아요! 꾸준히만 하면 됩니다.','꼼꼼히 관리':'훌륭합니다! 루틴으로 고정합시다.'},
+    mental:{'전혀 안 함':'괜찮아요.\n5분이면 충분합니다.','가끔 산책 정도':'좋은 시작이에요!','명상이나 일기 가끔':'이미 하고 있네요. 루틴화만 하면 됩니다.','꾸준히 하는 중':'대단해요! 계속 이어갑시다.'},
+  };
+
+  // 수면은 bpDetailPick1로 바로
+  if(tid==='sleep'){
+    bpDetailPick1(choice);
+    return;
+  }
+
+  const react=reactions[tid]?reactions[tid][choice]:'알겠습니다!';
+  avatar.textContent=t.icon;
+  text.textContent=`${react}\n\n그럼, ${t.q2}`;
+  tap.style.display='none';
+  dialog.onclick=null;
+
+  const opts=t.opts2.map(o=>`<div class="hr" onclick="bpDetailPick1('${o}')">
     <div class="hr-info"><div class="t" style="color:#ffe066">${o}</div></div>
   </div>`).join('');
   extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
@@ -676,6 +716,35 @@ function bpDetailPick1(choice){
   avatar.textContent=t.icon;
   tap.style.display='none';
   dialog.onclick=null;
+
+  // 운동/학습: 현재 상태 기반으로 목표량 제시
+  if(tid==='exercise'){
+    const current=S._teamDetails[tid].current;
+    const levelMap={'전혀 안 함':0,'가끔 걷는 정도':1,'주 1~2회':2,'주 3회 이상':3};
+    const lv=levelMap[current]||0;
+    const goals=lv<=1?['10분','15분','20분']:['20분','30분','40분'];
+
+    text.textContent=`${choice}!\n좋습니다.\n\n${current==='전혀 안 함'?'처음이니까 아주 짧게.':'지금 수준에서 조금만 더.'}\n하루에 얼마나?`;
+    const opts=goals.map(o=>`<div class="hr" onclick="bpDetailPick2('${o}')">
+      <div class="hr-info"><div class="t" style="color:#ffe066">${o}</div></div>
+    </div>`).join('');
+    extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
+    return;
+  }
+
+  if(tid==='study'){
+    const current=S._teamDetails[tid].current;
+    const levelMap={'전혀 안 함':0,'가끔 생각날 때':1,'하루 30분 미만':2,'하루 30분 이상':3};
+    const lv=levelMap[current]||0;
+    const goals=lv<=1?['10분','15분','20분']:['30분','40분','50분'];
+
+    text.textContent=`${choice}!\n\n${lv<=1?'처음이니까 부담 없이.':'지금 페이스에서 살짝만 더.'}\n하루에 얼마나?`;
+    const opts=goals.map(o=>`<div class="hr" onclick="bpDetailPick2('${o}')">
+      <div class="hr-info"><div class="t" style="color:#ffe066">${o}</div></div>
+    </div>`).join('');
+    extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
+    return;
+  }
 
   // 수면팀: 현재 취침 시간 기반으로 목표 생성
   if(tid==='sleep'){
@@ -702,9 +771,18 @@ function bpDetailPick1(choice){
     return;
   }
 
-  // 기본: 고정 옵션
-  text.textContent=t.q2;
-  const opts=t.opts2.map(o=>`<div class="hr" onclick="bpDetailPick2('${o}')">
+  // 건강/재정/멘탈: 현재 상태에 따라 난이도 조절
+  const current=S._teamDetails[tid]?S._teamDetails[tid].current:'';
+  const isLow=current.includes('전혀')||current.includes('쓰는 대로')||current.includes('대충');
+
+  text.textContent=`${choice}!\n\n${isLow?'가볍게 시작해봅시다.\n하루에 어느 정도?':'좋아요, 어느 정도로 해볼까요?'}`;
+
+  let goals;
+  if(tid==='health') goals=isLow?['하루 한 번만','생각날 때']:['하루 두 번','매 끼니'];
+  else if(tid==='finance') goals=isLow?['일주일에 한 번','하루 한 번']:['하루 한 번','매일 꼼꼼히'];
+  else goals=isLow?['5분','10분']:['10분','15분','20분'];
+
+  const opts=goals.map(o=>`<div class="hr" onclick="bpDetailPick2('${o}')">
     <div class="hr-info"><div class="t" style="color:#ffe066">${o}</div></div>
   </div>`).join('');
   extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
