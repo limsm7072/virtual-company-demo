@@ -205,9 +205,94 @@
     box-shadow:2px 2px 0 rgba(0,0,0,0.5);font-family:inherit;
   }
   .toast.bad{border-color:#cc4444;color:#ff8888}
+
+  /* ===== 인트로 화면 ===== */
+  .intro{
+    position:fixed;top:0;left:0;width:100%;height:100%;z-index:500;
+    background:#1a1a10;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    max-width:480px;margin:0 auto;
+  }
+  .intro.hidden{display:none}
+
+  /* 타이틀 */
+  .intro-title{
+    text-align:center;margin-bottom:40px;
+  }
+  .intro-title .logo{font-size:48px;margin-bottom:12px}
+  .intro-title h1{font-size:18px;color:#ffe066;text-shadow:2px 2px 0 #806000;letter-spacing:2px}
+  .intro-title .sub{font-size:9px;color:#8a8060;margin-top:6px}
+  .intro-start{
+    padding:12px 40px;background:#4a6a2a;border:2px solid #66aa44;color:#ccff88;
+    font-family:inherit;font-size:12px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,0.4);
+    animation:pulse 1.5s ease-in-out infinite;
+  }
+  .intro-start:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,0.4)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+
+  /* NPC 대화 */
+  .npc-screen{
+    position:fixed;top:0;left:0;width:100%;height:100%;z-index:500;
+    background:#1a1a10;max-width:480px;margin:0 auto;display:none;
+    flex-direction:column;
+  }
+  .npc-screen.active{display:flex}
+  .npc-scene{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .npc-luna{
+    width:80px;height:80px;background:linear-gradient(135deg,#9933cc,#cc66ff);
+    border:3px solid #6600aa;display:flex;align-items:center;justify-content:center;
+    font-size:36px;margin-bottom:16px;box-shadow:3px 3px 0 rgba(0,0,0,0.4);
+  }
+  .npc-name{font-size:11px;color:#cc88ff;margin-bottom:20px}
+  .npc-dialog{
+    width:100%;background:#3a3520;border:2px solid #5a5530;padding:16px;
+    margin:0 12px;box-shadow:2px 2px 0 rgba(0,0,0,0.4);
+    min-height:80px;position:relative;
+  }
+  .npc-text{font-size:11px;color:#f0e8d0;line-height:1.6}
+  .npc-tap{font-size:8px;color:#8a8060;text-align:right;margin-top:8px;animation:pulse 1.2s ease-in-out infinite}
+  .npc-input{
+    width:100%;padding:10px;background:#2a2510;border:2px solid #5a5530;
+    color:#ffe066;font-family:inherit;font-size:13px;text-align:center;
+    margin-top:12px;
+  }
+  .npc-input::placeholder{color:#5a5530}
+  .npc-confirm{
+    margin-top:12px;padding:10px 30px;background:#4a6a2a;border:2px solid #66aa44;
+    color:#ccff88;font-family:inherit;font-size:11px;cursor:pointer;
+    box-shadow:2px 2px 0 rgba(0,0,0,0.4);
+  }
 </style>
 </head>
 <body>
+
+<!-- 인트로 타이틀 -->
+<div class="intro" id="introScreen">
+  <div class="intro-title">
+    <div class="logo">🏢</div>
+    <h1>수호 컴퍼니</h1>
+    <div class="sub">나만의 회사를 세우고 성장시키세요</div>
+  </div>
+  <button class="intro-start" onclick="startIntro()">▸ 시작하기</button>
+</div>
+
+<!-- NPC 대화 -->
+<div class="npc-screen" id="npcScreen">
+  <div class="npc-scene">
+    <div class="npc-luna" id="npcAvatar">☽</div>
+    <div class="npc-name">루나</div>
+    <div class="npc-dialog" id="npcDialog" onclick="nextDialog()">
+      <div class="npc-text" id="npcText"></div>
+      <div class="npc-tap" id="npcTap">탭하여 계속 ▸</div>
+    </div>
+    <div id="npcExtra" style="width:100%;text-align:center"></div>
+  </div>
+</div>
+
+<!-- 게임 화면 (처음엔 숨김) -->
+<div id="gameScreen" style="display:none">
 
 <div class="hud">
   <div class="hud-left">
@@ -256,6 +341,8 @@
   <button class="bb sec" onclick="resetGame()">↻ 리셋</button>
 </div>
 
+</div><!-- /gameScreen -->
+
 <script>
 const G=[
   {name:'개인사무실',icon:'🏠',minKpi:0,maxDept:4,exp:100,wins:1,desks:2,plants:1,
@@ -292,11 +379,68 @@ const SK=['#FFDBB4','#E8B88A','#D4A574','#C68642'];
 const HR=['#222','#4A2800','#8B4513','#333','#1a1a1a'];
 
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
-let S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false};
+let S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:''};
 
 function rN(){const a=NM.filter(n=>!S.used.includes(n));const n=a.length?rnd(a):rnd(NM);S.used.push(n);return n;}
 
 function mkEmp(gi){return{name:rN(),gi,mood:'normal',skin:rnd(SK),hair:rnd(HR),waveT:0};}
+
+// ===== 인트로 시스템 =====
+const DIALOGS=[
+  '안녕하세요, CEO님!\n저는 루나, 앞으로 CEO님의\n비서실장을 맡게 되었습니다.',
+  '지금 이 곳은 아무것도 없는\n빈 사무실이에요.',
+  '하지만 걱정 마세요!\nCEO님이 팀을 만들고\n직원을 채용하면...',
+  '운동, 수면, 학습, 건강 등\n각 팀의 직원들이 CEO님의\n목표 달성을 도와줄 거예요.',
+  '직원들의 성과는 CEO님이\n미션을 얼마나 잘 수행하느냐에\n달려있습니다!',
+  '자, 그럼 먼저\n회사 이름부터 정해볼까요?',
+];
+let dialogIdx=0;
+
+function startIntro(){
+  document.getElementById('introScreen').classList.add('hidden');
+  document.getElementById('npcScreen').classList.add('active');
+  dialogIdx=0;
+  showDialog();
+}
+
+function showDialog(){
+  document.getElementById('npcText').textContent=DIALOGS[dialogIdx];
+  if(dialogIdx===DIALOGS.length-1){
+    document.getElementById('npcTap').style.display='none';
+    document.getElementById('npcExtra').innerHTML=`
+      <input class="npc-input" id="nameInput" type="text" placeholder="회사 이름" maxlength="10">
+      <br>
+      <button class="npc-confirm" onclick="confirmName()">▸ 설립하기</button>
+    `;
+    setTimeout(()=>{const inp=document.getElementById('nameInput');if(inp)inp.focus();},300);
+  }
+}
+
+function nextDialog(){
+  if(dialogIdx>=DIALOGS.length-1)return;
+  dialogIdx++;
+  showDialog();
+}
+
+function confirmName(){
+  const inp=document.getElementById('nameInput');
+  const name=inp?inp.value.trim():'';
+  if(!name){inp.style.borderColor='#cc4444';return;}
+  S.companyName=name;
+  S.founded=true;
+  S.day=1;
+
+  // NPC 마지막 인사
+  document.getElementById('npcExtra').innerHTML='';
+  document.getElementById('npcTap').style.display='block';
+  document.getElementById('npcText').textContent=`${name}!\n멋진 이름이네요.\n\n그럼 사무실로 가볼까요?\n첫 번째 팀을 만들어봅시다!`;
+  document.getElementById('npcDialog').onclick=()=>{
+    document.getElementById('npcScreen').classList.remove('active');
+    document.getElementById('gameScreen').style.display='block';
+    init();
+    toast(`🏢 ${name} 설립!`);
+  };
+}
 
 function init(){
   S.depts=[];
@@ -551,18 +695,8 @@ function renderContent(){
 
 function renderMissions(c){
   let h='';
-  if(!S.founded){
-    c.innerHTML=`<div class="rc"><div class="rc-body" style="text-align:center;padding:24px">
-      <div style="font-size:20px;margin-bottom:8px">🏢</div>
-      <div style="font-size:13px;color:#ffe066;margin-bottom:6px">회사 설립</div>
-      <div style="font-size:9px;color:#a09870;margin-bottom:16px;line-height:1.5">나만의 회사를 세우고<br>팀을 만들어 성장시키세요!</div>
-      <input id="companyInput" type="text" placeholder="회사 이름을 입력하세요" maxlength="12" style="width:100%;padding:8px;background:#2a2510;border:2px solid #5a5530;color:#ffe066;font-family:inherit;font-size:11px;text-align:center;margin-bottom:12px">
-      <div class="add-c" onclick="foundCompany()" style="border-style:solid;color:#ffe066;border-color:#ffe066">▸ 회사 설립하기</div>
-    </div></div>`;
-    return;
-  }
   if(S.depts.length===0){
-    h+=`<div class="rc"><div class="rc-body" style="text-align:center;padding:20px"><div style="font-size:13px;color:#ffe066;margin-bottom:8px">${S.companyName}</div><div style="font-size:9px;color:#a09870;margin-bottom:12px">첫 번째 팀을 만들어보세요!</div></div></div>`;
+    h+=`<div class="rc"><div class="rc-body" style="text-align:center;padding:20px"><div style="font-size:14px;color:#ffe066;margin-bottom:8px">${S.companyName||'회사'}</div><div style="font-size:9px;color:#a09870;margin-bottom:12px">첫 번째 팀을 만들어보세요!</div></div></div>`;
     h+=`<div class="add-c" onclick="addDept()">+ 첫 번째 팀 만들기</div>`;
     c.innerHTML=h;return;
   }
@@ -634,17 +768,6 @@ function renderReport(c){
       </div>
     </div>
   </div>`;
-}
-
-function foundCompany(){
-  const input=document.getElementById('companyInput');
-  const name=input?input.value.trim():'';
-  if(!name){toast('회사 이름을 입력해주세요',true);return;}
-  S.founded=true;
-  S.companyName=name;
-  S.day=1;
-  toast(`🏢 ${name} 설립!`);
-  render();
 }
 
 // ===== ACTIONS =====
@@ -745,9 +868,18 @@ function render(){
   renderContent();updateLuna();
 }
 
-function resetGame(){if(!confirm('리셋?'))return;S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:''};init();}
+function resetGame(){
+  if(!confirm('리셋?'))return;
+  S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:''};
+  document.getElementById('gameScreen').style.display='none';
+  document.getElementById('introScreen').classList.remove('hidden');
+  document.getElementById('npcScreen').classList.remove('active');
+  document.getElementById('npcExtra').innerHTML='';
+  document.getElementById('npcTap').style.display='block';
+  dialogIdx=0;
+}
 
-init();
+// 인트로 화면부터 시작 (init은 설립 후 호출)
 </script>
 </body>
 </html>
