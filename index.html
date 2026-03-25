@@ -623,20 +623,70 @@ function renderCharLabels(){
   el.innerHTML=html;
 }
 
-// ===== 직원 클릭 → 서류작업 시작 =====
+// ===== 직원 클릭 → 메뉴 =====
 function onEmpClick(idx){
   const emp=S.emps[idx];
-  if(emp.state==='working'){
-    toast(`${emp.name}: 서류 작업 중...`);
-    return;
+  const eg=E[emp.gi];
+
+  document.getElementById('shTitle').textContent=`${emp.name} ${eg.rank}`;
+  let h=`<div style="font-size:9px;color:#8a8060;margin-bottom:8px">${eg.skill} · ${eg.desc}</div>`;
+
+  if(emp.state==='idle'){
+    h+=`<div class="btn" onclick="startWork(${idx})"><div class="ic" style="background:#4a6a2a;border-color:#66aa44;font-size:12px">⚙️</div><div class="info"><div class="t" style="color:#ccff88">서류 작업 시작</div><div class="d">게이지가 차면 돈이 들어옵니다</div></div></div>`;
+  } else if(emp.state==='working'){
+    h+=`<div class="btn" onclick="stopWork(${idx})"><div class="ic" style="background:#6a4a2a;border-color:#aa6644;font-size:12px">⏸️</div><div class="info"><div class="t" style="color:#ffaa66">작업 중지</div><div class="d">직원을 쉬게 합니다</div></div></div>`;
+  } else if(emp.state==='researching'){
+    h+=`<div style="font-size:9px;color:#88aaff;padding:8px">🔬 연구 진행 중...</div>`;
   }
-  // 바로 일 시작
+
+  // 연구개발 가능한 항목이 있고, 일하는 중이거나 대기 중이면 연구 전환
+  if(emp.state!=='researching'&&!S.research){
+    const avail=PATENTS.filter(p=>!S.unlocked.includes(p.id)&&p.req.every(r=>S.unlocked.includes(r))&&p.cost<=S.money);
+    if(avail.length>0){
+      h+=`<div style="font-size:9px;color:#8a8060;margin-top:8px;margin-bottom:4px">🔬 연구개발에 투입</div>`;
+      avail.forEach(p=>{
+        const eg2=E[emp.gi];
+        const dur=Math.round(p.cost/100/eg2.speed);
+        h+=`<div class="btn" onclick="assignResearch('${p.id}',${idx})"><div class="ic" style="background:#2a2a40;border-color:#4466aa;font-size:12px">${p.icon}</div>
+          <div class="info"><div class="t" style="color:#88aaff">${p.name}</div><div class="d">${p.desc} · ${dur}초</div></div>
+          <div class="cost" style="color:#ff6666">-${p.cost.toLocaleString()}원</div></div>`;
+      });
+    }
+  }
+
+  showSheet(`${emp.name}`,h);
+}
+
+function startWork(idx){
+  const emp=S.emps[idx];
   emp.state='working';
   const eg=E[emp.gi];
-  const duration=10/eg.speed/S.speedBonus;
   S.workers=S.workers||[];
-  S.workers.push({empIdx:idx,startTime:Date.now(),duration,income:Math.round(30*eg.speed)});
+  S.workers.push({empIdx:idx,startTime:Date.now(),duration:10/eg.speed/S.speedBonus,income:Math.round(30*eg.speed)});
+  closeSheet();
   toast(`${emp.name} 서류 작업 시작!`);
+}
+
+function stopWork(idx){
+  const emp=S.emps[idx];
+  emp.state='idle';
+  S.workers=(S.workers||[]).filter(w=>w.empIdx!==idx);
+  closeSheet();
+  toast(`${emp.name} 휴식`);
+}
+
+function assignResearch(patentId,idx){
+  const p=PATENTS.find(x=>x.id===patentId);
+  if(!p||p.cost>S.money)return;
+  if(S.research){toast('이미 연구 진행 중입니다',true);return;}
+  S.money-=p.cost;
+  // 기존 작업 중지
+  S.emps[idx].state='researching';
+  S.workers=(S.workers||[]).filter(w=>w.empIdx!==idx);
+  const eg=E[S.emps[idx].gi];
+  S.research={patentId,empIdx:idx,startTime:Date.now(),duration:p.cost/100/eg.speed};
+  closeSheet();
+  toast(`🔬 ${S.emps[idx].name} → ${p.name} 연구 시작!`);
   renderAll();
 }
 
