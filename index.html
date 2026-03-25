@@ -258,7 +258,7 @@
 
 <script>
 const G=[
-  {name:'개인사무실',icon:'🏠',minKpi:0,maxDept:2,exp:100,wins:1,desks:2,plants:1,
+  {name:'개인사무실',icon:'🏠',minKpi:0,maxDept:4,exp:100,wins:1,desks:2,plants:1,
    wall:'#d4c8a8',wl:'#c8bc98',trim:'#8B7355',f1:'#B8864E',f2:'#A67842',fh:'#C4925A'},
   {name:'스타트업',icon:'🏢',minKpi:40,maxDept:3,exp:300,wins:2,desks:3,plants:1,
    wall:'#ccd4d8',wl:'#bcc8cc',trim:'#6688aa',f1:'#a8a098',f2:'#989088',fh:'#b8b0a8'},
@@ -299,7 +299,7 @@ function rN(){const a=NM.filter(n=>!S.used.includes(n));const n=a.length?rnd(a):
 function mkEmp(gi){return{name:rN(),gi,mood:'normal',skin:rnd(SK),hair:rnd(HR),waveT:0};}
 
 function init(){
-  S.depts=D.slice(0,2).map(t=>({
+  S.depts=D.slice(0,4).map(t=>({
     ...t,kpi:50,emps:[mkEmp(0),mkEmp(1)],
     missions:t.ms.map(m=>({text:m,st:'todo'})),
   }));
