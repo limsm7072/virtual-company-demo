@@ -376,13 +376,34 @@ function updateCrafting(){
   if(S.crafting){
     const elapsed=(Date.now()-S.crafting.startTime)/1000;
     if(elapsed>=S.crafting.duration){
-      S.unlocked.push(S.crafting.craftId);
-      const craft=CRAFTS.find(c=>c.id===S.crafting.craftId);
-      S.money+=craft.reward;
-      S.emps[S.crafting.empIdx].state='idle';
-      toast(`✅ ${craft.name} 완성! +${craft.reward}원`);
-      S.crafting=null;
-      renderAll();
+      const empIdx=S.crafting.empIdx;
+      const emp=S.emps[empIdx];
+      const eg=E[emp.gi];
+
+      if(S.crafting.craftId==='_repeat'){
+        // 반복 생산 완료 → 돈 + 다시 반복
+        const income=Math.round(50*eg.speed*S.speedBonus);
+        S.money+=income;
+        S.crafting={craftId:'_repeat',empIdx,startTime:Date.now(),duration:8/eg.speed/S.speedBonus};
+        renderAll();
+      } else {
+        // 기능 제작 완료
+        S.unlocked.push(S.crafting.craftId);
+        const craft=CRAFTS.find(c=>c.id===S.crafting.craftId);
+        S.money+=craft.reward;
+        toast(`✅ ${craft.name} 완성! +${craft.reward}원`);
+
+        // 다음에 만들 수 있는 기능이 있으면 자동 이어서
+        const next=CRAFTS.find(c=>!S.unlocked.includes(c.id)&&c.req.every(r=>S.unlocked.includes(r))&&emp.gi>=c.minRank);
+        if(next){
+          S.crafting={craftId:next.id,empIdx,startTime:Date.now(),duration:next.time/eg.speed/S.speedBonus};
+          toast(`➡️ ${next.name} 제작 시작`);
+        } else {
+          // 만들 게 없으면 반복 생산 모드
+          S.crafting={craftId:'_repeat',empIdx,startTime:Date.now(),duration:8/eg.speed/S.speedBonus};
+        }
+        renderAll();
+      }
     }
   }
 
@@ -563,10 +584,13 @@ function onEmpClick(idx){
   const emp=S.emps[idx];
   if(emp.state==='working'){
     if(S.crafting&&S.crafting.empIdx===idx){
-      const craft=CRAFTS.find(c=>c.id===S.crafting.craftId);
-      const elapsed=(Date.now()-S.crafting.startTime)/1000;
-      const pct=Math.min(100,Math.round(elapsed/S.crafting.duration*100));
-      toast(`${craft.name} 제작 중... ${pct}%`);
+      if(S.crafting.craftId==='_repeat'){
+        toast(`${emp.name}: 반복 생산 중`);
+      } else {
+        const craft=CRAFTS.find(c=>c.id===S.crafting.craftId);
+        const pct=Math.min(100,Math.round((Date.now()-S.crafting.startTime)/1000/S.crafting.duration*100));
+        toast(`${craft.name} 제작 중... ${pct}%`);
+      }
     }
     return;
   }
@@ -618,11 +642,13 @@ function renderAll(){
 
   // 제작 진행 상태
   if(S.crafting){
-    const craft=CRAFTS.find(cr=>cr.id===S.crafting.craftId);
     const emp=S.emps[S.crafting.empIdx];
-    h+=`<div class="card"><div class="card-head"><div class="card-title">🔨 제작 중</div></div><div class="card-body">
-      <div style="font-size:10px;margin-bottom:4px">${craft.icon} ${craft.name}</div>
-      <div style="font-size:8px;color:#8a8060;margin-bottom:6px">${emp.name} 작업 중...</div>
+    const isRepeat=S.crafting.craftId==='_repeat';
+    const craft=isRepeat?null:CRAFTS.find(cr=>cr.id===S.crafting.craftId);
+    const title=isRepeat?'💰 수익 생산 중':'🔨 '+craft.name+' 제작 중';
+    const desc=isRepeat?`${emp.name} 반복 작업 중...`:`${emp.name} 작업 중...`;
+    h+=`<div class="card"><div class="card-head"><div class="card-title">${title}</div></div><div class="card-body">
+      <div style="font-size:8px;color:#8a8060;margin-bottom:6px">${desc}</div>
       <div class="prog-wrap"><div class="prog-fill" id="craftProg" style="width:0%"></div></div>
     </div></div>`;
   }
