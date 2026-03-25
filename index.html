@@ -379,7 +379,7 @@ function renderBubbles(){
   S.depts.forEach((dept,di)=>{
     const lx=di*dwPx+6;
     const ly=fy*PX-36;
-    sh+=`<div style="position:absolute;left:${lx}px;top:${ly}px;width:${dwPx-12}px;text-align:center;font-size:11px;color:#ffe8c0;font-weight:bold;text-shadow:1px 1px 0 #3a2a10;font-family:inherit;white-space:nowrap;overflow:hidden">${dept.icon} ${dept.name}</div>`;
+    sh+=`<div style="position:absolute;left:${lx}px;top:${ly}px;width:${dwPx-12}px;text-align:center;font-size:10px;color:#ffe8c0;font-weight:bold;text-shadow:1px 1px 0 #3a2a10;font-family:inherit;white-space:nowrap;overflow:hidden">${dept.name}</div>`;
   });
   sl.innerHTML=sh;
 }
