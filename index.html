@@ -701,17 +701,32 @@ function renderMissions(c){
     c.innerHTML=h;return;
   }
   S.depts.forEach((d,di)=>{
+    const hasEmp=d.emps.length>0;
     const kc=d.kpi>=70?'high':d.kpi>=40?'mid':'low';
-    h+=`<div class="rc"><div class="rc-head"><div class="rc-title">${d.icon} ${d.name}</div><div class="rc-badge ${kc}">${d.kpi}%</div></div><div class="rc-body"><div class="kbar"><div class="kbar-fill ${kc}" style="width:${d.kpi}%"></div></div>`;
-    d.missions.forEach((m,mi)=>{
-      const cls=m.st==='done'?'done':m.st==='fail'?'fail':'';
-      const ck=m.st==='done'?'✓':m.st==='fail'?'✕':'';
-      const act=m.st==='todo'?`onclick="doM(${di},${mi})"`:m.st==='fail'?`onclick="retry(${di},${mi})"`:''
-      h+=`<div class="mi ${cls}" ${act}><div class="mi-ck">${ck}</div><div class="mi-txt">${m.text}</div></div>`;
-    });
+    h+=`<div class="rc"><div class="rc-head"><div class="rc-title">${d.icon} ${d.name}</div>`;
+    if(hasEmp) h+=`<div class="rc-badge ${kc}">${d.kpi}%</div>`;
+    h+=`</div><div class="rc-body">`;
+
+    if(!hasEmp){
+      // 직원 없음 → 채용 유도
+      h+=`<div style="text-align:center;padding:12px 0">
+        <div style="font-size:9px;color:#8a8060;margin-bottom:8px">아직 직원이 없습니다</div>
+        <div class="add-c" onclick="openSheet(${di})" style="margin:0;padding:10px;font-size:10px">👔 첫 직원 채용하기</div>
+      </div>`;
+    } else {
+      // 미션 표시
+      h+=`<div class="kbar"><div class="kbar-fill ${kc}" style="width:${d.kpi}%"></div></div>`;
+      d.missions.forEach((m,mi)=>{
+        if(m.st==='locked') return; // 잠긴 미션은 안 보임
+        const cls=m.st==='done'?'done':m.st==='fail'?'fail':'';
+        const ck=m.st==='done'?'✓':m.st==='fail'?'✕':'';
+        const act=m.st==='todo'?`onclick="doM(${di},${mi})"`:m.st==='fail'?`onclick="retry(${di},${mi})"`:''
+        h+=`<div class="mi ${cls}" ${act}><div class="mi-ck">${ck}</div><div class="mi-txt">${m.text}</div></div>`;
+      });
+    }
     h+=`</div></div>`;
   });
-  if(S.depts.length<G[S.gi].maxDept) h+=`<div class="add-c" onclick="addDept()">+ 새 부서 설립</div>`;
+  if(S.depts.length<G[S.gi].maxDept) h+=`<div class="add-c" onclick="addDept()">+ 새 팀 만들기</div>`;
   c.innerHTML=h;
 }
 
@@ -801,8 +816,9 @@ function newDay(){
 function addDept(){
   if(S.depts.length>=G[S.gi].maxDept)return toast('등급 부족',true);
   const t=D[S.depts.length];if(!t)return;
-  S.depts.push({...t,kpi:50,emps:[mkEmp(0)],missions:t.ms.map(m=>({text:m,st:'todo'}))});
-  toast(`🏢 ${t.name} 설립!`);render();
+  // 빈 팀으로 생성 (직원 없음, 미션 잠김)
+  S.depts.push({...t,kpi:0,emps:[],missions:t.ms.map(m=>({text:m,st:'locked'}))});
+  toast(`${t.name} 창설!`);render();
 }
 
 function checkUp(){const g=G[S.gi];if(S.exp>=g.exp&&S.gi<5){S.exp-=g.exp;S.gi++;S.lv++;toast(`★ ${G[S.gi].name} 승급!`);}}
@@ -830,8 +846,18 @@ function closeSheet(){document.getElementById('shBg').classList.remove('open');}
 function hire(gi){
   const g=E[gi];if(g.cost>S.money)return;
   S.money-=g.cost;
-  S.depts[hDi].emps.push(mkEmp(gi));
-  toast(`${S.depts[hDi].emps.at(-1).name} ${g.rank} 채용!`);closeSheet();render();
+  const dept=S.depts[hDi];
+  const wasEmpty=dept.emps.length===0;
+  dept.emps.push(mkEmp(gi));
+  // 첫 직원 채용 시 미션 해금
+  if(wasEmpty){
+    dept.missions=D.find(x=>x.id===dept.id).ms.map(m=>({text:m,st:'todo'}));
+    dept.kpi=30;
+    toast(`${dept.emps.at(-1).name} ${g.rank} 채용! 미션이 해금되었습니다`);
+  } else {
+    toast(`${dept.emps.at(-1).name} ${g.rank} 채용!`);
+  }
+  closeSheet();render();
 }
 
 // ===== LUNA =====
