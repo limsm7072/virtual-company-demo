@@ -210,13 +210,15 @@ let S={
   unlocked:[],
   crafting:null,
   missions:[],
-  owned:[], // 구매한 상점 아이템
-  speedBonus:1, // 제작 속도 보너스
+  owned:[], // {id, x, y} 배치된 아이템
+  speedBonus:1,
 };
+let placingItem=null; // 배치 모드 중인 아이템
 
 function rN(){const a=NAMES.filter(n=>!S.used.includes(n));const n=a.length?rnd(a):rnd(NAMES);S.used.push(n);return n;}
 function mkEmp(gi){return{name:rN(),gi,skin:rnd(SK),hair:rnd(HR),state:'idle',mood:'normal'};}
 function has(id){return S.unlocked.includes(id);}
+function hasItem(id){return S.owned.some(o=>o.id===id);}
 
 // ===== 인트로 =====
 let introStep=0;
@@ -335,6 +337,17 @@ function setupCanvas(){
 function onCanvasClick(e){
   const r=cv.getBoundingClientRect();
   const mx=(e.clientX-r.left)/PX,my=(e.clientY-r.top)/PX;
+
+  // 배치 모드
+  if(placingItem){
+    S.owned.push({id:placingItem.id,x:Math.round(mx),y:Math.round(my)});
+    toast(`✅ ${placingItem.name} 배치 완료!`);
+    placingItem=null;
+    renderAll();
+    return;
+  }
+
+  // 직원 클릭
   S.emps.forEach((emp,i)=>{
     const p=empPos(i);
     if(mx>=p.x-10&&mx<=p.x+10&&my>=p.y-20&&my<=p.y+5){
@@ -344,13 +357,11 @@ function onCanvasClick(e){
 }
 
 function empPos(i){
+  const deskX=15+i*30,deskY=Math.floor(H*0.55)+10;
   if(S.emps[i].state==='working'){
-    // 책상 위치
-    const dx=15+i*30,dy=Math.floor(H*0.55)+10;
-    return{x:dx,y:dy};
+    return{x:deskX,y:deskY}; // 책상에 앉아있음
   }
-  // 서있는 위치
-  return{x:20+i*25, y:Math.floor(H*0.55)-2};
+  return{x:deskX, y:Math.floor(H*0.55)-4}; // 책상 앞에 서있음
 }
 
 function gameLoop(ts){
@@ -425,21 +436,59 @@ function drawOffice(){
   cx.fillStyle='#77bbdd';cx.fillRect(10,15,6,5);cx.fillStyle='#99ccee';cx.fillRect(18,15,6,5);
   cx.fillStyle='#eee';cx.fillRect(16,6,2,16);cx.fillRect(8,13,18,2);
 
-  // 책상 (일하는 직원 수만큼)
+  // 구매한 아이템 배치 (유저가 놓은 좌표에)
+  S.owned.forEach(o=>{
+    const dx=o.x,dy=o.y;
+    if(o.id==='plant1'){
+      cx.fillStyle='#8B4513';cx.fillRect(dx,dy,7,5);
+      cx.fillStyle='#44bb44';cx.fillRect(dx-1,dy-4,9,5);
+      cx.fillStyle='#66dd66';cx.fillRect(dx+1,dy-6,5,3);
+    } else if(o.id==='poster'){
+      cx.fillStyle='#ddd';cx.fillRect(dx,dy,14,10);
+      cx.fillStyle='#ee4444';cx.fillRect(dx+1,dy+1,12,8);
+      cx.fillStyle='#fff';cx.font='3px monospace';cx.textAlign='center';cx.fillText('DO IT',dx+7,dy+6);
+    } else if(o.id==='coffee'){
+      cx.fillStyle='#555';cx.fillRect(dx,dy,6,6);
+      cx.fillStyle='#333';cx.fillRect(dx+1,dy+1,4,4);
+      cx.fillStyle='#ee8844';cx.fillRect(dx+2,dy+2,2,2);
+    } else if(o.id==='snack'){
+      cx.fillStyle='#aa8844';cx.fillRect(dx,dy,6,4);
+      cx.fillStyle='#ee6644';cx.fillRect(dx+1,dy-2,2,3);
+      cx.fillStyle='#eecc44';cx.fillRect(dx+3,dy-1,2,2);
+    } else if(o.id==='chair'||o.id==='monitor'){
+      // 이것들은 책상에 반영됨 (아래에서 처리)
+    }
+  });
+
+  // 배치 모드 커서 표시
+  if(placingItem){
+    cx.fillStyle='rgba(255,224,100,0.3)';
+    cx.fillRect(0,0,W,H);
+    cx.fillStyle='#ffe066';cx.font='5px monospace';cx.textAlign='center';
+    cx.fillText('탭해서 배치',W/2,H/2);
+  }
+
+  // 책상 (직원 수만큼 항상 표시)
+  const fancyChair=hasItem('chair');
+  const bigMon=hasItem('monitor');
   S.emps.forEach((emp,i)=>{
-    if(emp.state==='working'){
-      const p=empPos(i);
-      // 의자
-      cx.fillStyle='#666';cx.fillRect(p.x-4,p.y-4,9,2);
-      cx.fillStyle='#555';cx.fillRect(p.x-4,p.y-2,1,5);cx.fillRect(p.x+4,p.y-2,1,5);
-      cx.fillStyle='#777';cx.fillRect(p.x-4,p.y+3,9,2);
-      // 책상
-      cx.fillStyle='#A0782C';cx.fillRect(p.x-6,p.y+4,13,4);
-      cx.fillStyle='#B8864E';cx.fillRect(p.x-5,p.y+5,11,2);
-      cx.fillStyle='#8B6914';cx.fillRect(p.x-5,p.y+8,2,3);cx.fillRect(p.x+5,p.y+8,2,3);
-      // 모니터
-      cx.fillStyle='#333';cx.fillRect(p.x-3,p.y+1,7,4);
-      cx.fillStyle='#66ddff';cx.fillRect(p.x-2,p.y+2,5,2);
+    const deskX=15+i*30,deskY=Math.floor(H*0.55)+10;
+    // 의자
+    cx.fillStyle=fancyChair?'#884422':'#666';cx.fillRect(deskX-4,deskY-4,9,2);
+    cx.fillStyle=fancyChair?'#773311':'#555';cx.fillRect(deskX-4,deskY-2,1,5);cx.fillRect(deskX+4,deskY-2,1,5);
+    cx.fillStyle=fancyChair?'#995533':'#777';cx.fillRect(deskX-4,deskY+3,9,2);
+    if(fancyChair){cx.fillStyle='#cc8844';cx.fillRect(deskX-4,deskY-5,9,1);}
+    // 책상
+    cx.fillStyle='#A0782C';cx.fillRect(deskX-6,deskY+4,13,4);
+    cx.fillStyle='#B8864E';cx.fillRect(deskX-5,deskY+5,11,2);
+    cx.fillStyle='#8B6914';cx.fillRect(deskX-5,deskY+8,2,3);cx.fillRect(deskX+5,deskY+8,2,3);
+    // 모니터
+    if(bigMon){
+      cx.fillStyle='#222';cx.fillRect(deskX-5,deskY-1,11,6);
+      cx.fillStyle='#4499dd';cx.fillRect(deskX-4,deskY,9,4);
+    } else {
+      cx.fillStyle='#333';cx.fillRect(deskX-3,deskY+1,7,4);
+      cx.fillStyle='#66ddff';cx.fillRect(deskX-2,deskY+2,5,2);
     }
   });
 
@@ -629,7 +678,7 @@ function renderAll(){
   // 상점
   h+=`<div class="card"><div class="card-head"><div class="card-title">🛒 상점</div></div><div class="card-body">`;
   SHOP.forEach(item=>{
-    const owned=S.owned.includes(item.id);
+    const owned=hasItem(item.id);
     const isIAP=item.type==='iap';
     const afford=isIAP||item.cost<=S.money;
     if(owned&&!isIAP){
@@ -728,13 +777,14 @@ function hireEmp(gi){
 // ===== 상점 =====
 function buyItem(id){
   const item=SHOP.find(i=>i.id===id);
-  if(!item||item.cost>S.money||S.owned.includes(id))return;
+  if(!item||item.cost>S.money||hasItem(id))return;
   S.money-=item.cost;
-  S.owned.push(id);
   // 효과 적용
   if(item.effect==='speed_10')S.speedBonus+=0.1;
   if(item.effect==='speed_20')S.speedBonus+=0.2;
-  toast(`🛒 ${item.name} 구매!`);
+  // 배치 모드 진입
+  placingItem={id:item.id,icon:item.icon,name:item.name};
+  toast(`📍 사무실을 탭해서 ${item.name}을 배치하세요`);
   renderAll();
 }
 
