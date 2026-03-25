@@ -815,10 +815,28 @@ function newDay(){
 
 function addDept(){
   if(S.depts.length>=G[S.gi].maxDept)return toast('등급 부족',true);
-  const t=D[S.depts.length];if(!t)return;
-  // 빈 팀으로 생성 (직원 없음, 미션 잠김)
+  // 이미 만든 팀 제외
+  const made=S.depts.map(d=>d.id);
+  const avail=D.filter(t=>!made.includes(t.id));
+  if(!avail.length)return toast('모든 팀을 만들었습니다',true);
+
+  document.getElementById('shTitle').textContent='팀 선택';
+  const b=document.getElementById('shBody');
+  b.innerHTML=avail.map(t=>{
+    return `<div class="hr" onclick="createDept('${t.id}')">
+      <div class="hr-ic" style="background:#4a4520;border-color:#8a8060;font-size:16px">${t.icon}</div>
+      <div class="hr-info"><div class="t" style="color:#ffe066">${t.name}</div>
+      <div class="d">${t.ms.join(' · ')}</div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('shBg').classList.add('open');
+}
+
+function createDept(id){
+  const t=D.find(x=>x.id===id);if(!t)return;
   S.depts.push({...t,kpi:0,emps:[],missions:t.ms.map(m=>({text:m,st:'locked'}))});
-  toast(`${t.name} 창설!`);render();
+  toast(`${t.name} 창설!`);
+  closeSheet();render();
 }
 
 function checkUp(){const g=G[S.gi];if(S.exp>=g.exp&&S.gi<5){S.exp-=g.exp;S.gi++;S.lv++;toast(`★ ${G[S.gi].name} 승급!`);}}
