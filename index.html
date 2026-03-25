@@ -319,7 +319,8 @@
 </div>
 
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('missions')">📋 미션</button>
+  <button class="tab active" onclick="switchTab('missions')">📋 루틴</button>
+  <button class="tab" onclick="switchTab('projects')">🎯 목표</button>
   <button class="tab" onclick="switchTab('employees')">👥 직원</button>
   <button class="tab" onclick="switchTab('report')">📊 리포트</button>
 </div>
@@ -379,7 +380,7 @@ const SK=['#FFDBB4','#E8B88A','#D4A574','#C68642'];
 const HR=['#222','#4A2800','#8B4513','#333','#1a1a1a'];
 
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
-let S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:''};
+let S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:'',projects:[]};
 
 function rN(){const a=NM.filter(n=>!S.used.includes(n));const n=a.length?rnd(a):rnd(NM);S.used.push(n);return n;}
 
@@ -682,13 +683,14 @@ function drawChar(x,y,emp,eg,kpi,bubble,isWaving){
 // ===== TABS =====
 function switchTab(t){
   S.tab=t;
-  document.querySelectorAll('.tab').forEach((b,i)=>{b.classList.toggle('active',['missions','employees','report'][i]===t);});
+  document.querySelectorAll('.tab').forEach((b,i)=>{b.classList.toggle('active',['missions','projects','employees','report'][i]===t);});
   renderContent();
 }
 
 function renderContent(){
   const c=document.getElementById('content');
   if(S.tab==='missions')renderMissions(c);
+  else if(S.tab==='projects')renderProjects(c);
   else if(S.tab==='employees')renderEmployees(c);
   else renderReport(c);
 }
@@ -747,6 +749,138 @@ function renderEmployees(c){
   c.innerHTML=h;
 }
 
+// ===== 프로젝트 (목표) =====
+function renderProjects(c){
+  let h='';
+
+  // 진행중 프로젝트
+  S.projects.forEach((p,pi)=>{
+    const elapsed=S.day-p.startDay;
+    const remaining=p.duration-elapsed;
+    const pct=calcProjectProgress(p);
+    const pc=pct>=80?'high':pct>=40?'mid':'low';
+    const statusTxt=remaining<=0?(pct>=p.goal?'✓ 성공':'✕ 실패'):`D-${remaining}`;
+    const statusColor=remaining<=0?(pct>=p.goal?'#66ff66':'#ff6666'):(remaining<=3?'#ff6666':'#ffe066');
+
+    h+=`<div class="rc ${remaining<=0?(pct>=p.goal?'good':'danger'):''}">
+      <div class="rc-head">
+        <div class="rc-title">${p.icon} ${p.name}</div>
+        <div class="rc-badge" style="color:${statusColor};border-color:${statusColor}">${statusTxt}</div>
+      </div>
+      <div class="rc-body">
+        <div style="font-size:8px;color:#8a8060;margin-bottom:6px">${p.desc}</div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:4px">
+          <span>진행률</span><span style="color:${pc==='high'?'#66ff66':pc==='mid'?'#ffcc00':'#ff6666'}">${pct}%</span>
+        </div>
+        <div class="kbar"><div class="kbar-fill ${pc}" style="width:${pct}%"></div></div>
+        <div style="font-size:8px;color:#8a8060;margin-top:4px">
+          투입 팀: ${p.teams.map(tid=>{const d=S.depts.find(x=>x.id===tid);return d?d.icon+d.name:'?';}).join(', ')||'없음'}
+        </div>
+        <div style="font-size:8px;color:#8a8060">기간: ${p.duration}일 | 목표 달성률: ${p.goal}%</div>
+        <div style="font-size:8px;color:#ffe066;margin-top:2px">보상: EXP +${p.reward.exp} · 자금 +${p.reward.money.toLocaleString()}원</div>
+      </div>
+    </div>`;
+
+    // 기간 지났으면 정산
+    if(remaining<=0&&!p.settled){
+      p.settled=true;
+      if(pct>=p.goal){
+        S.exp+=p.reward.exp;S.money+=p.reward.money;
+        toast(`🎉 ${p.name} 프로젝트 성공!`);
+      } else {
+        S.depts.forEach(d=>{if(p.teams.includes(d.id))d.kpi=Math.max(0,d.kpi-10);});
+        toast(`${p.name} 프로젝트 실패..`,true);
+      }
+    }
+  });
+
+  // 새 프로젝트 만들기
+  h+=`<div class="add-c" onclick="openNewProject()">+ 새 목표 등록</div>`;
+  c.innerHTML=h;
+}
+
+function activeProjects(){return S.projects.filter(p=>!p.settled);}
+
+function calcProjectProgress(p){
+  // 투입된 팀들의 평균 KPI × 루틴 달성률
+  if(!p.teams.length)return 0;
+  const teamDepts=S.depts.filter(d=>p.teams.includes(d.id));
+  if(!teamDepts.length)return 0;
+  const avgKpi=Math.round(teamDepts.reduce((s,d)=>s+d.kpi,0)/teamDepts.length);
+  return Math.min(100,avgKpi);
+}
+
+function openNewProject(){
+  document.getElementById('shTitle').textContent='새 목표 등록';
+  const teamOpts=S.depts.map(d=>`<label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:10px;cursor:pointer"><input type="checkbox" class="pj-team" value="${d.id}"> ${d.icon} ${d.name}</label>`).join('');
+
+  document.getElementById('shBody').innerHTML=`
+    <div style="padding:8px">
+      <div style="font-size:9px;color:#8a8060;margin-bottom:4px">목표 이름</div>
+      <input id="pjName" type="text" placeholder="예: OPIc IH 달성" maxlength="20"
+        style="width:100%;padding:8px;background:#2a2510;border:2px solid #5a5530;color:#ffe066;font-family:inherit;font-size:11px;margin-bottom:8px">
+
+      <div style="font-size:9px;color:#8a8060;margin-bottom:4px">설명 (선택)</div>
+      <input id="pjDesc" type="text" placeholder="예: 영어 공부 꾸준히 해서 IH 취득" maxlength="40"
+        style="width:100%;padding:8px;background:#2a2510;border:2px solid #5a5530;color:#f0e8d0;font-family:inherit;font-size:10px;margin-bottom:8px">
+
+      <div style="font-size:9px;color:#8a8060;margin-bottom:4px">투입 팀</div>
+      <div style="background:#2a2510;border:2px solid #5a5530;padding:8px;margin-bottom:8px">${teamOpts||'<span style="font-size:9px;color:#5a5530">팀이 없습니다</span>'}</div>
+
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <div style="flex:1">
+          <div style="font-size:9px;color:#8a8060;margin-bottom:4px">기간 (일)</div>
+          <select id="pjDuration" style="width:100%;padding:8px;background:#2a2510;border:2px solid #5a5530;color:#ffe066;font-family:inherit;font-size:10px">
+            <option value="7">7일</option>
+            <option value="14">14일</option>
+            <option value="30" selected>30일</option>
+            <option value="60">60일</option>
+            <option value="90">90일</option>
+          </select>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:9px;color:#8a8060;margin-bottom:4px">목표 달성률</div>
+          <select id="pjGoal" style="width:100%;padding:8px;background:#2a2510;border:2px solid #5a5530;color:#ffe066;font-family:inherit;font-size:10px">
+            <option value="50">50%</option>
+            <option value="60">60%</option>
+            <option value="70" selected>70%</option>
+            <option value="80">80%</option>
+            <option value="90">90%</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="hr" onclick="confirmProject()" style="justify-content:center;background:#4a6a2a;border-color:#66aa44">
+        <div class="hr-info" style="text-align:center"><div class="t" style="color:#ccff88">▸ 프로젝트 수주</div></div>
+      </div>
+    </div>`;
+  document.getElementById('shBg').classList.add('open');
+  setTimeout(()=>{const inp=document.getElementById('pjName');if(inp)inp.focus();},300);
+}
+
+function confirmProject(){
+  const name=document.getElementById('pjName').value.trim();
+  if(!name){document.getElementById('pjName').style.borderColor='#cc4444';return;}
+  const desc=document.getElementById('pjDesc').value.trim();
+  const duration=parseInt(document.getElementById('pjDuration').value);
+  const goal=parseInt(document.getElementById('pjGoal').value);
+  const teams=[...document.querySelectorAll('.pj-team:checked')].map(cb=>cb.value);
+
+  const icons=['🎯','📈','🏆','⭐','🚀','💎'];
+  const rewardExp=Math.round(duration*goal/10);
+  const rewardMoney=duration*500;
+
+  S.projects.push({
+    name, desc: desc||name, icon:rnd(icons),
+    teams, duration, goal,
+    startDay:S.day, settled:false,
+    reward:{exp:rewardExp, money:rewardMoney}
+  });
+
+  toast(`🎯 ${name} 프로젝트 수주!`);
+  closeSheet();renderContent();
+}
+
 function renderReport(c){
   const avg=S.depts.length?Math.round(S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length):0;
   const tot=S.depts.reduce((s,d)=>s+d.emps.length,0);
@@ -779,13 +913,16 @@ function renderReport(c){
       <div style="font-size:9px;color:#a09870;padding:4px 0;border-bottom:2px solid #5a5530;margin-bottom:4px">▸ 부서별 성과</div>
       ${dr}
       <div class="rpt-next">
-        <div>다음 목표</div>
+        <div>다음 등급</div>
         <div class="target">${S.gi<5?G[S.gi+1].icon+' '+G[S.gi+1].name:'🏆 최고 등급!'}</div>
         <div style="margin-top:4px">EXP ${S.exp} / ${g.exp}</div>
         <div class="kbar" style="margin-top:4px;margin-bottom:0"><div class="kbar-fill" style="width:${Math.min(100,S.exp/g.exp*100)}%;background:#66cc44"></div></div>
       </div>
     </div>
-  </div>`;
+  </div>` + (activeProjects().length?`<div class="rc"><div class="rc-head"><div class="rc-title">🎯 진행중 프로젝트</div></div><div class="rc-body">${activeProjects().map(p=>{
+    const pct=calcProjectProgress(p);const rem=p.duration-(S.day-p.startDay);
+    return `<div class="rpt-dept"><span>${p.icon} ${p.name}</span><span style="color:${rem<=3?'#ff6666':'#ffe066'};font-size:9px">D-${rem} · ${pct}%</span></div>`;
+  }).join('')}</div></div>`:'');
 }
 
 function addRoutine(di){
@@ -935,7 +1072,7 @@ function render(){
 
 function resetGame(){
   if(!confirm('리셋?'))return;
-  S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:''};
+  S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:'',projects:[]};
   document.getElementById('gameScreen').style.display='none';
   document.getElementById('introScreen').classList.remove('hidden');
   document.getElementById('npcScreen').classList.remove('active');
