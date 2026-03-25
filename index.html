@@ -367,66 +367,153 @@ const SK=['#FFDBB4','#E8B88A','#D4A574','#C68642'];
 const HR=['#222','#4A2800','#8B4513','#333','#1a1a1a'];
 
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
-let S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:'',projects:[]};
+let S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:'',projects:[],office:null,planTeams:[]};
 
 function rN(){const a=NM.filter(n=>!S.used.includes(n));const n=a.length?rnd(a):rnd(NM);S.used.push(n);return n;}
 
 function mkEmp(gi){return{name:rN(),gi,mood:'normal',skin:rnd(SK),hair:rnd(HR),waveT:0};}
 
 // ===== 인트로 시스템 =====
-const DIALOGS=[
-  '당신만의 회사를 세워보세요.',
-  '팀을 만들고, 직원을 채용하고\n루틴을 등록하세요.',
-  '운동, 수면, 학습, 건강 등\n각 팀의 직원들이\n당신의 목표 달성을 돕습니다.',
-  '직원들의 성과는\n당신이 루틴을 얼마나\n잘 수행하느냐에 달려있습니다.',
-  '자, 먼저\n회사 이름부터 정해볼까요?',
+let introStep=0;
+
+const OFFICES=[
+  {name:'원룸 사무실',cost:5000,maxDept:2,icon:'🏠',desc:'책상 2개, 좁지만 시작하기 좋은'},
+  {name:'공유 오피스',cost:15000,maxDept:3,icon:'🏢',desc:'공용 회의실 포함, 3팀까지'},
+  {name:'소형 사무실',cost:30000,maxDept:4,icon:'🏗️',desc:'독립 공간, 4팀까지'},
+  {name:'층 사무실',cost:50000,maxDept:5,icon:'🏛️',desc:'한 층 전체, 5팀까지'},
 ];
-let dialogIdx=0;
 
 function startIntro(){
   document.getElementById('introScreen').classList.add('hidden');
   document.getElementById('npcScreen').classList.add('active');
-  dialogIdx=0;
-  showDialog();
+  introStep=0;
+  showStep();
 }
 
-function showDialog(){
-  document.getElementById('npcText').textContent=DIALOGS[dialogIdx];
-  if(dialogIdx===DIALOGS.length-1){
-    document.getElementById('npcTap').style.display='none';
-    document.getElementById('npcExtra').innerHTML=`
+function showStep(){
+  const scene=document.getElementById('npcScene');
+  const avatar=document.getElementById('npcAvatar');
+  const npcName=document.querySelector('.npc-name');
+  const dialog=document.getElementById('npcDialog');
+  const text=document.getElementById('npcText');
+  const tap=document.getElementById('npcTap');
+  const extra=document.getElementById('npcExtra');
+
+  if(introStep===0){
+    // 1단계: 회사 이름
+    avatar.textContent='📝';
+    npcName.textContent='STEP 1. 회사 설립';
+    text.textContent='먼저 회사 이름을 정하세요.';
+    tap.style.display='none';
+    dialog.onclick=null;
+    extra.innerHTML=`
       <input class="npc-input" id="nameInput" type="text" placeholder="회사 이름" maxlength="10">
       <br>
-      <button class="npc-confirm" onclick="confirmName()">▸ 설립하기</button>
+      <button class="npc-confirm" onclick="stepName()">▸ 다음</button>
     `;
     setTimeout(()=>{const inp=document.getElementById('nameInput');if(inp)inp.focus();},300);
+
+  } else if(introStep===1){
+    // 2단계: 사업계획서
+    avatar.textContent='📋';
+    npcName.textContent='STEP 2. 사업계획서';
+    text.textContent='어떤 분야에 집중할 회사인가요?\n최대 3개까지 선택하세요.';
+    tap.style.display='none';
+    dialog.onclick=null;
+
+    const opts=D.map(t=>`<label style="display:flex;align-items:center;gap:8px;padding:6px;background:#2a2510;border:1px solid #4a4520;margin-bottom:4px;cursor:pointer;font-size:10px">
+      <input type="checkbox" class="bp-team" value="${t.id}" onchange="checkBpLimit()"> ${t.icon} ${t.name} <span style="color:#8a8060;font-size:8px">${t.hint}</span>
+    </label>`).join('');
+
+    extra.innerHTML=`
+      <div style="text-align:left;margin-top:8px">${opts}</div>
+      <div style="font-size:8px;color:#8a8060;margin-top:6px" id="bpCount">0/3 선택</div>
+      <button class="npc-confirm" onclick="stepPlan()" id="bpNext" disabled style="opacity:0.4">▸ 사업계획서 제출</button>
+    `;
+
+  } else if(introStep===2){
+    // 3단계: 투자 결과
+    avatar.textContent='💰';
+    npcName.textContent='STEP 3. 투자 유치';
+    const teamCount=S.planTeams.length;
+    const funding=30000+teamCount*10000;
+    S.money=funding;
+    text.textContent=`사업계획서 검토 완료!\n\n선택 분야: ${teamCount}개\n투자금: ${funding.toLocaleString()}원\n\n이 자금으로 사무실을 임대하세요.`;
+    tap.style.display='block';
+    tap.textContent='탭하여 계속 ▸';
+    dialog.onclick=()=>{introStep=3;showStep();};
+    extra.innerHTML='';
+
+  } else if(introStep===3){
+    // 4단계: 사무실 임대
+    avatar.textContent='🏠';
+    npcName.textContent='STEP 4. 사무실 임대';
+    text.textContent='사무실을 선택하세요.\n큰 사무실일수록 더 많은 팀을\n운영할 수 있습니다.';
+    tap.style.display='none';
+    dialog.onclick=null;
+
+    const opts=OFFICES.map((o,i)=>{
+      const afford=o.cost<=S.money;
+      return `<div class="hr ${afford?'':'locked'}" onclick="${afford?'rentOffice('+i+')':''}">
+        <div class="hr-ic" style="background:#4a4520;border-color:#8a8060;font-size:16px">${o.icon}</div>
+        <div class="hr-info">
+          <div class="t" style="color:#ffe066">${o.name}</div>
+          <div class="d">${o.desc} · 최대 ${o.maxDept}팀</div>
+        </div>
+        <div class="hr-cost" style="color:${afford?'#66cc44':'#ff6666'}">${o.cost.toLocaleString()}원</div>
+      </div>`;
+    }).join('');
+
+    extra.innerHTML=`<div style="margin-top:8px">${opts}</div>
+      <div style="font-size:9px;color:#8a8060;margin-top:6px">보유 자금: <span style="color:#66cc44">${S.money.toLocaleString()}원</span></div>`;
   }
 }
 
-function nextDialog(){
-  if(dialogIdx>=DIALOGS.length-1)return;
-  dialogIdx++;
-  showDialog();
+function checkBpLimit(){
+  const checked=document.querySelectorAll('.bp-team:checked');
+  document.getElementById('bpCount').textContent=`${checked.length}/3 선택`;
+  const btn=document.getElementById('bpNext');
+  if(checked.length>0&&checked.length<=3){btn.disabled=false;btn.style.opacity='1';}
+  else{btn.disabled=true;btn.style.opacity='0.4';}
+  if(checked.length>3){
+    [...checked].pop().checked=false;
+    checkBpLimit();
+  }
 }
 
-function confirmName(){
+function stepName(){
   const inp=document.getElementById('nameInput');
   const name=inp?inp.value.trim():'';
   if(!name){inp.style.borderColor='#cc4444';return;}
   S.companyName=name;
+  introStep=1;showStep();
+}
+
+function stepPlan(){
+  const checked=[...document.querySelectorAll('.bp-team:checked')].map(cb=>cb.value);
+  if(!checked.length)return;
+  S.planTeams=checked;
+  introStep=2;showStep();
+}
+
+function rentOffice(idx){
+  const o=OFFICES[idx];
+  if(o.cost>S.money)return;
+  S.money-=o.cost;
+  S.office=o;
   S.founded=true;
   S.day=1;
 
-  // NPC 마지막 인사
-  document.getElementById('npcExtra').innerHTML='';
-  document.getElementById('npcTap').style.display='block';
-  document.getElementById('npcText').textContent=`${name}\n\n설립 완료.\n사무실로 이동합니다.`;
-  document.getElementById('npcDialog').onclick=()=>{
-    document.getElementById('npcScreen').classList.remove('active');
-    document.getElementById('gameScreen').style.display='block';
-    init();
-    toast(`🏢 ${name} 설립!`);
-  };
+  // 사업계획서에서 선택한 팀 자동 생성 (빈 팀)
+  S.planTeams.forEach(tid=>{
+    const t=D.find(x=>x.id===tid);
+    if(t)S.depts.push({...t,kpi:0,emps:[],missions:[]});
+  });
+
+  document.getElementById('npcScreen').classList.remove('active');
+  document.getElementById('gameScreen').style.display='block';
+  init();
+  toast(`🏢 ${S.companyName} 개업!`);
 }
 
 function init(){
@@ -965,7 +1052,8 @@ function newDay(){
 }
 
 function addDept(){
-  if(S.depts.length>=G[S.gi].maxDept)return toast('등급 부족',true);
+  const maxD=S.office?S.office.maxDept:G[S.gi].maxDept;
+  if(S.depts.length>=maxD)return toast('사무실 공간 부족! 더 큰 사무실로 이전하세요',true);
   // 이미 만든 팀 제외
   const made=S.depts.map(d=>d.id);
   const avail=D.filter(t=>!made.includes(t.id));
@@ -1029,7 +1117,7 @@ function toast(m,bad){const t=document.getElementById('toast');t.textContent=m;t
 function render(){
   const g=G[S.gi];
   document.getElementById('hudDay').textContent=S.founded?`DAY ${String(S.day).padStart(3,'0')}`:'';
-  document.getElementById('hudGrade').textContent=S.founded?(S.companyName?S.companyName+' · ':'')+`${g.icon} ${g.name}`:'수호컴퍼니';
+  document.getElementById('hudGrade').textContent=S.founded?(S.companyName||'')+(S.office?' · '+S.office.icon+S.office.name:''):'수호컴퍼니';
   document.getElementById('expBar').style.width=Math.min(100,S.exp/g.exp*100)+'%';
   const avg=S.depts.length?Math.round(S.depts.reduce((s,d)=>s+d.kpi,0)/S.depts.length):0;
   document.getElementById('hudKpi').textContent=avg+'%';
@@ -1041,7 +1129,7 @@ function render(){
 
 function resetGame(){
   if(!confirm('리셋?'))return;
-  S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:'',projects:[]};
+  S={money:50000,exp:0,lv:1,gi:0,day:0,depts:[],used:[],tab:'missions',founded:false,companyName:'',projects:[],office:null,planTeams:[]};
   document.getElementById('gameScreen').style.display='none';
   document.getElementById('introScreen').classList.remove('hidden');
   document.getElementById('npcScreen').classList.remove('active');
