@@ -759,7 +759,7 @@ function openTab(tab){
       if(done){
         h+=`<div class="btn locked"><div class="ic" style="background:#2a3a2a;border-color:#44aa44;font-size:12px">${p.icon}</div><div class="info"><div class="t" style="color:#44aa44">${p.name}</div><div class="d">개발 완료</div></div></div>`;
       } else if(avail){
-        h+=`<div class="btn ${afford?'':'locked'}" onclick="${afford?`buyPatent('${p.id}')`:''}"}>
+        h+=`<div class="btn ${afford?'':'locked'}" onclick="${afford?'buyPatent(\''+p.id+'\')':''}">
           <div class="ic" style="background:#4a4520;border-color:#ffe066;font-size:12px">${p.icon}</div>
           <div class="info"><div class="t" style="color:#ffe066">${p.name}</div><div class="d">${p.desc}</div></div>
           <div class="cost" style="color:${afford?'#66cc44':'#ff6666'}">${p.cost.toLocaleString()}원</div>
