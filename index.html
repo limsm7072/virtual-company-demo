@@ -578,7 +578,82 @@ function showStep(){
 
     extra.innerHTML=`<div style="margin-top:8px">${opts}</div>
       <div style="font-size:9px;color:#8a8060;margin-top:6px">보유 자금: <span style="color:#66cc44">${S.money.toLocaleString()}원</span></div>`;
+
+  } else if(introStep===13){
+    // 직원 채용 안내
+    const dept=S.depts[S._hireIdx];
+    if(!dept||S._hireIdx>=S.depts.length){
+      // 모든 팀 채용 완료 → 게임 시작
+      introStep=14;showStep();return;
+    }
+    avatar.textContent=dept.icon;
+    npcName.textContent='';
+    text.textContent=`${dept.name}에 첫 직원을\n채용해야 합니다.\n\n어떤 등급의 직원을 뽑을까요?`;
+    tap.style.display='none';
+    dialog.onclick=null;
+
+    const affordable=E.filter(g=>g.cost<=S.money);
+    const opts=E.map((g,gi)=>{
+      const afford=g.cost<=S.money;
+      const locked=gi>2; // 튜토리얼에선 대리까지만
+      const dis=!afford||locked;
+      return `<div class="hr ${dis?'locked':''}" onclick="${dis?'':'tutorialHire('+gi+')'}">
+        <div class="hr-ic" style="background:${g.bg};border-color:${g.c};font-size:12px">★</div>
+        <div class="hr-info">
+          <div class="t" style="color:${g.c}">${g.rank}</div>
+          <div class="d">${g.skill}</div>
+          <div class="d" style="color:#8a8060">${g.desc}</div>
+        </div>
+        <div class="hr-cost" style="color:${afford&&!locked?'#66cc44':'#ff6666'}">${g.cost?g.cost.toLocaleString()+'원':'무료'}</div>
+      </div>`;
+    }).join('');
+
+    extra.innerHTML=`<div style="margin-top:8px">${opts}</div>
+      <div style="font-size:9px;color:#8a8060;margin-top:6px">보유 자금: <span style="color:#66cc44">${S.money.toLocaleString()}원</span></div>`;
+
+  } else if(introStep===14){
+    // 모든 준비 완료
+    avatar.textContent='🎉';
+    npcName.textContent='';
+    const empCount=S.depts.reduce((s,d)=>s+d.emps.length,0);
+    text.textContent=`모든 준비가 끝났습니다!\n\n${S.companyName}\n팀 ${S.depts.length}개 · 직원 ${empCount}명\n\n이제 시작합니다.`;
+    tap.style.display='block';
+    tap.textContent='▸ 게임 시작';
+    dialog.onclick=()=>{
+      document.getElementById('npcScreen').classList.remove('active');
+      document.getElementById('gameScreen').style.display='block';
+      init();
+      toast(`🏢 ${S.companyName} 개업!`);
+    };
+    extra.innerHTML='';
   }
+}
+
+function tutorialHire(gi){
+  const g=E[gi];
+  if(g.cost>S.money)return;
+  S.money-=g.cost;
+  const dept=S.depts[S._hireIdx];
+  dept.emps.push(mkEmp(gi));
+  dept.kpi=10;
+  const emp=dept.emps.at(-1);
+
+  // 채용 결과 보여주기
+  const avatar=document.getElementById('npcAvatar');
+  const text=document.getElementById('npcText');
+  const tap=document.getElementById('npcTap');
+  const extra=document.getElementById('npcExtra');
+  const dialog=document.getElementById('npcDialog');
+
+  avatar.textContent='👔';
+  text.textContent=`${dept.name}에\n${emp.name} ${g.rank} 채용 완료!\n\n스킬: ${g.skill}`;
+  tap.style.display='block';
+  tap.textContent='탭하여 계속 ▸';
+  extra.innerHTML='';
+  dialog.onclick=()=>{
+    S._hireIdx++;
+    introStep=13;showStep();
+  };
 }
 
 function bpStepName(){
@@ -711,7 +786,7 @@ function rentOffice(idx){
       // 세부 선택을 루틴으로 변환
       missions.push({text:`${detail.what} ${detail.howMuch}`,st:'todo'});
     }
-    S.depts.push({...t,kpi:10,emps:[mkEmp(0)],missions}); // 인턴 1명 자동 배치
+    S.depts.push({...t,kpi:0,emps:[],missions});
   });
 
   // 목표를 프로젝트로 자동 생성
@@ -726,10 +801,10 @@ function rentOffice(idx){
     });
   }
 
-  document.getElementById('npcScreen').classList.remove('active');
-  document.getElementById('gameScreen').style.display='block';
-  init();
-  toast(`🏢 ${S.companyName} 개업!`);
+  // 직원 채용 튜토리얼로
+  introStep=13;
+  S._hireIdx=0;
+  showStep();
 }
 
 function init(){
