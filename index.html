@@ -406,7 +406,9 @@ function showStep(){
       {icon:'📊',title:'',msg:'운동, 수면, 공부, 건강...\n혼자서는 관리가 안 되는 것들.'},
       {icon:'🏢',title:'',msg:'그래서 생각했습니다.\n\n"회사를 만들자.\n나를 관리해줄 회사를."'},
       {icon:'👔',title:'',msg:'직원을 뽑고, 팀을 꾸리고\n그들에게 당신의 목표를\n맡기는 겁니다.'},
-      {icon:'🚀',title:'',msg:'직원들의 성과는\n당신이 루틴을 얼마나\n잘 수행하느냐에 달려있습니다.\n\n준비 되셨나요?'},
+      {icon:'🚀',title:'',msg:'직원들의 성과는\n당신이 루틴을 얼마나\n잘 수행하느냐에 달려있습니다.'},
+      {icon:'📝',title:'',msg:'좋습니다.\n\n그럼 사업계획서부터\n작성해볼까요?\n\n걱정 마세요,\n몇 가지만 고르면 됩니다.'},
+      {icon:'🏢',title:'',msg:'먼저, 당신의 회사에\n이름을 붙여주세요.'},
     ];
     const s=stories[introStep];
     avatar.textContent=s.icon;
@@ -417,11 +419,10 @@ function showStep(){
     dialog.onclick=()=>{introStep++;showStep();};
     extra.innerHTML='';
 
-  } else if(introStep===5){
-    // 회사 이름
-    avatar.textContent='📝';
-    npcName.textContent='사업계획서 작성';
-    text.textContent='회사 이름을 정해주세요.';
+  } else if(introStep===7){
+    // 회사 이름 입력 (서사에서 자연스럽게 이어짐)
+    avatar.textContent='🏢';
+    npcName.textContent='';
     tap.style.display='none';
     dialog.onclick=null;
     extra.innerHTML=`
@@ -431,7 +432,7 @@ function showStep(){
     `;
     setTimeout(()=>{const inp=document.getElementById('nameInput');if(inp)inp.focus();},300);
 
-  } else if(introStep===6){
+  } else if(introStep===8){
     // 사업계획서 - 주력 분야 (하나씩)
     avatar.textContent='📋';
     npcName.textContent='사업계획서 작성';
@@ -441,7 +442,7 @@ function showStep(){
 
     if(picking>=2||avail.length===0){
       // 다 골랐으면 다음으로
-      introStep=7;showStep();return;
+      introStep=9;showStep();return;
     }
 
     const ordinal=['첫 번째','두 번째'][picking];
@@ -458,7 +459,7 @@ function showStep(){
     extra.innerHTML=`<div style="margin-top:8px">${opts}</div>
       ${picking>0?`<div style="margin-top:6px"><button class="npc-confirm" onclick="bpSkipTeam()" style="background:#2a2510;border-color:#5a5530;color:#8a8060">▸ 이만 충분해요</button></div>`:''}`;
 
-  } else if(introStep===7){
+  } else if(introStep===9){
     // 사업계획서 - 목표 설정
     avatar.textContent='🎯';
     npcName.textContent='사업계획서 작성';
@@ -481,7 +482,7 @@ function showStep(){
 
     extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
 
-  } else if(introStep===8){
+  } else if(introStep===10){
     // 사업계획서 - 기간
     avatar.textContent='📅';
     npcName.textContent='사업계획서 작성';
@@ -497,7 +498,7 @@ function showStep(){
 
     extra.innerHTML=`<div style="margin-top:8px">${opts}</div>`;
 
-  } else if(introStep===9){
+  } else if(introStep===11){
     // 사업계획서 완성 & 리뷰
     avatar.textContent='📄';
     npcName.textContent='사업계획서 완성';
@@ -507,10 +508,10 @@ function showStep(){
     text.textContent=plan;
     tap.style.display='block';
     tap.textContent='탭하여 심사 결과 확인 ▸';
-    dialog.onclick=()=>{introStep=10;showStep();};
+    dialog.onclick=()=>{introStep=12;showStep();};
     extra.innerHTML='';
 
-  } else if(introStep===10){
+  } else if(introStep===12){
     // 투자 결과 - 원룸만 가능한 금액
     avatar.textContent='💰';
     npcName.textContent='투자 심사 결과';
@@ -518,10 +519,10 @@ function showStep(){
     text.textContent=`심사 결과: 승인\n\n시드 투자금: 8,000원\n\n큰 금액은 아니지만\n작은 사무실부터 시작해봅시다.`;
     tap.style.display='block';
     tap.textContent='탭하여 계속 ▸';
-    dialog.onclick=()=>{introStep=11;showStep();};
+    dialog.onclick=()=>{introStep=13;showStep();};
     extra.innerHTML='';
 
-  } else if(introStep===11){
+  } else if(introStep===13){
     // 사무실 임대
     avatar.textContent='🏠';
     npcName.textContent='사무실 임대';
@@ -553,18 +554,18 @@ function bpStepName(){
   S.companyName=name;
   S.planTeams=[];
   S._bpPicking=0;
-  introStep=6;showStep();
+  introStep=8;showStep();
 }
 
 function bpPickTeam(tid){
   if(!S.planTeams)S.planTeams=[];
   S.planTeams.push(tid);
   S._bpPicking=(S._bpPicking||0)+1;
-  introStep=6;showStep(); // 다시 6으로 → 다음 팀 선택 or 자동 넘어감
+  introStep=8;showStep(); // 다시 8로 → 다음 팀 선택 or 자동 넘어감
 }
 
 function bpSkipTeam(){
-  introStep=7;showStep();
+  introStep=9;showStep();
 }
 
 function bpPickGoal(goal){
@@ -578,7 +579,7 @@ function bpPickGoal(goal){
     return;
   }
   S._bpGoal=goal;
-  introStep=8;showStep();
+  introStep=10;showStep();
 }
 
 function bpCustomGoal(){
@@ -586,12 +587,12 @@ function bpCustomGoal(){
   const v=inp?inp.value.trim():'';
   if(!v){inp.style.borderColor='#cc4444';return;}
   S._bpGoal=v;
-  introStep=8;showStep();
+  introStep=10;showStep();
 }
 
 function bpPickPeriod(p){
   S._bpPeriod=p;
-  introStep=9;showStep();
+  introStep=11;showStep();
 }
 
 function rentOffice(idx){
