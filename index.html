@@ -386,11 +386,31 @@ function onCanvasClick(e){
 
   // 배치 모드
   if(placingItem){
-    S.owned.push({id:placingItem.id,x:Math.round(mx),y:Math.round(my)});
-    toast(`✅ ${placingItem.name} 배치 완료!`);
+    if(placingItem.moveIdx!==undefined){
+      // 기존 아이템 이동
+      S.owned[placingItem.moveIdx].x=Math.round(mx);
+      S.owned[placingItem.moveIdx].y=Math.round(my);
+      toast(`✅ 이동 완료!`);
+    } else {
+      // 새 아이템 배치
+      S.owned.push({id:placingItem.id,x:Math.round(mx),y:Math.round(my)});
+      toast(`✅ ${placingItem.name} 배치 완료!`);
+    }
     placingItem=null;
     renderAll();
     return;
+  }
+
+  // 배치된 아이템 클릭 → 이동 모드
+  for(let oi=0;oi<S.owned.length;oi++){
+    const o=S.owned[oi];
+    if(o.id==='chair'||o.id==='monitor')continue;
+    if(mx>=o.x-4&&mx<=o.x+10&&my>=o.y-6&&my<=o.y+6){
+      const item=SHOP.find(s=>s.id===o.id);
+      placingItem={id:o.id,icon:item?item.icon:'?',name:item?item.name:'아이템',moveIdx:oi};
+      toast(`📍 새 위치를 탭하세요`);
+      return;
+    }
   }
 
   // 직원 클릭
