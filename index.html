@@ -145,12 +145,12 @@
 
 <script>
 const GRADES=[
-  {name:'개인사무실',icon:'🏠',minKpi:0,maxDept:2,exp:100,wins:1,desks:2,plants:0},
-  {name:'스타트업',icon:'🏢',minKpi:40,maxDept:3,exp:300,wins:2,desks:3,plants:1},
-  {name:'중소기업',icon:'🏗️',minKpi:55,maxDept:4,exp:600,wins:2,desks:4,plants:2},
-  {name:'중견기업',icon:'🏛️',minKpi:65,maxDept:5,exp:1000,wins:3,desks:5,plants:2},
-  {name:'대기업',icon:'🏙️',minKpi:75,maxDept:6,exp:2000,wins:3,desks:6,plants:3},
-  {name:'글로벌기업',icon:'🌍',minKpi:85,maxDept:6,exp:9999,wins:4,desks:8,plants:3},
+  {name:'개인사무실',icon:'🏠',minKpi:0,maxDept:2,exp:100,wins:1,desks:2,plants:1,wall:'#d4c8a8',wallLine:'#c8bc98',trim:'#8B7355',floor1:'#B8864E',floor2:'#A67842',floorHi:'#C4925A'},
+  {name:'스타트업',icon:'🏢',minKpi:40,maxDept:3,exp:300,wins:2,desks:3,plants:1,wall:'#c8d4d8',wallLine:'#b8c8cc',trim:'#6688aa',floor1:'#a0a0a0',floor2:'#909090',floorHi:'#b0b0b0'},
+  {name:'중소기업',icon:'🏗️',minKpi:55,maxDept:4,exp:600,wins:2,desks:4,plants:2,wall:'#d0d0d8',wallLine:'#c0c0cc',trim:'#7777aa',floor1:'#B8864E',floor2:'#A67842',floorHi:'#C4925A'},
+  {name:'중견기업',icon:'🏛️',minKpi:65,maxDept:5,exp:1000,wins:3,desks:5,plants:2,wall:'#e0dcd4',wallLine:'#d4d0c4',trim:'#aa9966',floor1:'#c49a6c',floor2:'#b08850',floorHi:'#d4a878'},
+  {name:'대기업',icon:'🏙️',minKpi:75,maxDept:6,exp:2000,wins:3,desks:6,plants:3,wall:'#e8e4dc',wallLine:'#dcd8cc',trim:'#bbaa88',floor1:'#8a8a8a',floor2:'#777',floorHi:'#999'},
+  {name:'글로벌기업',icon:'🌍',minKpi:85,maxDept:6,exp:9999,wins:4,desks:8,plants:3,wall:'#f0ece4',wallLine:'#e4e0d4',trim:'#ccbb99',floor1:'#2a2a2a',floor2:'#222',floorHi:'#333'},
 ];
 const EG=[
   {rank:'인턴',c:'#78909c',bg:'#455a64',cost:0,bonus:0},
@@ -254,38 +254,53 @@ function drawOffice(){
   if(!ctx) return;
   const g = GRADES[S.gi];
 
-  // 배경 - 벽
-  ctx.fillStyle = '#1e1e38';
+  // 배경 - 벽 (등급별 색상)
+  ctx.fillStyle = g.wall;
   ctx.fillRect(0, 0, cW, cH * 0.6);
+  // 벽 무늬
+  ctx.fillStyle = g.wallLine;
+  for(let y = 0; y < cH*0.6; y += 12){
+    ctx.fillRect(0, y, cW, 1);
+  }
 
-  // 벽 하단 라인
-  ctx.fillStyle = '#444466';
-  ctx.fillRect(0, Math.floor(cH*0.6), cW, 2);
+  // 벽 하단 걸레받이
+  ctx.fillStyle = g.trim;
+  ctx.fillRect(0, Math.floor(cH*0.6)-2, cW, 4);
 
-  // 바닥 - 체크무늬
+  // 바닥 - 나무 마루
   const floorY = Math.floor(cH * 0.6) + 2;
   for(let y = floorY; y < cH; y += 8){
-    for(let x = 0; x < cW; x += 8){
-      const checker = ((x/8|0)+(y/8|0)) % 2;
-      ctx.fillStyle = checker ? '#2a2a3e' : '#252538';
-      ctx.fillRect(x, y, 8, 8);
+    for(let x = 0; x < cW; x += 16){
+      const shift = ((y/8|0) % 2) * 8;
+      ctx.fillStyle = g.floor1;
+      ctx.fillRect(x + shift, y, 15, 7);
+      ctx.fillStyle = g.floor2;
+      ctx.fillRect(x + shift, y+7, 15, 1);
+      ctx.fillStyle = g.floorHi;
+      ctx.fillRect(x + shift + 2, y+1, 11, 2);
     }
   }
 
-  // 창문
+  // 창문 (밝은 하늘색 + 흰 프레임)
   for(let i = 0; i < g.wins; i++){
     const wx = 8 + i * 28;
-    const wy = 8;
-    ctx.fillStyle = '#555577';
-    ctx.fillRect(wx, wy, 20, 18);
-    ctx.fillStyle = '#2244aa';
-    ctx.fillRect(wx+2, wy+2, 7, 6);
-    ctx.fillStyle = '#3366cc';
-    ctx.fillRect(wx+11, wy+2, 7, 6);
-    ctx.fillStyle = '#2244aa';
-    ctx.fillRect(wx+2, wy+10, 7, 6);
-    ctx.fillStyle = '#3366cc';
-    ctx.fillRect(wx+11, wy+10, 7, 6);
+    const wy = 6;
+    // 프레임
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(wx, wy, 20, 20);
+    // 유리
+    ctx.fillStyle = '#88ccee';
+    ctx.fillRect(wx+2, wy+2, 7, 7);
+    ctx.fillStyle = '#aaddff';
+    ctx.fillRect(wx+11, wy+2, 7, 7);
+    ctx.fillStyle = '#77bbdd';
+    ctx.fillRect(wx+2, wy+11, 7, 7);
+    ctx.fillStyle = '#99ccee';
+    ctx.fillRect(wx+11, wy+11, 7, 7);
+    // 창틀 십자
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(wx+9, wy, 2, 20);
+    ctx.fillRect(wx, wy+9, 20, 2);
   }
 
   // 책상
@@ -304,9 +319,9 @@ function drawOffice(){
     ctx.fillRect(dx+2, dy+6, 2, 4);
     ctx.fillRect(dx+14, dy+6, 2, 4);
     // 모니터
-    ctx.fillStyle = '#333';
+    ctx.fillStyle = '#444';
     ctx.fillRect(dx+6, dy-5, 7, 5);
-    ctx.fillStyle = '#4488aa';
+    ctx.fillStyle = '#66ccff';
     ctx.fillRect(dx+7, dy-4, 5, 3);
   }
 
@@ -318,9 +333,9 @@ function drawOffice(){
     ctx.fillStyle = '#8B4513';
     ctx.fillRect(px, py, 8, 6);
     // 잎
-    ctx.fillStyle = '#228B22';
-    ctx.fillRect(px-1, py-4, 10, 5);
     ctx.fillStyle = '#33aa33';
+    ctx.fillRect(px-1, py-4, 10, 5);
+    ctx.fillStyle = '#55cc55';
     ctx.fillRect(px+1, py-6, 6, 3);
   }
 
